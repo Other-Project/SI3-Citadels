@@ -2,6 +2,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -24,43 +25,74 @@ public abstract class Player {
         builtDistricts = new ArrayList<>();
     }
 
+    /**
+     * Gets the name of the player
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the amount of coins the player have
+     */
     public int getCoins() {
         return coins;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (" + getCoins() + " coins) " + getHandDistricts() + " : " + getBuiltDistricts();
     }
 
     /**
      * Tries to pay a certain amount of money
      *
      * @param price The price to pay
-     * @return True if the player has enough money
+     * @return True if the player had enough money
      */
     public boolean pay(int price) {
-        if (coins < price) return false;
+        if (coins < price || price < 0) return false;
         coins -= price;
         return true;
     }
 
+    /**
+     * Gets all the districts that the player built (and that haven't been destroyed)
+     */
     public List<District> getBuiltDistricts() {
         return builtDistricts;
     }
 
+    /**
+     * Gets all the districts in the hand of the player (but not built for now)
+     */
     public List<District> getHandDistricts() {
         return handDistricts;
     }
 
-    public Character getCharacter() {
-        return character;
+    /**
+     * Gets the chosen character (can be empty if the player hasn't chosen yet)
+     */
+    public Optional<Character> getCharacter() {
+        return Optional.ofNullable(character);
     }
 
+    /**
+     * Sets the character of the player
+     *
+     * @param character The character to set
+     */
     protected void setCharacter(Character character) {
         this.character = character;
     }
 
-    protected boolean buildDistricts(District district) {
+    /**
+     * Tries to build a district
+     *
+     * @param district The district to build
+     * @return True if the district have been successfully built
+     */
+    protected boolean buildDistrict(District district) {
         if (!handDistricts.contains(district)) return false;
         if (!pay(district.getCost())) return false;
         handDistricts.remove(district);
@@ -68,9 +100,33 @@ public abstract class Player {
         return true;
     }
 
+    /**
+     * Asks the player to choose a character
+     *
+     * @param availableCharacters A list of the characters available
+     * @return The character that has been chosen
+     */
     public abstract Character pickCharacter(List<Character> availableCharacters);
 
+    /**
+     * Ask the player if he wants to pick coins
+     */
     public abstract boolean pickCoins();
 
-    public abstract List<District> pickDistrictsToBuild();
+    /**
+     * Asks the player to choose n districts from the districts that has been drawn
+     *
+     * @param drawnCards     The list of the drawn districts
+     * @param amountToChoose The amount of districts to choose
+     * @return The chosen districts
+     */
+    public abstract List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose);
+
+    /**
+     * Asks the player to choose districts from his hand to be build
+     *
+     * @param maxAmountToChoose The max amount of districts that can be built
+     * @return The chosen districts
+     */
+    public abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
 }

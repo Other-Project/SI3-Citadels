@@ -23,7 +23,7 @@ public class Game {
 
     public void gameTurn() {
         characterSelectionTurn();
-        playerList.sort(Comparator.comparing(Player::getCharacter));
+        playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
     }
 
     public static void main(String... args) {

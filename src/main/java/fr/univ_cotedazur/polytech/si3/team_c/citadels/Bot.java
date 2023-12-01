@@ -11,7 +11,7 @@ import java.util.Random;
  * @author Team C
  */
 public class Bot extends Player {
-    Random random;
+    private final Random random;
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
@@ -21,7 +21,7 @@ public class Bot extends Player {
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
         setCharacter(availableCharacters.get(random.nextInt(availableCharacters.size())));
-        return getCharacter();
+        return getCharacter().orElseThrow();
     }
 
     @Override
@@ -31,11 +31,26 @@ public class Bot extends Player {
     }
 
     @Override
-    public List<District> pickDistrictsToBuild() {
+    public List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose) {
+        ArrayList<District> chosen = new ArrayList<>(drawnCards.stream()
+                .filter(c -> !getBuiltDistricts().contains(c))
+                .filter(c -> !getHandDistricts().contains(c))
+                .limit(amountToChoose).toList()); // For now, we select the first x districts
+        if (chosen.size() < amountToChoose && drawnCards.size() > chosen.size())
+            chosen.addAll(drawnCards.stream().filter(c -> !chosen.contains(c))
+                    .limit((long) amountToChoose - chosen.size()).toList());
+        return chosen;
+    }
+
+    @Override
+    public List<District> pickDistrictsToBuild(int maxAmountToChoose) {
+        ArrayList<District> built = new ArrayList<>();
         for (District district : getHandDistricts()) {
-            if (buildDistricts(district))
-                return List.of(district); // For now builds the first district found buildable
+            if (maxAmountToChoose > 0 && buildDistrict(district)) { // For now builds the first x districts found buildable
+                built.add(district);
+                maxAmountToChoose--;
+            }
         }
-        return Collections.emptyList();
+        return built;
     }
 }
