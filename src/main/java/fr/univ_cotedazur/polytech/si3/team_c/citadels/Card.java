@@ -26,8 +26,8 @@ public abstract class Card {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof District district)) return false;
-        return Objects.equals(getName(), district.getName());
+        if (!(obj instanceof Card other)) return false;
+        return Objects.equals(getName(), other.getName());
     }
 
     @Override
