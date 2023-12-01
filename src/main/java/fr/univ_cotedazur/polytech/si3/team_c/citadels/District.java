@@ -21,11 +21,23 @@ public abstract class District{
         return color;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public int getPoint(){
+    public int getPoint() {
         return point;
+    }
+
+    public boolean isDestructible() {
+        return true;
+    }
+
+    public int numberOfCardsToDraw() {
+        return 2;
+    }
+
+    public int numberOfCardsToKeep() {
+        return 1;
     }
 }

@@ -26,6 +26,7 @@ public class Deck {
                 cards.add(new Harbor());
                 cards.add(new WatchTower());
                 cards.add(new Prison());
+                cards.add(new Battlefield());
             }
             if (i < 4) {
                 cards.add(new Church());
