@@ -1,28 +1,17 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-public abstract class District{
-    private final String name;
+public abstract class District extends Card {
     private final int cost;
-    private final Colors color;
     private final int point;
 
-    protected District(String name, int cost, Colors color, int point){
-        this.name = name;
+    protected District(String name, int cost, Colors color, int point) {
+        super(name, color);
         this.cost = cost;
-        this.color = color;
         this.point = point;
     }
 
-    public int getCost(){
+    public int getCost() {
         return cost;
-    }
-
-    public Colors getColor(){
-        return color;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public int getPoint() {
@@ -39,5 +28,10 @@ public abstract class District{
 
     public int numberOfCardsToKeep() {
         return 1;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " ($" + getCost() + ", " + getPoint() + " pts)";
     }
 }

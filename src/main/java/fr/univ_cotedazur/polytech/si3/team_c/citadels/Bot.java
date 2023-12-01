@@ -1,8 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Character;
-
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
