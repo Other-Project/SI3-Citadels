@@ -5,8 +5,10 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
@@ -21,6 +23,8 @@ public class Game {
         for (int i = 1; !gameTurn(); i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
         }
+        Player winner = getWinner();
+        LOGGER.log(Level.INFO, "The player {0} won with {1} points !", new Object[]{winner.getName(), winner.getScore()});
         LOGGER.log(Level.INFO, "Game ends");
     }
 
@@ -96,6 +100,22 @@ public class Game {
             if (end(player)) isEnd = true;
         }
         return isEnd;
+    }
+
+    /**
+     * @return a map of all the scores with the player associated with it
+     */
+    public Map<Player, Integer> getScores() {
+        return playerList.stream()
+                .collect(Collectors.toMap(p -> p, Player::getScore));
+    }
+
+    /**
+     * @return the winner of the game
+     */
+    public Player getWinner() {
+        return getScores().entrySet().stream()
+                .max(Comparator.comparingInt(Map.Entry::getValue)).orElseThrow().getKey();
     }
 
     public static void main(String... args) {

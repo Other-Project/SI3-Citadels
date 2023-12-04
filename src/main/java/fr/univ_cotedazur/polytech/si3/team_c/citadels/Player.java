@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 /**
  * A player (human or robot)
  *
@@ -154,4 +153,12 @@ public abstract class Player {
      * @return The chosen districts
      */
     public abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
+
+    /**
+     * @return the current score of the player
+     */
+    public int getScore() {
+        return getBuiltDistricts().stream()
+                .mapToInt(District::getPoint).sum();
+    }
 }
