@@ -46,6 +46,7 @@ public class Game {
      * Player chooses the action he wants to play during his turn
      */
     public void playerTurn(Player player) {
+        LOGGER.log(Level.INFO, "{0}", player);
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
@@ -90,6 +91,7 @@ public class Game {
         playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
         boolean isEnd = false;
         for (Player player : playerList) {
+            player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
             playerTurn(player);
             if (end(player)) isEnd = true;
         }

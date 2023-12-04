@@ -41,7 +41,7 @@ public abstract class Player {
 
     @Override
     public String toString() {
-        return getName() + " (" + getCoins() + " coins) " + getHandDistricts() + " : " + getBuiltDistricts();
+        return getName() + " (" + getCoins() + " coins) " + getHandDistricts() + " :" + getBuiltDistricts();
     }
 
     /**
@@ -69,7 +69,14 @@ public abstract class Player {
      * Gets all the districts that the player built (and that haven't been destroyed)
      */
     public List<District> getBuiltDistricts() {
-        return new ArrayList<>(builtDistricts);
+        return new ArrayList<>(builtDistricts) {
+            @Override
+            public String toString() {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (District d : this) stringBuilder.append("\n\t").append(d);
+                return stringBuilder.toString();
+            }
+        };
     }
 
     /**
