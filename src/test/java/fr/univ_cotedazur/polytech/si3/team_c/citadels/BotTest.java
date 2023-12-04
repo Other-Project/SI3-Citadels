@@ -26,7 +26,7 @@ class BotTest {
         assertTrue(player1.pay(2));
         assertFalse(player1.pay(-1));
         assertEquals(0, player1.getCoins());
-        assertTrue(player1.pickCoins()); // The player has no money and should therefore get some gold
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
     }
 
     @Test

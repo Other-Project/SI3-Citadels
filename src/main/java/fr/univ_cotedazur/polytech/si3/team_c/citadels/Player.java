@@ -109,9 +109,9 @@ public abstract class Player {
     public abstract Character pickCharacter(List<Character> availableCharacters);
 
     /**
-     * Ask the player if he wants to pick coins
+     * Which action should be done (will be asked until there's no more actions to do)
      */
-    public abstract boolean pickCoins();
+    public abstract Action nextAction(List<Action> remainingActions);
 
     /**
      * Asks the player to choose n districts from the districts that has been drawn
