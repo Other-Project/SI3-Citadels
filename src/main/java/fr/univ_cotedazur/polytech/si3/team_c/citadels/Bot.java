@@ -44,6 +44,7 @@ public class Bot extends Player {
         if (chosen.size() < amountToChoose && drawnCards.size() > chosen.size())
             chosen.addAll(drawnCards.stream().filter(c -> !chosen.contains(c))
                     .limit((long) amountToChoose - chosen.size()).toList());
+        chosen.forEach(this::addDistrictToHand);
         return chosen;
     }
 

@@ -110,6 +110,15 @@ public abstract class Player {
     }
 
     /**
+     * Adds a district to the player's hand
+     *
+     * @param district The district to add
+     */
+    protected void addDistrictToHand(District district) {
+        handDistricts.add(district);
+    }
+
+    /**
      * Asks the player to choose a character
      *
      * @param availableCharacters A list of the characters available
