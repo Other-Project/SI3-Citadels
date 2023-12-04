@@ -69,14 +69,14 @@ public abstract class Player {
      * Gets all the districts that the player built (and that haven't been destroyed)
      */
     public List<District> getBuiltDistricts() {
-        return builtDistricts;
+        return new ArrayList<>(builtDistricts);
     }
 
     /**
      * Gets all the districts in the hand of the player (but not built for now)
      */
     public List<District> getHandDistricts() {
-        return handDistricts;
+        return new ArrayList<>(handDistricts);
     }
 
     /**
