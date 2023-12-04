@@ -57,6 +57,15 @@ public abstract class Player {
     }
 
     /**
+     * Add some coins to the player "wallet"
+     *
+     * @param quantity Quantity of coins to add
+     */
+    public void gainCoins(int quantity) {
+        coins += quantity;
+    }
+
+    /**
      * Gets all the districts that the player built (and that haven't been destroyed)
      */
     public List<District> getBuiltDistricts() {
