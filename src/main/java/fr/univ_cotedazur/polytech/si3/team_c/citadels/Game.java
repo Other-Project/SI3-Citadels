@@ -20,8 +20,9 @@ public class Game {
         LOGGER.log(Level.INFO, "Game starts");
         deck = new Deck();
         playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
-        for (int i = 1; !gameTurn(); i++) {
+        for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
+            if (gameTurn()) break;
         }
         Player winner = getWinner();
         LOGGER.log(Level.INFO, "The player {0} won with {1} points !", new Object[]{winner.getName(), winner.getScore()});
