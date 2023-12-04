@@ -26,12 +26,12 @@ public class Bot extends Player {
 
     @Override
     public Action nextAction(List<Action> remainingActions) {
-        if (remainingActions.contains(Action.INCOME)) {
-            var minCost = getHandDistricts().stream().mapToInt(District::getCost).min(); // For now, picks coins only if nothing can be built
-            if (minCost.isPresent() && getCoins() < minCost.getAsInt()) return Action.INCOME;
-        }
+        var minCost = getHandDistricts().stream().mapToInt(District::getCost).min();
+        var canBuild = minCost.isPresent() && getCoins() > minCost.getAsInt();
+        if (remainingActions.contains(Action.INCOME) && minCost.isPresent() && !canBuild)
+            return Action.INCOME; // For now, picks coins only if nothing can be built
         if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
-        if (remainingActions.contains(Action.BUILD)) return Action.BUILD;
+        if (remainingActions.contains(Action.BUILD) && canBuild) return Action.BUILD;
         return Action.NONE;
     }
 
