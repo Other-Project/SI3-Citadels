@@ -51,7 +51,7 @@ public class Deck extends ArrayDeque<District> {
 
     public List<District> draw(int cardToDraw) {
         List<District> drawnCards = new ArrayList<>();
-        for (int i = 0; i < cardToDraw; i++) {
+        for (int i = 0; i < cardToDraw && !isEmpty(); i++) {
             drawnCards.add(pop());
         }
         return drawnCards;
