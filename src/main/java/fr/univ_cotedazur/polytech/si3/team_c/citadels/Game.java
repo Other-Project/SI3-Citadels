@@ -18,7 +18,8 @@ public class Game {
         LOGGER.log(Level.INFO, "Game starts");
         deck = new Deck();
         playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
-        while (!gameTurn()) {
+        for (int i = 1; !gameTurn(); i++) {
+            LOGGER.log(Level.INFO, "Turn {0}", i);
         }
         LOGGER.log(Level.INFO, "Game ends");
     }
@@ -50,27 +51,27 @@ public class Game {
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
             switch (action) {
                 case DRAW:
-                    LOGGER.log(Level.INFO, "The player chooses to draw");
-                    player.pickDistrictsFromDeck(deck.draw(2), 1).forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to draw");
+                    player.pickDistrictsFromDeck(deck.draw(2), 1)
+                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
                     actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
-                    LOGGER.log(Level.INFO, player.getHandDistricts().toString());
+
                     break;
                 case INCOME:
-                    LOGGER.log(Level.INFO, "The player chooses to gains 2 coins");
+                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to gains 2 coins");
                     player.gainCoins(2);
                     actionList.remove(Action.DRAW); // The player cannot draw cards if he gets the income
                     break;
                 case BUILD:
-                    LOGGER.log(Level.INFO, "The player builds a district");
-                    for (District district : player.pickDistrictsToBuild(1)) {
-                        player.buildDistrict(district);
-                    }
-                    LOGGER.log(Level.INFO, player.getBuiltDistricts().toString());
+                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
+                    player.pickDistrictsToBuild(1)
+                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
                     break;
                 default:
                     break;
             }
             actionList.remove(action);
+            LOGGER.log(Level.INFO, "{0}", player);
         }
     }
 
