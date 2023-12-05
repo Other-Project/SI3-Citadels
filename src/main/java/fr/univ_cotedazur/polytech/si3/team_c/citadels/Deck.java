@@ -8,6 +8,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class Deck extends ArrayDeque<District> {
+
+    /**
+     * Constructor of the class to create the Deck with all the district cards
+     */
     public Deck() {
         List<District> deck = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -49,6 +53,12 @@ public class Deck extends ArrayDeque<District> {
         addAll(deck); // the deck is now a queue
     }
 
+    /**
+     * Method for drawing a certain number of cards from the deck
+     *
+     * @param cardToDraw : number of cards to draw
+     * @return the List of drawn cards
+     */
     public List<District> draw(int cardToDraw) {
         List<District> drawnCards = new ArrayList<>();
         for (int i = 0; i < cardToDraw && !isEmpty(); i++) {

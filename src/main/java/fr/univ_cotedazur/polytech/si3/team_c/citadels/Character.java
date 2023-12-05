@@ -12,10 +12,16 @@ public abstract class Character extends Card implements Comparable<Character> {
         this.turn = turn;
     }
 
+    /**
+     * @return the turn order number of the character
+     */
     public int getTurn() {
         return this.turn;
     }
 
+    /**
+     * @return the difference between the turn order number of a character and the turn order numbers of another character to compare them
+     */
     @Override
     public int compareTo(Character other) {
         return getTurn() - other.getTurn();

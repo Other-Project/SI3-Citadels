@@ -11,10 +11,16 @@ public abstract class Card {
         this.color = color;
     }
 
+    /**
+     * @return the color of the card
+     */
     public Colors getColor() {
         return color;
     }
 
+    /**
+     * @return the name of the card
+     */
     public String getName() {
         return name;
     }
