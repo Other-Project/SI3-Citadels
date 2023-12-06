@@ -20,6 +20,13 @@ class BotTest {
     }
 
     @Test
+    void stringRepresentation() {
+        assertEquals("Bot 1", player1.getName());
+        player1.buildDistrict(new Church());
+        assertEquals("Bot 1 (0 coins) [🔴Battlefield ($3, 3 pts), 🟡Castle ($4, 4 pts), 🟣Dragon Gate ($6, 8 pts)] :\n\t🔵Church ($2, 2 pts)", player1.toString());
+    }
+
+    @Test
     void coins() {
         assertEquals(2, player1.getCoins());
         assertFalse(player1.pay(3));
@@ -27,6 +34,25 @@ class BotTest {
         assertFalse(player1.pay(-1));
         assertEquals(0, player1.getCoins());
         assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
+    }
+
+    @Test
+    void actions() {
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of card, he should get some coins
+        player1.gainCoins(4); // To be sure the player will build something we give 4 golds and not wait for having enough to build the DragonGate
+        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD)));
+        assertTrue(player1.buildDistrict(new DragonGate()));
+        assertEquals(List.of(new DragonGate()), player1.getBuiltDistricts());
+        assertEquals(0, player1.getCoins());
+
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player has no gold he should definitely get some
+        player1.gainCoins(1); // So the player can't build anything
+        assertEquals(Action.NONE, player1.nextAction(List.of(Action.BUILD))); // The player has nothing to build, he should end his turn there
+
+        player1.gainCoins(20); // So the player have enough to build everything in hand, and so he doesn't get coins
+        for (var district : player1.getHandDistricts())
+            assertTrue(player1.buildDistrict(district)); // We build everything remaining to force the player to draw cards
+        assertEquals(Action.DRAW, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of gold but no cards
     }
 
     @Test
