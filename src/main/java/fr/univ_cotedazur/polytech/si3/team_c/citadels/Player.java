@@ -155,10 +155,9 @@ public abstract class Player {
     public abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
 
     /**
-     * @return the current score of the player
+     * Gets the current score of the player
      */
     public int getScore() {
-        return getBuiltDistricts().stream()
-                .mapToInt(District::getPoint).sum();
+        return getBuiltDistricts().stream().mapToInt(District::getPoint).sum();
     }
 }
