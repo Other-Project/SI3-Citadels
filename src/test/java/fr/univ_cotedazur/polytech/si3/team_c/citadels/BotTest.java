@@ -61,4 +61,13 @@ class BotTest {
         assertEquals(List.of(new Church()), player1.pickDistrictsToBuild(1)); // Only the church is affordable for the player
         assertEquals(List.of(new Church()), player1.getBuiltDistricts());
     }
+
+    @Test
+    void getScore() {
+        player1.gainCoins(100);
+        player1.buildDistrict(new Battlefield());
+        player1.buildDistrict(new Castle());
+        player1.buildDistrict(new Church());
+        assertEquals(9, player1.getScore());
+    }
 }
