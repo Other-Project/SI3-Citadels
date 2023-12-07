@@ -49,6 +49,7 @@ class GameTest {
     void gameTurn() {
         Bot bot1 = new Bot("bot1", 2, deck.draw(2));
         game.addPlayer(bot1);
+        game.setDefaultDeck();
         assertFalse(game.gameTurn());
     }
 }

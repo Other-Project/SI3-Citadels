@@ -28,9 +28,13 @@ public class Game {
         else this.playerList.add(player);
     }
 
+    public void setDefaultDeck() {
+        this.deck = new Deck();
+    }
+
     public void start() {
         LOGGER.log(Level.INFO, "Game starts");
-        deck = new Deck();
+        setDefaultDeck();
         playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
         for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
