@@ -23,12 +23,12 @@ public class Game {
     /**
      * Add a player to the game
      */
-    public void addPlayer(Player player) {
+    protected void addPlayer(Player player) {
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
 
-    public void setDefaultDeck() {
+    protected void setDefaultDeck() {
         this.deck = new Deck();
     }
 
