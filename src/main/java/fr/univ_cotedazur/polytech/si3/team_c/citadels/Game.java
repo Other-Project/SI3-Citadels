@@ -16,6 +16,18 @@ public class Game {
     private List<Character> characterList;
     private Deck deck;
 
+    public List<Player> getPlayerList() {
+        return playerList;
+    }
+
+    /**
+     * Add a player to the game
+     */
+    public void addPlayer(Player player) {
+        if (playerList == null) playerList = new ArrayList<>(List.of(player));
+        else this.playerList.add(player);
+    }
+
     public void start() {
         LOGGER.log(Level.INFO, "Game starts");
         deck = new Deck();
@@ -32,8 +44,8 @@ public class Game {
     /**
      * Reset the list of characters
      */
-    public void setDefaultCharacterList() {
-        characterList = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+    public List<Character> defaultCharacterList() {
+        return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
     }
 
@@ -41,7 +53,7 @@ public class Game {
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        setDefaultCharacterList();
+        characterList = defaultCharacterList();
         for (Player player : playerList) {
             characterList.remove(player.pickCharacter(this.characterList));
         }
