@@ -6,7 +6,7 @@ public enum Action {
      */
     INCOME,
     /**
-     * It's a bonus incoe according to the player's character
+     * It's a bonus income according to the player's character
      */
     SPECIAL_INCOME,
     /**

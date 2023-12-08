@@ -57,9 +57,12 @@ public class Game {
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
+        LOGGER.log(Level.INFO, "Beginning of the character selection turn");
         characterList = defaultCharacterList();
         for (Player player : playerList) {
-            characterList.remove(player.pickCharacter(this.characterList));
+            Character pickedCharacter = player.pickCharacter(this.characterList);
+            LOGGER.log(Level.INFO, "{0} picked the {1}", new Object[]{player.getName(), pickedCharacter});
+            characterList.remove(pickedCharacter);
         }
     }
 
@@ -110,6 +113,7 @@ public class Game {
     public boolean gameTurn() {
         characterSelectionTurn();
         playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
+        LOGGER.log(Level.INFO, "The Game turn begins");
         boolean isEnd = false;
         for (Player player : playerList) {
             player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
