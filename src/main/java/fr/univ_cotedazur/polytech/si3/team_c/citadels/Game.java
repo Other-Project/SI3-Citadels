@@ -72,6 +72,9 @@ public class Game {
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
+        if (player.getCharacter().orElseThrow().getColor() != Colors.NONE) {
+            actionList.add(Action.SPECIAL_INCOME); // if the character isn't white, he can claim a special income
+        }
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
             switch (action) {
@@ -80,7 +83,6 @@ public class Game {
                     player.pickDistrictsFromDeck(deck.draw(2), 1)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
                     actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
-
                     break;
                 case INCOME:
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to gains 2 coins");
@@ -91,6 +93,14 @@ public class Game {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild(1)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
+                    break;
+                case SPECIAL_INCOME:
+                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
+                    int coinsToClaim = 0;
+                    for (District district : player.getBuiltDistricts()) {
+                        if (district.getColor() == player.getCharacter().orElseThrow().getColor()) coinsToClaim++;
+                    }
+                    LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(coinsToClaim)});
                     break;
                 default:
                     break;
