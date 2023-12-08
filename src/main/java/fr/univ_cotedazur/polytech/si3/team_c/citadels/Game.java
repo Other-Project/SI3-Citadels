@@ -74,7 +74,7 @@ public class Game {
             switch (action) {
                 case DRAW:
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to draw");
-                    player.pickDistrictsFromDeck(deck.draw(2), 1)
+                    player.pickDistrictsFromDeck(deck.draw(player.numberOfDistrictsToDraw()), player.numberOfDistrictsToKeep())
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
                     actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
 
