@@ -7,4 +7,9 @@ public class WatchTower extends District {
     public WatchTower() {
         super("Watch Tower", 1, Colors.RED, 1);
     }
+
+    @Override
+    public boolean isDestructible() {
+        return false;
+    }
 }

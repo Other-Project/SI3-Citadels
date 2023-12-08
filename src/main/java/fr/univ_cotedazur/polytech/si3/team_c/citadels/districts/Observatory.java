@@ -7,4 +7,9 @@ public class Observatory extends District {
     public Observatory() {
         super("Observatory", 5, Colors.PURPLE, 5);
     }
+
+    @Override
+    public int numberOfCardsToDraw() {
+        return 3;
+    }
 }

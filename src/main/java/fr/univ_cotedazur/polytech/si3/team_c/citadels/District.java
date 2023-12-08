@@ -1,5 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
-
+@SuppressWarnings("java:S2160")
 public abstract class District extends Card {
     private final int cost;
     private final int point;
@@ -43,6 +43,21 @@ public abstract class District extends Card {
      */
     public int numberOfCardsToKeep() {
         return 1;
+    }
+
+    /**
+     * @return the number of coins to be taken the next turn
+     */
+    public int numberOfCoinsToTake() {
+        return 2;
+    }
+
+    /**
+     * @param color the color to be compared
+     * @return true if the card color match to the color
+     */
+    public boolean matchColor(Colors color) {
+        return getColor().equals(color);
     }
 
     @Override

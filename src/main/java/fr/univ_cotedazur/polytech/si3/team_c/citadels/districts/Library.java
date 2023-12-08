@@ -7,4 +7,9 @@ public class Library extends District {
     public Library() {
         super("Library", 6, Colors.PURPLE, 6);
     }
+
+    @Override
+    public int numberOfCardsToKeep() {
+        return 2;
+    }
 }
