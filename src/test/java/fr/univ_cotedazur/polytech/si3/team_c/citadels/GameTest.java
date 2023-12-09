@@ -68,12 +68,12 @@ class GameTest {
         game.addPlayer(bot2);
         bot1.pickCharacter(List.of());
         bot2.pickCharacter(List.of(new Magician()));
-        for (Player p : game.getPlayerList()) {
+        for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
             assertEquals(0, game.getCrown());
         }
-        game.gameTurn();
+        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown does not turn between player if there is a King
         assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
         assertEquals(0, game.getCrown());
     }
@@ -83,7 +83,7 @@ class GameTest {
         Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
-                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(),
                         new Bishop(), new Merchant(), new Architect(), new Warlord()));
                 setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
                 return getCharacter().orElseThrow();
@@ -92,7 +92,7 @@ class GameTest {
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
-                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(),
                         new Bishop(), new Merchant(), new Architect(), new Warlord()));
                 setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
                 return getCharacter().orElseThrow();
@@ -100,16 +100,17 @@ class GameTest {
         };
         game.addPlayer(bot1);
         game.addPlayer(bot2);
-        bot1.pickCharacter(List.of(new King()));
-        bot2.pickCharacter(List.of(new Magician()));
-        for (Player p : game.getPlayerList()) {
+        bot1.pickCharacter(List.of());
+        bot2.pickCharacter(List.of());
+        game.setCrown(0);
+        for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
             assertEquals(0, game.getCrown());
         }
-        game.gameTurn();
+        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
         assertEquals("bot2", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(1, game.getCrown());
+        assertEquals(2, game.getCrown());
     }
 
 
