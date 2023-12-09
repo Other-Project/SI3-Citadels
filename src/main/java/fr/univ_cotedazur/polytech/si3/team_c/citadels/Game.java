@@ -103,7 +103,7 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(coinsToClaim)});
                     break;
                 }
-                default ->
+                default -> {
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
             actionList.remove(action);
