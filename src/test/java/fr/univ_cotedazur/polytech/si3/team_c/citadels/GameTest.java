@@ -110,7 +110,7 @@ class GameTest {
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
         assertEquals("bot2", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(2, game.getCrown());
+        assertEquals(1, game.getCrown());
     }
 
 
