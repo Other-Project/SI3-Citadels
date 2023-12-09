@@ -74,18 +74,18 @@ public class Game {
             switch (action) {
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to draw");
-                    player.pickDistrictsFromDeck(deck.draw(player.numberOfDistrictsToDraw()), player.numberOfDistrictsToKeep())
+                    player.pickDistrictsFromDeck(deck.draw(player.numberOfDistrictsToDraw()))
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
                     actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to gains 2 coins");
-                    player.gainCoins(2);
+                    player.gainIncome();
                     actionList.remove(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
-                    player.pickDistrictsToBuild(1)
+                    player.pickDistrictsToBuild()
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
                 }
                 default ->

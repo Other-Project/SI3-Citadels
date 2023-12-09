@@ -11,8 +11,10 @@ import java.util.function.Function;
  * @author Team C
  */
 public abstract class Player {
+    private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
+    private static final int NUMBER_OF_DISTRICTS_TO_BUILD = 1;
     private final String name;
     private int coins;
     private final ArrayList<District> builtDistricts;
@@ -59,11 +61,22 @@ public abstract class Player {
     }
 
     /**
+     * Claims player's income
+     *
+     * @return Player's income
+     */
+    public int gainIncome() {
+        int income = INCOME;
+        gainCoins(income);
+        return income;
+    }
+
+    /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add
      */
-    public void gainCoins(int quantity) {
+    protected void gainCoins(int quantity) {
         coins += quantity;
     }
 
@@ -141,21 +154,40 @@ public abstract class Player {
     public abstract Action nextAction(List<Action> remainingActions);
 
     /**
+     * Asks the player to choose districts among the drawn ones
+     *
+     * @param drawnCards The list of the drawn districts
+     * @return The chosen districts
+     */
+    public List<District> pickDistrictsFromDeck(List<District> drawnCards) {
+        return pickDistrictsFromDeck(drawnCards, numberOfDistrictsToKeep());
+    }
+
+    /**
      * Asks the player to choose n districts from the districts that has been drawn
      *
      * @param drawnCards     The list of the drawn districts
      * @param amountToChoose The amount of districts to choose
      * @return The chosen districts
      */
-    public abstract List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose);
+    protected abstract List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose);
 
     /**
-     * Asks the player to choose districts from his hand to be build
+     * Asks the player to choose district(s) from his hand to be build
+     *
+     * @return The chosen districts
+     */
+    public List<District> pickDistrictsToBuild() {
+        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD);
+    }
+
+    /**
+     * Asks the player to choose district(s) from his hand to be build
      *
      * @param maxAmountToChoose The max amount of districts that can be built
      * @return The chosen districts
      */
-    public abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
+    protected abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
 
     /**
      * Gets the current score of the player
