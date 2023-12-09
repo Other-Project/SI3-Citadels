@@ -83,7 +83,7 @@ public class Game {
                     player.pickDistrictsFromDeck(deck.draw(player.numberOfDistrictsToDraw()))
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
                     actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
-                    break;
+                }
                 case INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to gains 2 coins");
                     player.gainIncome();
@@ -93,7 +93,7 @@ public class Game {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild()
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
-                    break;
+                }
                 case SPECIAL_INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
                     int coinsToClaim = 0;
@@ -101,9 +101,8 @@ public class Game {
                         if (district.getColor() == player.getCharacter().orElseThrow().getColor()) coinsToClaim++;
                     }
                     LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(coinsToClaim)});
-                    break;
                 }
-                default -> {
+                default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
             actionList.remove(action);
