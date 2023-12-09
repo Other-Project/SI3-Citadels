@@ -96,4 +96,32 @@ class BotTest {
         player1.buildDistrict(new Church());
         assertEquals(9, player1.getScore());
     }
+
+    @Test
+    void numberOfDistrictsToDraw() {
+        Observatory observatory = new Observatory();
+        Bot bot1 = new Bot("bot1", 1500, List.of(new Temple(), new Battlefield(), new Castle()
+                , new Cathedral(), observatory, new Docks(), new DragonGate(), new Fortress()));
+        assertEquals(2, bot1.numberOfDistrictsToDraw());
+        for (District district : bot1.getHandDistricts()) {
+            if (!district.equals(observatory)) bot1.buildDistrict(district);
+        }
+        assertEquals(2, bot1.numberOfDistrictsToDraw());
+        bot1.buildDistrict(observatory);
+        assertEquals(3, bot1.numberOfDistrictsToDraw());
+    }
+
+    @Test
+    void numberOfDistrictsToKeep() {
+        Library library = new Library();
+        Bot bot1 = new Bot("bot1", 1500, List.of(new Temple(), new Battlefield(), new Castle()
+                , new Cathedral(), library, new Docks(), new DragonGate(), new Fortress()));
+        assertEquals(1, bot1.numberOfDistrictsToKeep());
+        for (District district : bot1.getHandDistricts()) {
+            if (!district.equals(library)) bot1.buildDistrict(district);
+        }
+        assertEquals(1, bot1.numberOfDistrictsToKeep());
+        bot1.buildDistrict(library);
+        assertEquals(2, bot1.numberOfDistrictsToKeep());
+    }
 }

@@ -3,6 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A player (human or robot)
@@ -10,6 +11,8 @@ import java.util.Optional;
  * @author Team C
  */
 public abstract class Player {
+    private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
+    private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
     private final String name;
     private int coins;
     private final ArrayList<District> builtDistricts;
@@ -159,5 +162,32 @@ public abstract class Player {
      */
     public int getScore() {
         return getBuiltDistricts().stream().mapToInt(District::getPoint).sum();
+    }
+
+    /**
+     * @param cardSelector the method to select the maximum appropriate district value
+     * @param defaultValue the default value of the searched value
+     * @return the maximum selected district value for the player
+     */
+    private int maxBuiltDistrictValue(Function<District, Optional<Integer>> cardSelector, int defaultValue) {
+        return getBuiltDistricts().stream()
+                .map(cardSelector)
+                .flatMap(Optional::stream)
+                .max(Integer::compare)
+                .orElse(defaultValue);
+    }
+
+    /**
+     * @return the number of districts to draw for the player
+     */
+    public int numberOfDistrictsToDraw() {
+        return maxBuiltDistrictValue(District::numberOfDistrictsToDraw, NUMBER_OF_DISTRICTS_TO_DRAW);
+    }
+
+    /**
+     * @return the number of districts to keep for the player
+     */
+    public int numberOfDistrictsToKeep() {
+        return maxBuiltDistrictValue(District::numberOfDistrictsToKeep, NUMBER_OF_DISTRICTS_TO_KEEP);
     }
 }

@@ -7,4 +7,9 @@ public class SchoolOfMagic extends District {
     public SchoolOfMagic() {
         super("School of Magic", 6, Colors.PURPLE, 6);
     }
+
+    @Override
+    public boolean matchColor(Colors color) {
+        return true;
+    }
 }
