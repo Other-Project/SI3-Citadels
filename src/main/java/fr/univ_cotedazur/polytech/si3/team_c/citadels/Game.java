@@ -2,10 +2,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -13,11 +10,27 @@ import java.util.stream.Collectors;
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     private List<Player> playerList;
-    private List<Character> characterList;
+
     private Deck deck;
+
+    private int crown;
+    private final Random random = new Random();
+
+    public Game() {
+        this(new ArrayList<>());
+    }
+
+    public Game(List<Player> players) {
+        deck = new Deck();
+        playerList = players;
+    }
 
     public List<Player> getPlayerList() {
         return playerList;
+    }
+
+    public Deck getDeck() {
+        return deck;
     }
 
     /**
@@ -32,10 +45,18 @@ public class Game {
         this.deck = new Deck();
     }
 
+    public int getCrown() {
+        return crown;
+    }
+
+    public void setCrown(int player) {
+        crown = player;
+    }
+
+
     public void start() {
         LOGGER.log(Level.INFO, "Game starts");
-        setDefaultDeck();
-        playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
+        setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
             if (gameTurn()) break;
@@ -57,9 +78,11 @@ public class Game {
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        characterList = defaultCharacterList();
-        for (Player player : playerList) {
-            characterList.remove(player.pickCharacter(this.characterList));
+        List<Character> characterList = defaultCharacterList();
+        int p = getCrown();
+        LOGGER.log(Level.INFO, "{0} have the crown", playerList.get(p).getName());
+        for (int i = 0; i < playerList.size(); i++) {
+            characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
         }
     }
 
@@ -68,6 +91,7 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
+        if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
@@ -107,14 +131,17 @@ public class Game {
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
+        int previousCrown = getCrown();
         characterSelectionTurn();
-        playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
+        List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
         boolean isEnd = false;
-        for (Player player : playerList) {
+        for (Player player : playOrder) {
             player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
             playerTurn(player);
             if (end(player)) isEnd = true;
         }
+        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
+            setCrown((getCrown() + 1) % playerList.size());
         return isEnd;
     }
 
