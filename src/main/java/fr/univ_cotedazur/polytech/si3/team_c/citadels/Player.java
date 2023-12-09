@@ -154,7 +154,7 @@ public abstract class Player {
     public abstract Action nextAction(List<Action> remainingActions);
 
     /**
-     * Asks the player to choose n districts from the districts that has been drawn
+     * Asks the player to choose districts among the drawn ones
      *
      * @param drawnCards The list of the drawn districts
      * @return The chosen districts
