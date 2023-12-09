@@ -7,16 +7,17 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
-    private Game game, game1, game2;
+    private Game game, game1;
+    private final Random random = new Random();
     @BeforeEach
     void setup() {
         game = new Game();
         game1 = new Game(1);
-        game2 = new Game(2);
     }
 
     @Test
@@ -54,23 +55,61 @@ class GameTest {
     }
 
     @Test
-    void crownTest() {
-        Bot bot1 = new BotOnlyKing("bot1", 2, game.getDeck().draw(2));
+    void crownTestWithKingPlayer() {
+        Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new King());
+                return getCharacter().orElseThrow();
+            }
+        };
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2));
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         bot1.pickCharacter(List.of());
         bot2.pickCharacter(List.of(new Magician()));
-        game.playerTurn(bot1);
-        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(0, game.getCrown());
-        game.playerTurn(bot2);
-        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(0, game.getCrown());
+        for (Player p : game.getPlayerList()) {
+            game.playerTurn(p);
+            assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
+            assertEquals(0, game.getCrown());
+        }
         game.gameTurn();
-        assertEquals("bot1", game.getPlayerOrder().get(game.getCrown()).getName());
+        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
         assertEquals(0, game.getCrown());
+    }
 
+    @Test
+    void crownTestWithoutKingPlayer() {
+        Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                        new Bishop(), new Merchant(), new Architect(), new Warlord()));
+                setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
+                return getCharacter().orElseThrow();
+            }
+        };
+        Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                        new Bishop(), new Merchant(), new Architect(), new Warlord()));
+                setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
+                return getCharacter().orElseThrow();
+            }
+        };
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        bot1.pickCharacter(List.of(new King()));
+        bot2.pickCharacter(List.of(new Magician()));
+        for (Player p : game.getPlayerList()) {
+            game.playerTurn(p);
+            assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
+            assertEquals(0, game.getCrown());
+        }
+        game.gameTurn();
+        assertEquals("bot2", game.getPlayerList().get(game.getCrown()).getName());
+        assertEquals(1, game.getCrown());
     }
 
 
