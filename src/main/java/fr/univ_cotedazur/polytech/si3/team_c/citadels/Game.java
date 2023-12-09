@@ -2,7 +2,11 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
-import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -61,8 +65,8 @@ public class Game {
             LOGGER.log(Level.INFO, "Turn {0}", i);
             if (gameTurn()) break;
         }
-        Player winner = getWinner();
-        LOGGER.log(Level.INFO, "The player {0} won with {1} points !", new Object[]{winner.getName(), winner.getScore()});
+        String winners = winnersDisplay();
+        LOGGER.log(Level.INFO, winners);
         LOGGER.log(Level.INFO, "Game ends");
     }
 
@@ -146,19 +150,33 @@ public class Game {
     }
 
     /**
-     * @return a map of all the scores with the player associated with it
+     * @return a tuple having as key the list of winning players and as value the score
      */
-    public Map<Player, Integer> getScores() {
-        return playerList.stream()
-                .collect(Collectors.toMap(p -> p, Player::getScore));
+    public SimpleEntry<List<Player>, Integer> getWinners() {
+        List<Player> winners = new ArrayList<>();
+        int max = 0;
+        for (Player player : playerList) {
+            int score = player.getScore();
+            if (score > max) {
+                winners = new ArrayList<>(List.of(player));
+                max = score;
+            } else if (score == max) winners.add(player);
+        }
+        return new SimpleEntry<>(winners, max);
     }
 
     /**
-     * @return the winner of the game
+     * @return the string for the winners display
      */
-    public Player getWinner() {
-        return getScores().entrySet().stream()
-                .max(Comparator.comparingInt(Map.Entry::getValue)).orElseThrow().getKey();
+    public String winnersDisplay() {
+        SimpleEntry<List<Player>, Integer> winners = getWinners();
+        StringBuilder result = new StringBuilder();
+        if (winners.getKey().size() == 1)
+            result.append("The player ").append(winners.getKey().get(0).getName()).append(" won");
+        else
+            result.append("There is an equality between players : ")
+                    .append(winners.getKey().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
     public static void main(String... args) {

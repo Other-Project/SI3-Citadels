@@ -5,6 +5,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ class GameTest {
     void start() {
         game.addPlayer(new Bot("bot1", 2, game.getDeck().draw(2)));
         game.start();
-        assertTrue(game.getPlayerList().contains(game.getWinner()));
+        assertTrue(game.getPlayerList().contains(game.getWinners().getKey().get(0)));
     }
 
     @Test
@@ -114,5 +115,22 @@ class GameTest {
         assertEquals(bot2, game.getPlayerList().get(game.getCrown()));
     }
 
+    @Test
+    void winnersTest() {
+        // Equality test
+        Bot firstBot = new Bot("bot1", 1500, List.of(new Tavern(), new Laboratory(), new Harbor()));
+        Bot secondBot = new Bot("bot2", 1500, List.of(new Temple(), new Library(), new Docks()));
+        for (District district : firstBot.getHandDistricts()) firstBot.buildDistrict(district);
+        for (District district : secondBot.getHandDistricts()) secondBot.buildDistrict(district);
+        Game scriptedGame = new Game(List.of(firstBot, secondBot));
+        assertEquals(new SimpleEntry<>(List.of(firstBot, secondBot), firstBot.getScore()), scriptedGame.getWinners());
+        assertEquals("There is an equality between players : bot1, bot2 with " + firstBot.getScore() + " points !", scriptedGame.winnersDisplay());
 
+        // Normal test
+        Bot thirdBot = new Bot("bot3", 1500, List.of(new Tavern(), new Library(), new Harbor()));
+        Game secondScriptedGame = new Game(List.of(firstBot, thirdBot));
+        for (District district : thirdBot.getHandDistricts()) thirdBot.buildDistrict(district);
+        assertEquals(new SimpleEntry<>(List.of(thirdBot), thirdBot.getScore()), secondScriptedGame.getWinners());
+        assertEquals("The player bot3 won with " + thirdBot.getScore() + " points !", secondScriptedGame.winnersDisplay());
+    }
 }
