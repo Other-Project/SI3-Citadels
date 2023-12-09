@@ -97,15 +97,15 @@ class GameTest {
                         setCharacter(character);
                         return character;
                     }
-                return getCharacter().orElseThrow();
+                throw new UnsupportedOperationException();
             }
         };
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         List<Character> availableCharacters = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
-        bot1.pickCharacter(availableCharacters);
-        availableCharacters.remove(bot1.getCharacter().orElseThrow());
+
+        availableCharacters.remove(bot1.pickCharacter(availableCharacters));
         bot2.pickCharacter(availableCharacters);
         game.setCrown(0);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn

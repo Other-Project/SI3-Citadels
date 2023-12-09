@@ -17,8 +17,7 @@ public class Game {
     private final Random random = new Random();
 
     public Game() {
-        deck = new Deck();
-        playerList = new ArrayList<>();
+        this(new ArrayList<>());
     }
 
     public Game(List<Player> players) {
