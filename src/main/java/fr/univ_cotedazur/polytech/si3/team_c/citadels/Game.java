@@ -10,42 +10,68 @@ import java.util.stream.Collectors;
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     private List<Player> playerList;
+
+    private List<Player> playerOrder;
     private Deck deck;
 
     private int crown;
     private final Random random = new Random();
 
+    public Game() {
+        this(0);
+    }
+
+    public Game(int players) {
+        deck = new Deck();
+        playerList = new ArrayList<>();
+        playerOrder = new ArrayList<>();
+        for (int i = 1; i <= players; i++) {
+            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+            playerOrder.add(new Bot("bot" + i, 2, deck.draw(2)));
+        }
+    }
 
     public List<Player> getPlayerList() {
         return playerList;
+    }
+
+    public List<Player> getPlayerOrder() {
+        return playerOrder;
+    }
+
+    public Deck getDeck() {
+        return deck;
     }
 
     /**
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
-        if (playerList == null) playerList = new ArrayList<>(List.of(player));
-        else this.playerList.add(player);
+        if (playerList == null) {
+            playerList = new ArrayList<>(List.of(player));
+            playerOrder = new ArrayList<>(List.of(player));
+        } else {
+            this.playerList.add(player);
+            this.playerOrder.add(player);
+        }
     }
 
     protected void setDefaultDeck() {
         this.deck = new Deck();
     }
 
-    private int getCrown() {
+    public int getCrown() {
         return crown;
     }
 
-    private void setCrown(int player) {
+    public void setCrown(int player) {
         crown = player;
     }
 
 
     public void start() {
         LOGGER.log(Level.INFO, "Game starts");
-        setDefaultDeck();
-        playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
-        setCrown(random.nextInt(playerList.size()));
+        setCrown(random.nextInt(playerOrder.size()));
         for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
             if (gameTurn()) break;
@@ -69,8 +95,8 @@ public class Game {
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
         int p = getCrown();
-        for (int i = 0; i < playerList.size(); i++) {
-            characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
+        for (int i = 0; i < playerOrder.size(); i++) {
+            characterList.remove(playerOrder.get((p + i) % playerOrder.size()).pickCharacter(characterList));
         }
     }
 
@@ -79,7 +105,7 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
-        if (player.getCharacter().orElseThrow().getName().equals("King")) setCrown(playerList.indexOf(player));
+        if (player.getCharacter().orElseThrow().getClass() == King.class) setCrown(playerOrder.indexOf(player));
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
@@ -129,7 +155,8 @@ public class Game {
             playerTurn(player);
             if (end(player)) isEnd = true;
         }
-        if (previousCrown == getCrown()) setCrown((getCrown() + 1) % playerList.size());
+        if (!playerOrder.get(previousCrown).getCharacter().orElseThrow().getClass().equals(King.class) && previousCrown == getCrown())
+            setCrown((getCrown() + 1) % playerOrder.size());
         return isEnd;
     }
 

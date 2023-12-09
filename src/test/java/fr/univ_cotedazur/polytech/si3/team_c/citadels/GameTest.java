@@ -11,19 +11,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
-    private Game game;
-    private Deck deck;
+    private Game game, game1, game2;
     @BeforeEach
     void setup() {
         game = new Game();
-        deck = new Deck();
+        game1 = new Game(1);
+        game2 = new Game(2);
     }
 
     @Test
         // Here, we are testing if the game is ending (that the method start executes well until the end)
     void start() {
-        game.start();
-        assertTrue(game.getPlayerList().contains(game.getWinner()));
+        game1.start();
+        assertTrue(game1.getPlayerList().contains(game1.getWinner()));
     }
 
     @Test
@@ -47,9 +47,31 @@ class GameTest {
 
     @Test
     void gameTurn() {
-        Bot bot1 = new Bot("bot1", 2, deck.draw(2));
+        Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2));
         game.addPlayer(bot1);
         game.setDefaultDeck();
         assertFalse(game.gameTurn());
     }
+
+    @Test
+    void crownTest() {
+        Bot bot1 = new BotOnlyKing("bot1", 2, game.getDeck().draw(2));
+        Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2));
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        bot1.pickCharacter(List.of());
+        bot2.pickCharacter(List.of(new Magician()));
+        game.playerTurn(bot1);
+        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
+        assertEquals(0, game.getCrown());
+        game.playerTurn(bot2);
+        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
+        assertEquals(0, game.getCrown());
+        game.gameTurn();
+        assertEquals("bot1", game.getPlayerOrder().get(game.getCrown()).getName());
+        assertEquals(0, game.getCrown());
+
+    }
+
+
 }
