@@ -7,24 +7,22 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
-    private Game game, game1;
-    private final Random random = new Random();
+    private Game game;
     @BeforeEach
     void setup() {
         game = new Game();
-        game1 = new Game(1);
     }
 
     @Test
         // Here, we are testing if the game is ending (that the method start executes well until the end)
     void start() {
-        game1.start();
-        assertTrue(game1.getPlayerList().contains(game1.getWinner()));
+        game.addPlayer(new Bot("bot1", 2, game.getDeck().draw(2)));
+        game.start();
+        assertTrue(game.getPlayerList().contains(game.getWinner()));
     }
 
     @Test
@@ -66,16 +64,16 @@ class GameTest {
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2));
         game.addPlayer(bot1);
         game.addPlayer(bot2);
-        bot1.pickCharacter(List.of());
+        bot1.pickCharacter(List.of(new King()));
         bot2.pickCharacter(List.of(new Magician()));
         for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
-            assertEquals(0, game.getCrown());
+            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown does not turn between player if there is a King
-        assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(0, game.getCrown());
+        assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
+        assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
     }
 
     @Test
@@ -83,34 +81,41 @@ class GameTest {
         Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
-                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(),
-                        new Bishop(), new Merchant(), new Architect(), new Warlord()));
-                setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
+                for (Character character : availableCharacters)
+                    if (!(character instanceof King)) {
+                        setCharacter(character);
+                        return character;
+                    }
                 return getCharacter().orElseThrow();
             }
         };
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
-                List<Character> availableCharacters2 = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(),
-                        new Bishop(), new Merchant(), new Architect(), new Warlord()));
-                setCharacter(availableCharacters2.get(random.nextInt(availableCharacters2.size())));
+                for (Character character : availableCharacters)
+                    if (!(character instanceof King)) {
+                        setCharacter(character);
+                        return character;
+                    }
                 return getCharacter().orElseThrow();
             }
         };
         game.addPlayer(bot1);
         game.addPlayer(bot2);
-        bot1.pickCharacter(List.of());
-        bot2.pickCharacter(List.of());
+        List<Character> availableCharacters = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                new Bishop(), new Merchant(), new Architect(), new Warlord()));
+        bot1.pickCharacter(availableCharacters);
+        availableCharacters.remove(bot1.getCharacter().orElseThrow());
+        bot2.pickCharacter(availableCharacters);
         game.setCrown(0);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals("bot1", game.getPlayerList().get(game.getCrown()).getName());
-            assertEquals(0, game.getCrown());
+            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
-        assertEquals("bot2", game.getPlayerList().get(game.getCrown()).getName());
-        assertEquals(1, game.getCrown());
+        assertEquals(bot2, game.getPlayerList().get(game.getCrown()));
+        assertEquals(game.getPlayerList().indexOf(bot2), game.getCrown());
     }
 
 

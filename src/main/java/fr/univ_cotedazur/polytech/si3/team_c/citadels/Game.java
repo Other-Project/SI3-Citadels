@@ -17,13 +17,13 @@ public class Game {
     private final Random random = new Random();
 
     public Game() {
-        this(0);
-    }
-
-    public Game(int players) {
         deck = new Deck();
         playerList = new ArrayList<>();
-        for (int i = 1; i <= players; i++) playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+    }
+
+    public Game(List<Player> players) {
+        deck = new Deck();
+        playerList = players;
     }
 
     public List<Player> getPlayerList() {
@@ -81,6 +81,7 @@ public class Game {
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
         int p = getCrown();
+        LOGGER.log(Level.INFO, "{0} have the crown", playerList.get(p).getName());
         for (int i = 0; i < playerList.size(); i++) {
             characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
         }
@@ -91,7 +92,7 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
-        if (player.getCharacter().orElseThrow().getClass() == King.class) setCrown(playerList.indexOf(player));
+        if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
@@ -141,7 +142,7 @@ public class Game {
             playerTurn(player);
             if (end(player)) isEnd = true;
         }
-        if (!playerList.get(previousCrown).getCharacter().orElseThrow().getClass().equals(King.class) && previousCrown == getCrown())
+        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
             setCrown((getCrown() + 1) % playerList.size());
         return isEnd;
     }
