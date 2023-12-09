@@ -86,7 +86,7 @@ class GameTest {
                         setCharacter(character);
                         return character;
                     }
-                return getCharacter().orElseThrow();
+                throw new UnsupportedOperationException();
             }
         };
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
