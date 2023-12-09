@@ -166,6 +166,7 @@ public abstract class Player {
 
     /**
      * @param cardSelector the method to select the maximum appropriate district value
+     * @param defaultValue the default value of the searched value
      * @return the maximum selected district value for the player
      */
     private int maxBuiltDistrictValue(Function<District, Optional<Integer>> cardSelector, int defaultValue) {
