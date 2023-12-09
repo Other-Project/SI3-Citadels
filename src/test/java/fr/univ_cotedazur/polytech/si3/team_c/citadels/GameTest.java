@@ -69,11 +69,9 @@ class GameTest {
         for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
-            assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown does not turn between player if there is a King
-        assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
-        assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
+        assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
     }
 
     @Test
@@ -111,11 +109,9 @@ class GameTest {
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
-            assertEquals(game.getPlayerList().indexOf(bot1), game.getCrown());
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
         assertEquals(bot2, game.getPlayerList().get(game.getCrown()));
-        assertEquals(game.getPlayerList().indexOf(bot2), game.getCrown());
     }
 
 
