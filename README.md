@@ -19,7 +19,7 @@ les cartes violettes ont, comme les personnages, des capacités propres.
 Un tour se déroule de la façon suivante :
 * Chaque joueur en partant de celui qui a la couronne, choisit à tour de rôle son personnage. 
 * Puis chaque personnage est appelé dans un ordre défini. 
-* La personne ayant choisi le personnage peut alors réaliser au moins 2 actions différentes par tour :
+* La personne ayant choisi le personnage peut alors réaliser différentes actions :
   * piocher 2 cartes ou prendre 2 pièces d'or
   * construire un quartier : pour construire un quartier, il faut avoir assez de pièces pour pouvoir payer le coût indiqué sur la carte. 
   * réaliser l'action spéciale associée à son personnage ou à un de ses quartiers violets déjà construit. 
@@ -38,7 +38,7 @@ Il faut ainsi dans un premier temps réaliser:
 
 ## Lancement avec Maven:
 
-- ### Le programme principale
+- ### Le programme principal
 
   ```
   mvn clean compile exec:java
