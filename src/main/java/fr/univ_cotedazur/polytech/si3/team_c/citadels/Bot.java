@@ -1,8 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -24,14 +22,41 @@ public class Bot extends Player {
         return getCharacter().orElseThrow();
     }
 
+    /**
+     * Calculate a profitability score for a given district
+     *
+     * @param district The district whose profitability is to be calculated
+     */
+    protected double districtProfitability(District district) {
+        return district.getPoint() / (double) district.getCost();
+    }
+
+    /**
+     * The district that the bot aims to build next
+     *
+     * @return Empty if no district in hand
+     */
+    protected Optional<District> districtObjective() {
+        District bestDistrict = null;
+        double bestProfitability = 0;
+        for (District district : getHandDistricts()) {
+            double profitability = districtProfitability(district);
+            if (profitability > bestProfitability || (bestDistrict != null && profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+                bestDistrict = district;
+                bestProfitability = profitability;
+            }
+        }
+        return Optional.ofNullable(bestDistrict);
+    }
+
     @Override
     public Action nextAction(List<Action> remainingActions) {
-        var minCost = getHandDistricts().stream().mapToInt(District::getCost).min();
-        var canBuild = minCost.isPresent() && getCoins() > minCost.getAsInt();
-        if (remainingActions.contains(Action.INCOME) && minCost.isPresent() && !canBuild)
-            return Action.INCOME; // For now, picks coins only if nothing can be built
+        var objective = districtObjective();
+        if (remainingActions.contains(Action.INCOME) && objective.isPresent() && objective.get().getCost() > getCoins())
+            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has
         if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
-        if (remainingActions.contains(Action.BUILD) && canBuild) return Action.BUILD;
+        if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+            return Action.BUILD;
         return Action.NONE;
     }
 
@@ -40,7 +65,8 @@ public class Bot extends Player {
         ArrayList<District> chosen = new ArrayList<>(drawnCards.stream()
                 .filter(c -> !getBuiltDistricts().contains(c))
                 .filter(c -> !getHandDistricts().contains(c))
-                .limit(amountToChoose).toList()); // For now, we select the first x districts
+                .sorted(Comparator.comparingDouble(this::districtProfitability).reversed())
+                .limit(amountToChoose).toList());
         if (chosen.size() < amountToChoose && drawnCards.size() > chosen.size())
             chosen.addAll(drawnCards.stream().filter(c -> !chosen.contains(c))
                     .limit((long) amountToChoose - chosen.size()).toList());
@@ -51,12 +77,13 @@ public class Bot extends Player {
     @Override
     public List<District> pickDistrictsToBuild(int maxAmountToChoose) {
         ArrayList<District> built = new ArrayList<>();
-        for (District district : getHandDistricts()) {
-            if (maxAmountToChoose > 0 && buildDistrict(district)) { // For now builds the first x districts found buildable
-                built.add(district);
-                maxAmountToChoose--;
-            }
+        for (; maxAmountToChoose > 0; maxAmountToChoose--) {
+            var objective = districtObjective();
+            if (objective.isEmpty() || !buildDistrict(objective.get()))
+                break;
+            built.add(objective.get());
         }
+
         return built;
     }
 }
