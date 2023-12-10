@@ -14,11 +14,11 @@ public enum Action {
      */
     DRAW,
     /**
-     * The build action : the player builds a district from his hand according to its cost
+     * The player wants to build a district from his hand
      */
     BUILD,
     /**
-     * The player wants to end his tur
+     * The player wants to end his turn
      */
     NONE
 }
