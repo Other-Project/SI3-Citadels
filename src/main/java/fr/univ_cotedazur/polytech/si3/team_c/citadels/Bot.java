@@ -57,6 +57,7 @@ public class Bot extends Player {
         if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
         if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;
+        if (remainingActions.contains(Action.SPECIAL_INCOME)) return Action.SPECIAL_INCOME;
         return Action.NONE;
     }
 
