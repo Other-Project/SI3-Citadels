@@ -72,6 +72,18 @@ public abstract class Player {
     }
 
     /**
+     * If the player is the King, the Merchant, the Bishop or the warlord, he can claim a special income
+     *
+     * @return the number of coins the player claimed
+     */
+    public int gainSpecialIncome() {
+        Colors color = getCharacter().orElseThrow().getColor();
+        int income = (int) getBuiltDistricts().stream().filter(district -> district.matchColor(color)).count();
+        gainCoins(income);
+        return income;
+    }
+
+    /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add

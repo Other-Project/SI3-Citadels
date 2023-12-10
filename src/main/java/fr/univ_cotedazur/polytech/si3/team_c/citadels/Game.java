@@ -96,6 +96,9 @@ public class Game {
         LOGGER.log(Level.INFO, "{0}", player);
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
+        if (player.getCharacter().orElseThrow().getColor() != Colors.NONE) {
+            actionList.add(Action.SPECIAL_INCOME); // if the character isn't white, he can claim a special income
+        }
         Action action;
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
             switch (action) {
@@ -114,6 +117,11 @@ public class Game {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild()
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
+                }
+                case SPECIAL_INCOME -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
+                    int claimedCoins = player.gainSpecialIncome();
+                    LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
@@ -136,6 +144,7 @@ public class Game {
     public boolean gameTurn() {
         int previousCrown = getCrown();
         characterSelectionTurn();
+        LOGGER.log(Level.INFO, "The game turn begins");
         List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
         boolean isEnd = false;
         for (Player player : playOrder) {
