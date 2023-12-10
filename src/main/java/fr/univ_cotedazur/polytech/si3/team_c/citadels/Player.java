@@ -77,8 +77,7 @@ public abstract class Player {
      * @return The number of coins the player claimed
      */
     public int gainSpecialIncome() {
-        Colors color = getCharacter().orElseThrow().getColor();
-        int income = (int) getBuiltDistricts().stream().filter(district -> district.matchColor(color)).count();
+        int income = quantityOfColorBuilt(getCharacter().orElseThrow().getColor());
         gainCoins(income);
         return income;
     }
@@ -90,6 +89,15 @@ public abstract class Player {
      */
     protected void gainCoins(int quantity) {
         coins += quantity;
+    }
+
+    /**
+     * The quantity of built district of a given color
+     *
+     * @param color The color that the districts need to match
+     */
+    protected int quantityOfColorBuilt(Colors color) {
+        return (int) getBuiltDistricts().stream().filter(district -> district.matchColor(color)).count();
     }
 
     /**
