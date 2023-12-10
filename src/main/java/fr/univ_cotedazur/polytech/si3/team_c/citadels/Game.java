@@ -29,6 +29,13 @@ public class Game {
         playerList = players;
     }
 
+    public Game(int numberPlayers) {
+        deck = new Deck();
+        playerList = new ArrayList<>();
+        for (int i = 1; i <= numberPlayers; i++) {
+            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        }
+    }
     public List<Player> getPlayerList() {
         return playerList;
     }
@@ -59,6 +66,7 @@ public class Game {
 
 
     public void start() {
+        if (playerList.isEmpty()) throw new UnsupportedOperationException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
@@ -180,6 +188,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
-        new Game().start();
+        new Game(2).start();
     }
 }
