@@ -13,8 +13,8 @@ Polytech Nice-Sophia - SI3 PS5
 ### Le jeu Citadelles
 
 Citadelles est un jeu de société composé de cartes personnage ayant toutes une capacité différente 
-et de cartes quartier de couleurs différentes (rouge, jaune,bleu, vert et violet), 
-les cartes violettes ont comme les personnages des capacités propres. 
+et de cartes quartier de couleurs différentes (rouge, jaune, bleu, vert et violet), 
+les cartes violettes ont, comme les personnages, des capacités propres. 
 
 Un tour se déroule de la façon suivante :
 * Chaque joueur en partant de celui qui a la couronne, choisit à tour de rôle son personnage. 
@@ -40,16 +40,22 @@ Il faut ainsi dans un premier temps réaliser:
 
 - ### Le programme principale
 
-  `mvn clean compile exec:java`
+  ```
+  mvn clean compile exec:java
+  ```
 
 - ### Les tests 
 
-  `mvn clean test`
+  ```
+  mvn clean test
+  ```
 
 - ###  Générer un jar puis le lancer:
 
-  `mvn clean package
-  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game`
+  ```
+  mvn clean package
+  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
+  ```
 
 
 
