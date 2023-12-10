@@ -23,7 +23,8 @@ class GameTest {
     void start() {
         game.addPlayer(new Bot("bot1", 2, game.getDeck().draw(2)));
         game.start();
-        assertTrue(game.getPlayerList().contains(game.getWinners().getKey().get(0)));
+        assertEquals(1, game.getWinners().getKey().size());
+        assertEquals(game.getWinners().getKey().get(0), game.getPlayerList().get(0));
     }
 
     @Test

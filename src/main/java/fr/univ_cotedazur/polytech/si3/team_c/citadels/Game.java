@@ -65,8 +65,7 @@ public class Game {
             LOGGER.log(Level.INFO, "Turn {0}", i);
             if (gameTurn()) break;
         }
-        String winners = winnersDisplay();
-        LOGGER.log(Level.INFO, winners);
+        LOGGER.log(Level.INFO, this::winnersDisplay);
         LOGGER.log(Level.INFO, "Game ends");
     }
 
