@@ -24,9 +24,16 @@ public class Game {
         this(new ArrayList<>());
     }
 
+    public Game(int numberPlayers, Player... players) {
+        this(List.of(players));
+        for (int i = 1; i <= numberPlayers - playerList.size(); i++)
+            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+    }
+
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = players;
+        for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
     public List<Player> getPlayerList() {
@@ -59,6 +66,7 @@ public class Game {
 
 
     public void start() {
+        if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
@@ -189,6 +197,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
-        new Game().start();
+        new Game(2).start();
     }
 }
