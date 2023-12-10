@@ -24,18 +24,22 @@ public class Game {
         this(new ArrayList<>());
     }
 
+    public Game(int numberPlayers, List<Player> p) {
+        this(p);
+        for (int i = p.size(); i <= numberPlayers; i++) {
+            p.add(new Bot("bot" + i, 2, deck.draw(2)));
+        }
+
+    }
+
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = players;
-    }
-
-    public Game(int numberPlayers) {
-        deck = new Deck();
-        playerList = new ArrayList<>();
-        for (int i = 1; i <= numberPlayers; i++) {
-            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        for (Player p : playerList) {
+            p.pickDistrictsFromDeck(deck.draw(2), 2);
         }
     }
+
     public List<Player> getPlayerList() {
         return playerList;
     }
@@ -188,6 +192,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
-        new Game(2).start();
+        new Game(2, new ArrayList<>()).start();
     }
 }
