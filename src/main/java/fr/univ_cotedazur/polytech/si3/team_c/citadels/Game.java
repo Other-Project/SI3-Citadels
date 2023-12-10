@@ -24,9 +24,10 @@ public class Game {
         this(new ArrayList<>());
     }
 
-    public Game(int numberPlayers, List<Player> p) {
-        this(p);
-        for (int i = 1; i <= numberPlayers - p.size(); i++) p.add(new Bot("bot" + i, 2, deck.draw(2)));
+    public Game(int numberPlayers, Player... players) {
+        this(List.of(players));
+        for (int i = 1; i <= numberPlayers - playerList.size(); i++)
+            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
     }
 
     public Game(List<Player> players) {
@@ -187,6 +188,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
-        new Game(2, new ArrayList<>()).start();
+        new Game(2).start();
     }
 }
