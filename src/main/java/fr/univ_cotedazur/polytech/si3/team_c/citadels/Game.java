@@ -66,7 +66,7 @@ public class Game {
 
 
     public void start() {
-        if (playerList.isEmpty()) throw new UnsupportedOperationException("No players in this game");
+        if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
