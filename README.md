@@ -29,9 +29,27 @@ Le but est d'implémenter ce jeu afin de pouvoir réaliser des entre des robots.
 
 Il faut ainsi dans un premier temps réaliser:
 
--Les cartes personnages 
--Les cartes quartiers 
--Le système de jeu
--L'implémentation d'un premier robot
+- Les cartes personnages 
+- Les cartes quartiers 
+- Le système de jeu
+- L'implémentation d'un premier robot
+
+## Lancement avec Maven:
+
+- ### Le programme principale
+
+  mvn clean compile exec:java
+
+- ### Les tests 
+
+  mvn clean test
+
+- ###  Générer un jar puis le lancer:
+
+  mvn clean package
+  java -cp .\citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
+
+
+
 
 
