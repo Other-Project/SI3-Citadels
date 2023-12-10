@@ -2,10 +2,11 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -13,11 +14,27 @@ import java.util.stream.Collectors;
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     private List<Player> playerList;
-    private List<Character> characterList;
+
     private Deck deck;
+
+    private int crown;
+    private final Random random = new Random();
+
+    public Game() {
+        this(new ArrayList<>());
+    }
+
+    public Game(List<Player> players) {
+        deck = new Deck();
+        playerList = players;
+    }
 
     public List<Player> getPlayerList() {
         return playerList;
+    }
+
+    public Deck getDeck() {
+        return deck;
     }
 
     /**
@@ -32,16 +49,23 @@ public class Game {
         this.deck = new Deck();
     }
 
+    public int getCrown() {
+        return crown;
+    }
+
+    public void setCrown(int player) {
+        crown = player;
+    }
+
+
     public void start() {
         LOGGER.log(Level.INFO, "Game starts");
-        setDefaultDeck();
-        playerList = new ArrayList<>(List.of(new Bot("bot1", 2, deck.draw(2))));
+        setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
             if (gameTurn()) break;
         }
-        Player winner = getWinner();
-        LOGGER.log(Level.INFO, "The player {0} won with {1} points !", new Object[]{winner.getName(), winner.getScore()});
+        LOGGER.log(Level.INFO, this::winnersDisplay);
         LOGGER.log(Level.INFO, "Game ends");
     }
 
@@ -57,12 +81,11 @@ public class Game {
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        LOGGER.log(Level.INFO, "Beginning of the character selection turn");
-        characterList = defaultCharacterList();
-        for (Player player : playerList) {
-            Character pickedCharacter = player.pickCharacter(this.characterList);
-            LOGGER.log(Level.INFO, "{0} picked the {1}", new Object[]{player.getName(), pickedCharacter});
-            characterList.remove(pickedCharacter);
+        List<Character> characterList = defaultCharacterList();
+        int p = getCrown();
+        LOGGER.log(Level.INFO, "{0} have the crown", playerList.get(p).getName());
+        for (int i = 0; i < playerList.size(); i++) {
+            characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
         }
     }
 
@@ -71,6 +94,7 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
+        if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         if (player.getCharacter().orElseThrow().getColor() != Colors.NONE) {
             actionList.add(Action.SPECIAL_INCOME); // if the character isn't white, he can claim a special income
@@ -118,32 +142,49 @@ public class Game {
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
+        int previousCrown = getCrown();
         characterSelectionTurn();
-        playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
         LOGGER.log(Level.INFO, "The game turn begins");
+        List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
         boolean isEnd = false;
-        for (Player player : playerList) {
+        for (Player player : playOrder) {
             player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
             playerTurn(player);
             if (end(player)) isEnd = true;
         }
+        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
+            setCrown((getCrown() + 1) % playerList.size());
         return isEnd;
     }
 
     /**
-     * @return a map of all the scores with the player associated with it
+     * @return a tuple having as key the list of winning players and as value the score
      */
-    public Map<Player, Integer> getScores() {
-        return playerList.stream()
-                .collect(Collectors.toMap(p -> p, Player::getScore));
+    public SimpleEntry<List<Player>, Integer> getWinners() {
+        List<Player> winners = new ArrayList<>();
+        int max = 0;
+        for (Player player : playerList) {
+            int score = player.getScore();
+            if (score > max) {
+                winners = new ArrayList<>(List.of(player));
+                max = score;
+            } else if (score == max) winners.add(player);
+        }
+        return new SimpleEntry<>(winners, max);
     }
 
     /**
-     * @return the winner of the game
+     * @return the string for the winners display
      */
-    public Player getWinner() {
-        return getScores().entrySet().stream()
-                .max(Comparator.comparingInt(Map.Entry::getValue)).orElseThrow().getKey();
+    public String winnersDisplay() {
+        SimpleEntry<List<Player>, Integer> winners = getWinners();
+        StringBuilder result = new StringBuilder();
+        if (winners.getKey().size() == 1)
+            result.append("The player ").append(winners.getKey().get(0).getName()).append(" won");
+        else
+            result.append("There is an equality between players : ")
+                    .append(winners.getKey().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
     public static void main(String... args) {

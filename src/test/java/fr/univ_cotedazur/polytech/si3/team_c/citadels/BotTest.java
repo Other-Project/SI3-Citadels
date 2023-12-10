@@ -13,10 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class BotTest {
 
     Player player1;
+    Bot bot1;
 
     @BeforeEach
     void setUp() {
-        player1 = new Bot("Bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()));
+        player1 = bot1 = new Bot("Bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()));
     }
 
     @Test
@@ -34,6 +35,20 @@ class BotTest {
         assertFalse(player1.pay(-1));
         assertEquals(0, player1.getCoins());
         assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
+    }
+
+    @Test
+    void objective() {
+        var objective = bot1.districtObjective();
+        assertTrue(objective.isPresent());
+        assertEquals(objective, bot1.districtObjective()); // The objective should be consistant
+        assertEquals(new DragonGate(), objective.get());
+
+        Bot bot = new Bot(player1.getName(), player1.getCoins(), List.of(new Church(), new Market(), new Prison(), new TradingPost()));
+        objective = bot.districtObjective();
+        assertTrue(objective.isPresent());
+        assertEquals(objective, bot.districtObjective()); // Even with all profitability being equals the objective should be consistant
+        assertEquals(new Church(), objective.get());
     }
 
     @Test
@@ -82,10 +97,16 @@ class BotTest {
 
     @Test
     void pickDistrictsToBuild() {
-        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()), player1.getHandDistricts());
-        assertTrue(player1.getBuiltDistricts().isEmpty());
-        assertEquals(List.of(new Church()), player1.pickDistrictsToBuild(1)); // Only the church is affordable for the player
-        assertEquals(List.of(new Church()), player1.getBuiltDistricts());
+        Bot bot = new Bot("bot", 9, List.of(new Battlefield(), new Castle(), new DragonGate(), new Church())) {
+            @Override
+            protected double districtProfitability(District district) {
+                return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
+            }
+        };
+        assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild()); // Only one district should be built, and it should be the first in his hand
+        assertEquals(List.of(new Battlefield()), bot.getBuiltDistricts()); // The district has been correctly built
+        assertEquals(List.of(new Castle()), bot.pickDistrictsToBuild(2)); // The player can build 2 districts but only one of his objective can be afforded
+        assertEquals(List.of(new Battlefield(), new Castle()), bot.getBuiltDistricts());
     }
 
     @Test
