@@ -52,8 +52,8 @@ public class Bot extends Player {
     @Override
     public Action nextAction(List<Action> remainingActions) {
         var objective = districtObjective();
-        if (remainingActions.contains(Action.INCOME) && objective.isPresent() && objective.get().getCost() > getCoins())
-            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has
+        if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
         if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;
