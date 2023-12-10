@@ -123,7 +123,7 @@ public class Game {
     public boolean gameTurn() {
         characterSelectionTurn();
         playerList.sort(Comparator.comparing(player -> player.getCharacter().orElseThrow()));
-        LOGGER.log(Level.INFO, "The Game turn begins");
+        LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
         for (Player player : playerList) {
             player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));

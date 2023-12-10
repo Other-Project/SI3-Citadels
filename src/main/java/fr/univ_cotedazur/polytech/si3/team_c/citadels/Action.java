@@ -2,15 +2,15 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 public enum Action {
     /**
-     * The Default Income : the player can choose this action to get 2 coins
+     * The player receives a certain amount of coins
      */
     INCOME,
     /**
-     * It's a bonus income according to the player's character
+     * Bonus income based on the color of the player's character and on the districts built
      */
     SPECIAL_INCOME,
     /**
-     * The default drawing : the player chooses a card between two from the deck
+     * The player draws districts and chooses to keep a certain amount of them
      */
     DRAW,
     /**
@@ -18,7 +18,7 @@ public enum Action {
      */
     BUILD,
     /**
-     * The action of stopping the layer's turn
+     * The player wants to end his tur
      */
     NONE
 }
