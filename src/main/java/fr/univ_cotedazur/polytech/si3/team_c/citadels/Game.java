@@ -96,11 +96,8 @@ public class Game {
                 }
                 case SPECIAL_INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
-                    int coinsToClaim = 0;
-                    for (District district : player.getBuiltDistricts()) {
-                        if (district.getColor() == player.getCharacter().orElseThrow().getColor()) coinsToClaim++;
-                    }
-                    LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(coinsToClaim)});
+                    int claimedCoins = player.gainSpecialIncome();
+                    LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
