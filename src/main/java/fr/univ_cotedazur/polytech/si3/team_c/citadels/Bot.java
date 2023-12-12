@@ -35,7 +35,9 @@ public class Bot extends Player {
      * @param district The district whose profitability is to be calculated
      */
     protected double districtProfitability(District district) {
-        return district.getPoint() / (double) district.getCost();
+        return district.getPoint()
+                + quantityOfColorBuilt(district.getColor()) / 8.0
+                - district.getCost();
     }
 
     /**
@@ -45,10 +47,10 @@ public class Bot extends Player {
      */
     protected Optional<District> districtObjective() {
         District bestDistrict = null;
-        double bestProfitability = 0;
+        double bestProfitability = Double.MIN_VALUE;
         for (District district : getHandDistricts()) {
             double profitability = districtProfitability(district);
-            if (profitability > bestProfitability || (bestDistrict != null && profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
                 bestDistrict = district;
                 bestProfitability = profitability;
             }
