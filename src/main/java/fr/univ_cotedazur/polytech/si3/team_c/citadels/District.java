@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("java:S2160")
@@ -35,17 +36,24 @@ public abstract class District extends Card {
     }
 
     /**
-     * @return the number of cards to draw after this district
+     * @return the number of cards to draw after the district is built
      */
     public Optional<Integer> numberOfDistrictsToDraw() {
         return Optional.empty();
     }
 
     /**
-     * @return the number of cards to be drawn after this one
+     * @return the number of cards to keep after the district is built
      */
     public Optional<Integer> numberOfDistrictsToKeep() {
         return Optional.empty();
+    }
+
+    /**
+     * @return the colors that will be taken into account when counting bonuses
+     */
+    public List<Colors> bonusColors() {
+        return List.of(getColor());
     }
 
     /**
