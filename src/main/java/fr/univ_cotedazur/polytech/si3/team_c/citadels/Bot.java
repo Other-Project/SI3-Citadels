@@ -1,6 +1,9 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -9,17 +12,21 @@ import java.util.*;
  * @author Team C
  */
 public class Bot extends Player {
-    private final Random random;
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
-        random = new Random();
     }
 
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
-        setCharacter(availableCharacters.get(random.nextInt(availableCharacters.size())));
-        return getCharacter().orElseThrow();
+        Character best = null;
+        int profitability = -1;
+        for (Character character : availableCharacters) {
+            if (quantityOfColorBuilt(character.getColor()) > profitability)
+                best = character;
+        }
+        setCharacter(best);
+        return best;
     }
 
     /**
