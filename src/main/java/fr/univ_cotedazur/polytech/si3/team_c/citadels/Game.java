@@ -105,10 +105,10 @@ public class Game {
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
-                    LOGGER.log(Level.INFO, "{0} drawn {1}", new Object[]{player.getName(), drawnCard});
+                    LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
-                    actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
+                    actionList.remove(Action.INCOME); // The player cannot gain any coin if he draws
                 }
                 case INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
