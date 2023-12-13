@@ -72,13 +72,12 @@ public abstract class Player {
     }
 
     /**
-     * If the player is the King, the Merchant, the Bishop or the warlord, he can claim a special income
+     * If the player is a character of color, he can claim a special income depending on the number of districts built of the same color
      *
-     * @return the number of coins the player claimed
+     * @return The number of coins the player claimed
      */
     public int gainSpecialIncome() {
-        Colors color = getCharacter().orElseThrow().getColor();
-        int income = (int) getBuiltDistricts().stream().filter(district -> district.matchColor(color)).count();
+        int income = quantityOfColorBuilt(getCharacter().orElseThrow().getColor());
         gainCoins(income);
         return income;
     }
@@ -90,6 +89,15 @@ public abstract class Player {
      */
     protected void gainCoins(int quantity) {
         coins += quantity;
+    }
+
+    /**
+     * The quantity of built district of a given color
+     *
+     * @param color The color that the districts need to match
+     */
+    protected int quantityOfColorBuilt(Colors color) {
+        return (int) getBuiltDistricts().stream().filter(district -> district.matchColor(color)).count();
     }
 
     /**

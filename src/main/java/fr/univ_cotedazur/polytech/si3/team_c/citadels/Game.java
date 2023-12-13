@@ -111,14 +111,16 @@ public class Game {
         while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
             switch (action) {
                 case DRAW -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to draw");
-                    player.pickDistrictsFromDeck(deck.draw(player.numberOfDistrictsToDraw()))
-                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " obtained " + district));
-                    actionList.remove(Action.INCOME); // The player cannot gain any coins if he draws
+                    LOGGER.log(Level.INFO, () -> player.getName() + " draws");
+                    var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
+                    LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
+                    player.pickDistrictsFromDeck(drawnCard)
+                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
+                    actionList.remove(Action.INCOME); // The player cannot gain any coin if he draws
                 }
                 case INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to gains 2 coins");
-                    player.gainIncome();
+                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
+                    LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
                     actionList.remove(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
@@ -129,7 +131,7 @@ public class Game {
                 case SPECIAL_INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
                     int claimedCoins = player.gainSpecialIncome();
-                    LOGGER.log(Level.INFO, "{0} gets {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
+                    LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
