@@ -75,7 +75,7 @@ class BotTest {
         player1.addDistrictToHand(new Prison());
         player1.setCharacter(new King());
         player1.gainCoins(6);
-        assertTrue(player1.buildDistrict(new DragonGate()));
+        assertTrue(player1.buildDistrict(new DragonGate(), 0));
         assertEquals(0, player1.gainSpecialIncome()); // The player has no yellow districts
 
         assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
@@ -90,7 +90,7 @@ class BotTest {
         assertEquals(2, player1.gainIncome());
         assertEquals(6, player1.getCoins());
         assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
-        assertTrue(player1.buildDistrict(new WatchTower()));
+        assertTrue(player1.buildDistrict(new WatchTower(), 0));
         assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
 
         player1.pickCharacter(List.of(new Merchant(), new King(), new Bishop()));
@@ -98,7 +98,7 @@ class BotTest {
         assertEquals(2, player1.gainIncome());
         assertEquals(7, player1.getCoins());
         assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
-        assertTrue(player1.buildDistrict(new Prison())); // We force the player to build a red card (so we can test his special income)
+        assertTrue(player1.buildDistrict(new Prison(), 0)); // We force the player to build a red card (so we can test his special income)
         assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no card of the color of his character
         assertEquals(0, player1.gainSpecialIncome());
 
