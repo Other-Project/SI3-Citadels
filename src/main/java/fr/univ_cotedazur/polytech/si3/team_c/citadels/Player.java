@@ -16,7 +16,7 @@ public abstract class Player {
     private final String name;
     private boolean gameEnder = false;
     private int coins;
-    private final SortedMap<Integer, List<District>> builtDistricts;
+    private final Map<Integer, List<District>> builtDistricts;
     private final ArrayList<District> handDistricts;
     private Character character;
 
@@ -25,7 +25,7 @@ public abstract class Player {
         this.name = name;
         this.coins = coins;
         handDistricts = new ArrayList<>(districts);
-        builtDistricts = new TreeMap<>();
+        builtDistricts = new HashMap<>();
     }
 
     /**
