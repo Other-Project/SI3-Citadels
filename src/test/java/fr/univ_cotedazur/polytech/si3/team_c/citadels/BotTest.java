@@ -1,7 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Architect;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Magician;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,7 @@ class BotTest {
     }
 
     @Test
-    void actions() {
+    void basicActions() {
         assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of card, he should get some coins
         player1.gainCoins(4); // To be sure the player will build something we give 4 golds and not wait for having enough to build the DragonGate
         assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD)));
@@ -68,6 +67,43 @@ class BotTest {
         for (var district : player1.getHandDistricts())
             assertTrue(player1.buildDistrict(district, 0)); // We build everything remaining to force the player to draw cards
         assertEquals(Action.DRAW, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of gold but no cards
+    }
+
+    @Test
+    void specialIncome() {
+        player1.addDistrictToHand(new WatchTower());
+        player1.addDistrictToHand(new Prison());
+        player1.setCharacter(new King());
+        player1.gainCoins(6);
+        assertTrue(player1.buildDistrict(new DragonGate()));
+        assertEquals(0, player1.gainSpecialIncome()); // The player has no yellow districts
+
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(2, player1.gainIncome());
+        assertEquals(4, player1.getCoins());
+        var action = player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME));
+        assertNotEquals(Action.SPECIAL_INCOME, action); // The player didn't build anything, he clearly shouldn't claim his special income now
+        assertEquals(action, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player shouldn't change his mind
+        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
+
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(2, player1.gainIncome());
+        assertEquals(6, player1.getCoins());
+        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
+        assertTrue(player1.buildDistrict(new WatchTower()));
+        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
+
+        player1.pickCharacter(List.of(new Merchant(), new King(), new Bishop()));
+        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(2, player1.gainIncome());
+        assertEquals(7, player1.getCoins());
+        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
+        assertTrue(player1.buildDistrict(new Prison())); // We force the player to build a red card (so we can test his special income)
+        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no card of the color of his character
+        assertEquals(0, player1.gainSpecialIncome());
+
+        assertEquals(new Warlord(), player1.pickCharacter(List.of(new Merchant(), new Warlord()))); // The warlord is more profitable as the player will gain at least one more coins that with the merchant
+        assertEquals(2, player1.gainSpecialIncome()); // The player has 2 red cards
     }
 
     @Test

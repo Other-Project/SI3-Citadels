@@ -1,6 +1,9 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -9,17 +12,21 @@ import java.util.*;
  * @author Team C
  */
 public class Bot extends Player {
-    private final Random random;
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
-        random = new Random();
     }
 
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
-        setCharacter(availableCharacters.get(random.nextInt(availableCharacters.size())));
-        return getCharacter().orElseThrow();
+        Character best = null;
+        int profitability = -1;
+        for (Character character : availableCharacters) {
+            if (quantityOfColorBuilt(character.getColor()) > profitability)
+                best = character;
+        }
+        setCharacter(best);
+        return best;
     }
 
     /**
@@ -28,7 +35,9 @@ public class Bot extends Player {
      * @param district The district whose profitability is to be calculated
      */
     protected double districtProfitability(District district) {
-        return district.getPoint() / (double) district.getCost();
+        return district.getPoint()
+                + quantityOfColorBuilt(district.getColor()) / 8.0
+                - district.getCost();
     }
 
     /**
@@ -38,10 +47,10 @@ public class Bot extends Player {
      */
     protected Optional<District> districtObjective() {
         District bestDistrict = null;
-        double bestProfitability = 0;
+        double bestProfitability = Double.MIN_VALUE;
         for (District district : getHandDistricts()) {
             double profitability = districtProfitability(district);
-            if (profitability > bestProfitability || (bestDistrict != null && profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
                 bestDistrict = district;
                 bestProfitability = profitability;
             }
@@ -52,11 +61,13 @@ public class Bot extends Player {
     @Override
     public Action nextAction(List<Action> remainingActions) {
         var objective = districtObjective();
-        if (remainingActions.contains(Action.INCOME) && objective.isPresent() && objective.get().getCost() > getCoins())
-            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has
+        if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
         if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;
+        if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+            return Action.SPECIAL_INCOME;
         return Action.NONE;
     }
 
