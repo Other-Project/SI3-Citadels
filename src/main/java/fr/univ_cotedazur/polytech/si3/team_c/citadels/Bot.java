@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 
 /**
@@ -30,6 +32,20 @@ public class Bot extends Player {
     }
 
     /**
+     * Calculates the gain on a property from the construction of a district compared to the current one
+     *
+     * @param district         The district in question
+     * @param districtProperty Getter of the property on the district side
+     * @param playerProperty   Getter of the property on the player side
+     * @return The difference between the two
+     */
+    private double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
+        return districtProperty.apply(district)
+                .map(aDouble -> (aDouble.doubleValue() - playerProperty.getAsDouble()))
+                .orElse(0.0);
+    }
+
+    /**
      * Calculate a profitability score for a given district
      *
      * @param district The district whose profitability is to be calculated
@@ -37,6 +53,8 @@ public class Bot extends Player {
     protected double districtProfitability(District district) {
         return district.getPoint()
                 + quantityOfColorBuilt(district.getColor()) / 8.0
+                + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
+                + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 - district.getCost();
     }
 
