@@ -170,18 +170,21 @@ public abstract class Player {
     public abstract Character pickCharacter(List<Character> availableCharacters);
 
     /**
-     * Which action should be done (will be asked until there's no more actions to do)
+     * Ask the player which action should be done (will be asked until there's no more actions to do)
+     *
+     * @return The action chosen by the player to be done
      */
     public Action nextAction() {
         return nextAction(getActionSet());
     }
 
     /**
-     * Which action should be done (will be asked until there's no more actions to do). The action will be chosen in the Set in entry
+     * Ask the player which action should be done (will be asked until there's no more actions to do). The action will be chosen in the Set in entry
      *
      * @param actions Set of actions in which will be chosen the action to do
      */
     public abstract Action nextAction(Set<Action> actions);
+
     /**
      * Asks the player to choose districts among the drawn ones
      *
@@ -255,12 +258,11 @@ public abstract class Player {
     /**
      * Creates a list of possible actions for a player, depending on the chosen character and the built districts.
      */
-    public void createActionSet() {
+    public Set<Action> createActionSet() {
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
-        for (Card c : getBuiltDistricts()) {
-            actionSet.addAll(c.getAction().orElse(new ArrayList<>())); // Add the special action of each Card if the card have one
-        }
-        actionSet.addAll(character.getAction().orElse(new ArrayList<>())); // Add the special actions of each Character
+        getBuiltDistricts().forEach(district -> district.getAction().ifPresent(actionSet::addAll)); // Add the special action of each district if it has one
+        character.getAction().ifPresent(actionSet::addAll); // Add the special actions of the character
+        return actionSet;
     }
 
     public Set<Action> getActionSet() {
