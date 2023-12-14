@@ -26,13 +26,13 @@ public class Game {
 
     public Game(int numberPlayers, Player... players) {
         this(List.of(players));
-        for (int i = 1; i <= numberPlayers - playerList.size(); i++)
-            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        int initLength = playerList.size();
+        for (int i = 1; i <= numberPlayers - initLength; i++) playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
     }
 
     public Game(List<Player> players) {
         deck = new Deck();
-        playerList = players;
+        playerList = new ArrayList<>(players);
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
