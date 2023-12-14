@@ -27,6 +27,12 @@ public abstract class Card {
         return name;
     }
 
+    /**
+     * Method to return the special action for a player based on the chosen character
+     * or some purple district constructs.
+     *
+     * @return Empty if the district does not provide additional actions for the player.
+     */
     public Optional<List<Action>> getAction() {
         return Optional.empty();
     }

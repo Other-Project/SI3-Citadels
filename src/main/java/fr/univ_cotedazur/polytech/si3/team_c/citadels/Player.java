@@ -250,6 +250,9 @@ public abstract class Player {
         return maxBuiltDistrictValue(District::numberOfDistrictsToKeep, NUMBER_OF_DISTRICTS_TO_KEEP);
     }
 
+    /**
+     * Creates a list of possible actions for a player, depending on the chosen character and the built districts.
+     */
     public void createactionSet() {
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         for (Card c : getBuiltDistricts()) {
@@ -263,6 +266,6 @@ public abstract class Player {
     }
 
     public boolean removeActions(Action action) {
-        return actionSet.remove(action);
-    } // Remove the action of the actionSet
+        return actionSet.remove(action);// Remove the action of the actionSet
+    }
 }
