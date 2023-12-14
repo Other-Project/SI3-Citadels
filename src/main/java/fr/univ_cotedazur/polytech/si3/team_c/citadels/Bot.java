@@ -1,9 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -59,15 +56,15 @@ public class Bot extends Player {
     }
 
     @Override
-    public Action nextAction() {
+    public Action nextAction(Set<Action> setOfActions) {
         var objective = districtObjective();
-        if (getactionSet().contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+        if (setOfActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (getactionSet().contains(Action.DRAW))
+        if (setOfActions.contains(Action.DRAW))
             return Action.DRAW;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (getactionSet().contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+        if (setOfActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (getactionSet().contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+        if (setOfActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         return Action.NONE;
     }

@@ -102,7 +102,7 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
-        player.createactionSet();
+        player.createActionSet();
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
@@ -113,12 +113,12 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
-                    player.removeActions(Action.INCOME); // The player cannot gain any coins if he draws
+                    player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
-                    player.removeActions(Action.DRAW); // The player cannot draw cards if he gets the income
+                    player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
@@ -133,7 +133,7 @@ public class Game {
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
-            player.removeActions(action);
+            player.removeAction(action);
             LOGGER.log(Level.INFO, "{0}", player);
         }
     }

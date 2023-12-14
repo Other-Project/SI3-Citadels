@@ -172,14 +172,12 @@ public abstract class Player {
     /**
      * Which action should be done (will be asked until there's no more actions to do)
      */
-    public abstract Action nextAction();
-
-
-    public Action nextAction(List<Action> actions) {
-        actionSet = new HashSet<>();
-        actionSet.addAll(actions);
-        return nextAction();
+    public Action nextAction() {
+        return nextAction(getActionSet());
     }
+
+
+    public abstract Action nextAction(Set<Action> actions);
     /**
      * Asks the player to choose districts among the drawn ones
      *
@@ -253,7 +251,7 @@ public abstract class Player {
     /**
      * Creates a list of possible actions for a player, depending on the chosen character and the built districts.
      */
-    public void createactionSet() {
+    public void createActionSet() {
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         for (Card c : getBuiltDistricts()) {
             actionSet.addAll(c.getAction().orElse(new ArrayList<>())); // Add the special action of each Card if the card have one
@@ -261,11 +259,11 @@ public abstract class Player {
         actionSet.addAll(character.getAction().orElse(new ArrayList<>())); // Add the special actions of each Character
     }
 
-    public Set<Action> getactionSet() {
+    public Set<Action> getActionSet() {
         return actionSet;
     }
 
-    public boolean removeActions(Action action) {
+    public boolean removeAction(Action action) {
         return actionSet.remove(action);// Remove the action of the actionSet
     }
 }
