@@ -75,15 +75,24 @@ public class Bot extends Player {
     }
 
     @Override
-    public List<District> pickDistrictsToBuild(int maxAmountToChoose) {
+    public List<District> pickDistrictsToBuild(int maxAmountToChoose, int turn) {
         ArrayList<District> built = new ArrayList<>();
         for (; maxAmountToChoose > 0; maxAmountToChoose--) {
             var objective = districtObjective();
-            if (objective.isEmpty() || !buildDistrict(objective.get()))
+            if (objective.isEmpty() || !buildDistrict(objective.get(), turn))
                 break;
             built.add(objective.get());
         }
 
         return built;
+    }
+
+    @Override
+    public void pickBonusColor(Set<Colors> tookColors) {
+        List<Colors> colors = new ArrayList<>(Arrays.asList(Colors.values()));
+        colors.remove(Colors.NONE);
+        int i = 0;
+        while (i < colors.size() && tookColors.contains(colors.get(i))) i++;
+        if (!tookColors.contains(colors.get(i))) tookColors.add(colors.get(i));
     }
 }

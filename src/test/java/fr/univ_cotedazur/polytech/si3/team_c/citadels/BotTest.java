@@ -23,7 +23,7 @@ class BotTest {
     @Test
     void stringRepresentation() {
         assertEquals("Bot 1", player1.getName());
-        player1.buildDistrict(new Church());
+        player1.buildDistrict(new Church(), 0);
         assertEquals("Bot 1 (0 coins) [🔴Battlefield ($3, 3 pts), 🟡Castle ($4, 4 pts), 🟣Dragon Gate ($6, 8 pts)] :\n\t🔵Church ($2, 2 pts)", player1.toString());
     }
 
@@ -56,7 +56,7 @@ class BotTest {
         assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of card, he should get some coins
         player1.gainCoins(4); // To be sure the player will build something we give 4 golds and not wait for having enough to build the DragonGate
         assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD)));
-        assertTrue(player1.buildDistrict(new DragonGate()));
+        assertTrue(player1.buildDistrict(new DragonGate(), 0));
         assertEquals(List.of(new DragonGate()), player1.getBuiltDistricts());
         assertEquals(0, player1.getCoins());
 
@@ -66,7 +66,7 @@ class BotTest {
 
         player1.gainCoins(20); // So the player have enough to build everything in hand, and so he doesn't get coins
         for (var district : player1.getHandDistricts())
-            assertTrue(player1.buildDistrict(district)); // We build everything remaining to force the player to draw cards
+            assertTrue(player1.buildDistrict(district, 0)); // We build everything remaining to force the player to draw cards
         assertEquals(Action.DRAW, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of gold but no cards
     }
 
@@ -103,7 +103,7 @@ class BotTest {
                 return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
             }
         };
-        assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild()); // Only one district should be built, and it should be the first in his hand
+        assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild(0)); // Only one district should be built, and it should be the first in his hand
         assertEquals(List.of(new Battlefield()), bot.getBuiltDistricts()); // The district has been correctly built
         assertEquals(List.of(new Castle()), bot.pickDistrictsToBuild(2)); // The player can build 2 districts but only one of his objective can be afforded
         assertEquals(List.of(new Battlefield(), new Castle()), bot.getBuiltDistricts());
@@ -111,11 +111,29 @@ class BotTest {
 
     @Test
     void getScore() {
-        player1.gainCoins(100);
-        player1.buildDistrict(new Battlefield());
-        player1.buildDistrict(new Castle());
-        player1.buildDistrict(new Church());
-        assertEquals(9, player1.getScore());
+        // Test bonus score with first player to end bonus and districts score
+        player1.gainCoins(10000);
+        List<District> districts = List.of(
+                new Battlefield(), new Castle(), new Monastery(),
+                new TheKeep(), new Palace(), new Temple(),
+                new Manor(), new Prison(), new HauntedCity());
+        for (int i = 0; i < districts.size(); i++) {
+            player1.addDistrictToHand(districts.get(i));
+            player1.buildDistrict(districts.get(i), i);
+        }
+        player1.endsGame();
+        assertEquals(26, player1.getDistrictsScore());
+        assertEquals(30, player1.getScore(8));
+
+        // Test bonus score with districts score, colors bonus and eight districts bonus
+        setUp();
+        player1.gainCoins(10000);
+        for (District district : districts) player1.addDistrictToHand(district);
+        for (int i = districts.size() - 1; i >= 0; i--) {
+            player1.buildDistrict(districts.get(i), districts.size() - i);
+        }
+        assertEquals(26, player1.getDistrictsScore());
+        assertEquals(31, player1.getScore(8));
     }
 
     @Test
@@ -125,10 +143,10 @@ class BotTest {
                 , new Cathedral(), observatory, new Docks(), new DragonGate(), new Fortress()));
         assertEquals(2, bot1.numberOfDistrictsToDraw());
         for (District district : bot1.getHandDistricts()) {
-            if (!district.equals(observatory)) bot1.buildDistrict(district);
+            if (!district.equals(observatory)) bot1.buildDistrict(district, 0);
         }
         assertEquals(2, bot1.numberOfDistrictsToDraw());
-        bot1.buildDistrict(observatory);
+        bot1.buildDistrict(observatory, 0);
         assertEquals(3, bot1.numberOfDistrictsToDraw());
     }
 
@@ -139,10 +157,10 @@ class BotTest {
                 , new Cathedral(), library, new Docks(), new DragonGate(), new Fortress()));
         assertEquals(1, bot1.numberOfDistrictsToKeep());
         for (District district : bot1.getHandDistricts()) {
-            if (!district.equals(library)) bot1.buildDistrict(district);
+            if (!district.equals(library)) bot1.buildDistrict(district, 0);
         }
         assertEquals(1, bot1.numberOfDistrictsToKeep());
-        bot1.buildDistrict(library);
+        bot1.buildDistrict(library, 0);
         assertEquals(2, bot1.numberOfDistrictsToKeep());
     }
 }
