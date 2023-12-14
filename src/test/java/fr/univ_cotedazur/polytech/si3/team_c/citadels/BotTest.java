@@ -5,6 +5,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -180,5 +181,37 @@ class BotTest {
         assertEquals(1, bot1.numberOfDistrictsToKeep());
         bot1.buildDistrict(library);
         assertEquals(2, bot1.numberOfDistrictsToKeep());
+    }
+
+    @Test
+    void createactionSetTest() {
+        player1.pickCharacter(List.of(new King()));
+        player1.createactionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getactionSet());
+        player1.pickCharacter(List.of(new Bishop()));
+        player1.createactionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getactionSet());
+        player1.pickCharacter(List.of(new Warlord()));
+        player1.createactionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getactionSet());
+        player1.pickCharacter(List.of(new Merchant()));
+        player1.createactionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getactionSet());
+    }
+
+    @Test
+    void removeactionSetTest() {
+        player1.pickCharacter(List.of(new King()));
+        player1.createactionSet();
+        assertTrue(player1.removeActions(Action.SPECIAL_INCOME));
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW, Action.INCOME)), player1.getactionSet());
+        assertTrue(player1.removeActions(Action.INCOME));
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW)), player1.getactionSet());
+        assertTrue(player1.removeActions(Action.BUILD));
+        assertEquals(new HashSet<>(List.of(Action.DRAW)), player1.getactionSet());
+        assertTrue(player1.removeActions(Action.DRAW));
+        assertEquals(new HashSet<>(), player1.getactionSet());
+        assertFalse(player1.removeActions(Action.DRAW));
+        assertEquals(new HashSet<>(), player1.getactionSet());
     }
 }

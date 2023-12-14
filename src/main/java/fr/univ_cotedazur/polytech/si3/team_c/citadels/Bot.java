@@ -59,18 +59,18 @@ public class Bot extends Player {
     }
 
     @Override
-    public Action nextAction(List<Action> remainingActions) {
+    public Action nextAction() {
         var objective = districtObjective();
-        if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
-            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
-        if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
-            return Action.BUILD;
-        if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
-            return Action.SPECIAL_INCOME;
+        if (getactionSet().contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+            return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+        if (getactionSet().contains(Action.DRAW))
+            return Action.DRAW;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+        if (getactionSet().contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+            return Action.BUILD;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+        if (getactionSet().contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+            return Action.SPECIAL_INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         return Action.NONE;
     }
-
     @Override
     public List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose) {
         ArrayList<District> chosen = new ArrayList<>(drawnCards.stream()
@@ -94,7 +94,6 @@ public class Bot extends Player {
                 break;
             built.add(objective.get());
         }
-
         return built;
     }
 }

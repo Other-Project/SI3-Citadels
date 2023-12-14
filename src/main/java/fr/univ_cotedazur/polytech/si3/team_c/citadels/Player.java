@@ -1,8 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -21,12 +19,15 @@ public abstract class Player {
     private final ArrayList<District> handDistricts;
     private Character character;
 
+    private Set<Action> actionSet;
+
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
         this.coins = coins;
         handDistricts = new ArrayList<>(districts);
         builtDistricts = new ArrayList<>();
+        actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
     }
 
     /**
@@ -171,8 +172,14 @@ public abstract class Player {
     /**
      * Which action should be done (will be asked until there's no more actions to do)
      */
-    public abstract Action nextAction(List<Action> remainingActions);
+    public abstract Action nextAction();
 
+
+    public Action nextAction(List<Action> actions) {
+        actionSet = new HashSet<>();
+        actionSet.addAll(actions);
+        return nextAction();
+    }
     /**
      * Asks the player to choose districts among the drawn ones
      *
@@ -242,4 +249,20 @@ public abstract class Player {
     public int numberOfDistrictsToKeep() {
         return maxBuiltDistrictValue(District::numberOfDistrictsToKeep, NUMBER_OF_DISTRICTS_TO_KEEP);
     }
+
+    public void createactionSet() {
+        actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
+        for (Card c : getBuiltDistricts()) {
+            actionSet.addAll(c.getAction().orElse(new ArrayList<>())); // Add the special action of each Card if the card have one
+        }
+        actionSet.addAll(character.getAction().orElse(new ArrayList<>())); // Add the special actions of each Character
+    }
+
+    public Set<Action> getactionSet() {
+        return actionSet;
+    }
+
+    public boolean removeActions(Action action) {
+        return actionSet.remove(action);
+    } // Remove the action of the actionSet
 }
