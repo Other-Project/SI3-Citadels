@@ -7,4 +7,9 @@ public class TheKeep extends District {
     public TheKeep() {
         super("The Keep", 3, Colors.PURPLE, 3);
     }
+
+    @Override
+    public boolean isDestructible() {
+        return false;
+    }
 }
