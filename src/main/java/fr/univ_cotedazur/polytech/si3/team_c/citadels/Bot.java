@@ -55,16 +55,22 @@ public class Bot extends Player {
         return Optional.ofNullable(bestDistrict);
     }
 
+    /**
+     * The Bot choose an action to do during his turn
+     *
+     * @param remainingActions Set of actions that the bot could do during this turn
+     * @return The action choose by the bot
+     */
     @Override
-    public Action nextAction(Set<Action> setOfActions) {
+    public Action nextAction(Set<Action> remainingActions) {
         var objective = districtObjective();
-        if (setOfActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+        if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (setOfActions.contains(Action.DRAW))
+        if (remainingActions.contains(Action.DRAW))
             return Action.DRAW;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (setOfActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+        if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (setOfActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+        if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         return Action.NONE;
     }

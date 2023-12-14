@@ -176,7 +176,11 @@ public abstract class Player {
         return nextAction(getActionSet());
     }
 
-
+    /**
+     * Which action should be done (will be asked until there's no more actions to do). The action will be chosen in the Set in entry
+     *
+     * @param actions Set of actions in which will be chosen the action to do
+     */
     public abstract Action nextAction(Set<Action> actions);
     /**
      * Asks the player to choose districts among the drawn ones
