@@ -14,8 +14,9 @@ public abstract class Player {
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
     private static final int NUMBER_OF_DISTRICTS_TO_BUILD = 1;
     private final String name;
+    private boolean gameEnder = false;
     private int coins;
-    private final ArrayList<District> builtDistricts;
+    private final Map<Integer, List<District>> builtDistricts;
     private final ArrayList<District> handDistricts;
     private Character character;
 
@@ -26,8 +27,8 @@ public abstract class Player {
         this.name = name;
         this.coins = coins;
         handDistricts = new ArrayList<>(districts);
-        builtDistricts = new ArrayList<>();
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
+        builtDistricts = new HashMap<>();
     }
 
     /**
@@ -105,7 +106,7 @@ public abstract class Player {
      * Gets all the districts that the player built (and that haven't been destroyed)
      */
     public List<District> getBuiltDistricts() {
-        return new ArrayList<>(builtDistricts) {
+        return new ArrayList<>(builtDistricts.values().stream().flatMap(List::stream).toList()) {
             @Override
             public String toString() {
                 StringBuilder stringBuilder = new StringBuilder();
@@ -144,11 +145,12 @@ public abstract class Player {
      * @param district The district to build
      * @return True if the district have been successfully built
      */
-    protected boolean buildDistrict(District district) {
+    protected boolean buildDistrict(District district, int turn) {
         if (!handDistricts.contains(district)) return false;
         if (!pay(district.getCost())) return false;
         handDistricts.remove(district);
-        builtDistricts.add(district);
+        builtDistricts.putIfAbsent(turn, new ArrayList<>());
+        builtDistricts.get(turn).add(district);
         return true;
     }
 
@@ -209,23 +211,75 @@ public abstract class Player {
      *
      * @return The chosen districts
      */
-    public List<District> pickDistrictsToBuild() {
-        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD);
+    public List<District> pickDistrictsToBuild(int turn) {
+        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD, turn);
     }
 
     /**
      * Asks the player to choose district(s) from his hand to be build
      *
      * @param maxAmountToChoose The max amount of districts that can be built
+     * @param turn              the current turn of the Game
      * @return The chosen districts
      */
-    protected abstract List<District> pickDistrictsToBuild(int maxAmountToChoose);
+    protected abstract List<District> pickDistrictsToBuild(int maxAmountToChoose, int turn);
 
     /**
-     * Gets the current score of the player
+     * Choose a color for the bonus score and add it
+     *
+     * @param tookColors the colors already chosen
+     * @return the chosen color
      */
-    public int getScore() {
+    public abstract Optional<Colors> pickBonusColor(Set<Colors> tookColors);
+
+    /**
+     * @return the current score given by the districts of the player
+     */
+    public int getDistrictsScore() {
         return getBuiltDistricts().stream().mapToInt(District::getPoint).sum();
+    }
+
+    /**
+     * @param lastTurn the number of the last turn
+     * @return true if the district was built in the last turn
+     */
+    private boolean builtInTheLastTurn(District district, int lastTurn) {
+        if (builtDistricts.containsKey(lastTurn)) return builtDistricts.get(lastTurn).contains(district);
+        return false;
+    }
+
+    /**
+     * Check if the player has all the colors
+     *
+     * @param lastTurn the number of the last turn
+     **/
+    public boolean allColorsInDistricts(int lastTurn) {
+        Set<Colors> tookColors = new HashSet<>();
+        int anyCount = 0;
+        for (District district : getBuiltDistricts()) {
+            Optional<Colors> color = district.bonusColors(builtInTheLastTurn(district, lastTurn));
+            if (color.isPresent()) tookColors.add(color.get());
+            else anyCount++;
+        }
+        if (tookColors.size() == Colors.values().length - 1) return true;
+        else if (anyCount + tookColors.size() >= Colors.values().length - 1) {
+            for (int i = 0; i < anyCount; i++) {
+                pickBonusColor(tookColors).ifPresent(tookColors::add);
+            }
+        }
+        return Colors.values().length - 1 == tookColors.size();
+    }
+
+    /**
+     * @param lastTurn the number of the last turn
+     * @return the current score of the player
+     */
+    public int getScore(int lastTurn) {
+        int score = getDistrictsScore();
+        if (allColorsInDistricts(lastTurn)) score += 3;
+        if (isGameEnder()) score += 4;
+        else if (getBuiltDistricts().size() >= 8) score += 2;
+        return score;
     }
 
     /**
@@ -271,5 +325,18 @@ public abstract class Player {
 
     public boolean removeAction(Action action) {
         return actionSet.remove(action);// Remove the action of the actionSet
+      
+     /**
+     * Set the endPlayer boolean to true
+     */
+    public void endsGame() {
+        gameEnder = true;
+    }
+
+    /**
+     * @return true if the Player is the game ender
+     */
+    public boolean isGameEnder() {
+        return gameEnder;
     }
 }

@@ -1,6 +1,8 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.util.*;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 
 /**
@@ -17,13 +19,38 @@ public class Bot extends Player {
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
         Character best = null;
-        int profitability = -1;
+        double maxProfitability = -1;
         for (Character character : availableCharacters) {
-            if (quantityOfColorBuilt(character.getColor()) > profitability)
-                best = character;
+            var profitability = characterProfitability(character);
+            if (profitability <= maxProfitability) continue;
+            best = character;
+            maxProfitability = profitability;
         }
         setCharacter(best);
         return best;
+    }
+
+    /**
+     * Calculate a profitability score for a given character
+     *
+     * @param character The character whose profitability is to be calculated
+     */
+    protected double characterProfitability(Character character) {
+        return quantityOfColorBuilt(character.getColor());
+    }
+
+    /**
+     * Calculates the gain on a property from the construction of a district compared to the current one
+     *
+     * @param district         The district in question
+     * @param districtProperty Getter of the property on the district side
+     * @param playerProperty   Getter of the property on the player side
+     * @return The difference between the two
+     */
+    private double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
+        return districtProperty.apply(district)
+                .map(aDouble -> (aDouble.doubleValue() - playerProperty.getAsDouble()))
+                .orElse(0.0);
     }
 
     /**
@@ -34,6 +61,8 @@ public class Bot extends Player {
     protected double districtProfitability(District district) {
         return district.getPoint()
                 + quantityOfColorBuilt(district.getColor()) / 8.0
+                + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
+                + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 - district.getCost();
     }
 
@@ -90,14 +119,24 @@ public class Bot extends Player {
     }
 
     @Override
-    public List<District> pickDistrictsToBuild(int maxAmountToChoose) {
+    public List<District> pickDistrictsToBuild(int maxAmountToChoose, int turn) {
         ArrayList<District> built = new ArrayList<>();
         for (; maxAmountToChoose > 0; maxAmountToChoose--) {
             var objective = districtObjective();
-            if (objective.isEmpty() || !buildDistrict(objective.get()))
+            if (objective.isEmpty() || !buildDistrict(objective.get(), turn))
                 break;
             built.add(objective.get());
         }
         return built;
+    }
+
+    @Override
+    public Optional<Colors> pickBonusColor(Set<Colors> tookColors) {
+        for (Colors color : Colors.values()) {
+            if (color != Colors.NONE && !tookColors.contains(color)) {
+                return Optional.of(color);
+            }
+        }
+        return Optional.empty();
     }
 }

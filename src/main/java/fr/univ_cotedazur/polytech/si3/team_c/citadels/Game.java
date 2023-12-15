@@ -18,6 +18,7 @@ public class Game {
     private Deck deck;
 
     private int crown;
+    private int currentTurn = 0;
     private final Random random = new Random();
 
     public Game() {
@@ -26,13 +27,13 @@ public class Game {
 
     public Game(int numberPlayers, Player... players) {
         this(List.of(players));
-        for (int i = 1; i <= numberPlayers - playerList.size(); i++)
-            playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        int initLength = playerList.size();
+        for (int i = 1; i <= numberPlayers - initLength; i++) playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
     }
 
     public Game(List<Player> players) {
         deck = new Deck();
-        playerList = players;
+        playerList = new ArrayList<>(players);
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
@@ -71,6 +72,7 @@ public class Game {
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
             LOGGER.log(Level.INFO, "Turn {0}", i);
+            currentTurn = i;
             if (gameTurn()) break;
         }
         LOGGER.log(Level.INFO, this::winnersDisplay);
@@ -122,7 +124,7 @@ public class Game {
                 }
                 case BUILD -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
-                    player.pickDistrictsToBuild()
+                    player.pickDistrictsToBuild(currentTurn)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
                 }
                 case SPECIAL_INCOME -> {
@@ -157,7 +159,10 @@ public class Game {
         for (Player player : playOrder) {
             player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
             playerTurn(player);
-            if (end(player)) isEnd = true;
+            if (end(player)) {
+                if (!isEnd) player.endsGame();
+                isEnd = true;
+            }
         }
         if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
             setCrown((getCrown() + 1) % playerList.size());
@@ -171,7 +176,7 @@ public class Game {
         List<Player> winners = new ArrayList<>();
         int max = 0;
         for (Player player : playerList) {
-            int score = player.getScore();
+            int score = player.getScore(currentTurn);
             if (score > max) {
                 winners = new ArrayList<>(List.of(player));
                 max = score;

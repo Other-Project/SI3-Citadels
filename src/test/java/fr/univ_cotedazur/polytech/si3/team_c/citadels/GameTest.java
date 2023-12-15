@@ -40,7 +40,7 @@ class GameTest {
         game.addPlayer(bot1);
         assertFalse(game.end(bot1));
         for (District district : bot1.getHandDistricts()) {
-            bot1.buildDistrict(district);
+            bot1.buildDistrict(district, 0);
         }
         assertTrue(game.end(bot1));
     }
@@ -118,19 +118,40 @@ class GameTest {
     @Test
     void winnersTest() {
         // Equality test
-        Bot firstBot = new Bot("bot1", 1500, List.of(new Tavern(), new Laboratory(), new Harbor()));
-        Bot secondBot = new Bot("bot2", 1500, List.of(new Temple(), new Library(), new Docks()));
-        for (District district : firstBot.getHandDistricts()) firstBot.buildDistrict(district);
-        for (District district : secondBot.getHandDistricts()) secondBot.buildDistrict(district);
-        Game scriptedGame = new Game(List.of(firstBot, secondBot));
-        assertEquals(new SimpleEntry<>(List.of(firstBot, secondBot), firstBot.getScore()), scriptedGame.getWinners());
-        assertEquals("There is an equality between players : bot1, bot2 with " + firstBot.getScore() + " points !", scriptedGame.winnersDisplay());
+        List<District> firstBotDistricts = List.of(
+                new Palace(), new Cathedral(), new TownHall(),
+                new Fortress(), new TheKeep()
+        );
+        List<District> secondBotDistricts = List.of(
+                new HauntedCity(), new Castle(), new Manor(),
+                new Church(), new Monastery(), new Harbor(),
+                new TradingPost(), new Market()
+        );
 
-        // Normal test
+        // First bot initialisation
+        Bot firstBot = new Bot("bot1", 5000, firstBotDistricts);
+
+        // Second bot initialisation
+        Bot secondBot = new Bot("bot2", 5000, secondBotDistricts);
+
+        // Districts building
+        for (int i = 0; i < firstBotDistricts.size(); i++) firstBot.buildDistrict(firstBotDistricts.get(i), i);
+        for (int i = 0; i < secondBotDistricts.size(); i++) secondBot.buildDistrict(secondBotDistricts.get(i), i);
+
+        secondBot.endsGame();
+        Game scriptedGame = new Game(List.of(firstBot, secondBot));
+        assertEquals(new SimpleEntry<>(List.of(firstBot, secondBot), 26), scriptedGame.getWinners());
+        assertEquals("There is an equality between players : bot1, bot2 with 26 points !", scriptedGame.winnersDisplay());
+
+        // Test without equality
+
+        // Third bot initialisation
         Bot thirdBot = new Bot("bot3", 1500, List.of(new Tavern(), new Library(), new Harbor()));
+        for (int i = 0; i < secondBotDistricts.size(); i++) thirdBot.buildDistrict(secondBotDistricts.get(i), i);
+
         Game secondScriptedGame = new Game(List.of(firstBot, thirdBot));
-        for (District district : thirdBot.getHandDistricts()) thirdBot.buildDistrict(district);
-        assertEquals(new SimpleEntry<>(List.of(thirdBot), thirdBot.getScore()), secondScriptedGame.getWinners());
-        assertEquals("The player bot3 won with " + thirdBot.getScore() + " points !", secondScriptedGame.winnersDisplay());
+
+        assertEquals(new SimpleEntry<>(List.of(firstBot), 26), secondScriptedGame.getWinners());
+        assertEquals("The player bot1 won with 26 points !", secondScriptedGame.winnersDisplay());
     }
 }
