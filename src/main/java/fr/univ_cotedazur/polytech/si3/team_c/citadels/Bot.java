@@ -22,13 +22,24 @@ public class Bot extends Player {
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
         Character best = null;
-        int profitability = -1;
+        double maxProfitability = -1;
         for (Character character : availableCharacters) {
-            if (quantityOfColorBuilt(character.getColor()) > profitability)
-                best = character;
+            var profitability = characterProfitability(character);
+            if (profitability <= maxProfitability) continue;
+            best = character;
+            maxProfitability = profitability;
         }
         setCharacter(best);
         return best;
+    }
+
+    /**
+     * Calculate a profitability score for a given character
+     *
+     * @param character The character whose profitability is to be calculated
+     */
+    protected double characterProfitability(Character character) {
+        return quantityOfColorBuilt(character.getColor());
     }
 
     /**
