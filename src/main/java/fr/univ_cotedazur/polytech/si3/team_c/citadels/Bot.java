@@ -1,7 +1,10 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Rebot player
