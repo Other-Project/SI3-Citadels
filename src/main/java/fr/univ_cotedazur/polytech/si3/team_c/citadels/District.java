@@ -35,17 +35,25 @@ public abstract class District extends Card {
     }
 
     /**
-     * @return the number of cards to draw after this district
+     * @return The number of cards to draw after the district is built
      */
     public Optional<Integer> numberOfDistrictsToDraw() {
         return Optional.empty();
     }
 
     /**
-     * @return the number of cards to be drawn after this one
+     * @return The number of cards to keep after the district is built
      */
     public Optional<Integer> numberOfDistrictsToKeep() {
         return Optional.empty();
+    }
+
+    /**
+     * @param builtInLastTurn a boolean that is true if the card was built last turn
+     * @return The colors that will be taken into account when counting bonuses
+     */
+    public Optional<Colors> bonusColors(boolean builtInLastTurn) {
+        return Optional.of(getColor());
     }
 
     /**
