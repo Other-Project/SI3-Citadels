@@ -138,4 +138,9 @@ public class Bot extends Player {
         }
         return Optional.empty();
     }
+
+    @Override
+    public Character chooseCharacterToRob(List<Character> characterList) {
+        return characterList.get(0);
+    }
 }

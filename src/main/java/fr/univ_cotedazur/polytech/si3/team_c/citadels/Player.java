@@ -340,4 +340,11 @@ public abstract class Player {
     public boolean isGameEnder() {
         return gameEnder;
     }
+
+    /**
+     * The player chooses a character to rob
+     *
+     * @param characterList the list of character the player can rob
+     */
+    public abstract Character chooseCharacterToRob(List<Character> characterList);
 }

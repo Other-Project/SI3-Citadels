@@ -19,6 +19,9 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
+    private List<Character> roleList;
+    private Player robber;
+    private Character characterToRob;
     private final Random random = new Random();
 
     public Game() {
@@ -105,7 +108,13 @@ public class Game {
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
         player.createActionSet();
+        roleList.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
+        if (player.getCharacter().orElseThrow() == characterToRob) {
+            robber.gainCoins(player.getCoins());
+            player.pay(player.getCoins());
+            // The player who has been robbed give all his coins to the Thief
+        }
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
@@ -132,6 +141,10 @@ public class Game {
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
+                case STEAL -> {
+                    characterToRob = player.chooseCharacterToRob(roleList);
+                    robber = player;
+                }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
@@ -152,6 +165,9 @@ public class Game {
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
+        characterToRob = null;
+        robber = null;
+        roleList = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
