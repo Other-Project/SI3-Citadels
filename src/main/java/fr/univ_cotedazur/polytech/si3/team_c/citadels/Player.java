@@ -325,7 +325,8 @@ public abstract class Player {
 
     public boolean removeAction(Action action) {
         return actionSet.remove(action);// Remove the action of the actionSet
-      
+    }
+
      /**
      * Set the endPlayer boolean to true
      */
