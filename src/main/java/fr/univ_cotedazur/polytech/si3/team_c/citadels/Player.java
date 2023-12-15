@@ -146,8 +146,8 @@ public abstract class Player {
         if (!handDistricts.contains(district)) return false;
         if (!pay(district.getCost())) return false;
         handDistricts.remove(district);
-        if (!builtDistricts.containsKey(turn)) builtDistricts.put(turn, new ArrayList<>(List.of(district)));
-        else builtDistricts.get(turn).add(district);
+        builtDistricts.putIfAbsent(turn, new ArrayList<>());
+        builtDistricts.get(turn).add(district);
         return true;
     }
 
@@ -214,8 +214,9 @@ public abstract class Player {
      * Choose a color for the bonus score and add it
      *
      * @param tookColors the colors already chosen
+     * @return the chosen color
      */
-    public abstract void pickBonusColor(Set<Colors> tookColors);
+    public abstract Optional<Colors> pickBonusColor(Set<Colors> tookColors);
 
     /**
      * @return the current score given by the districts of the player
@@ -248,7 +249,9 @@ public abstract class Player {
         }
         if (tookColors.size() == Colors.values().length - 1) return true;
         else if (anyCount + tookColors.size() >= Colors.values().length - 1) {
-            for (int i = 0; i < anyCount; i++) pickBonusColor(tookColors);
+            for (int i = 0; i < anyCount; i++) {
+                pickBonusColor(tookColors).ifPresent(tookColors::add);
+            }
         }
         return Colors.values().length - 1 == tookColors.size();
     }

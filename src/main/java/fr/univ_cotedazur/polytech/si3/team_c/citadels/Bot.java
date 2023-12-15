@@ -95,11 +95,12 @@ public class Bot extends Player {
     }
 
     @Override
-    public void pickBonusColor(Set<Colors> tookColors) {
-        List<Colors> colors = new ArrayList<>(Arrays.asList(Colors.values()));
-        colors.remove(Colors.NONE);
-        int i = 0;
-        while (i < colors.size() && tookColors.contains(colors.get(i))) i++;
-        if (!tookColors.contains(colors.get(i))) tookColors.add(colors.get(i));
+    public Optional<Colors> pickBonusColor(Set<Colors> tookColors) {
+        for (Colors color : Colors.values()) {
+            if (color != Colors.NONE && !tookColors.contains(color)) {
+                return Optional.of(color);
+            }
+        }
+        return Optional.empty();
     }
 }
