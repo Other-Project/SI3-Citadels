@@ -4,9 +4,8 @@ import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 
-
 /**
- * Rebot player
+ * Robot player
  *
  * @author Team C
  */
