@@ -1,10 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
+import java.util.*;
 
 /**
  * Rebot player
@@ -97,15 +93,25 @@ public class Bot extends Player {
     }
 
     @Override
-    public List<District> pickDistrictsToBuild(int maxAmountToChoose) {
+    public List<District> pickDistrictsToBuild(int maxAmountToChoose, int turn) {
         ArrayList<District> built = new ArrayList<>();
         for (; maxAmountToChoose > 0; maxAmountToChoose--) {
             var objective = districtObjective();
-            if (objective.isEmpty() || !buildDistrict(objective.get()))
+            if (objective.isEmpty() || !buildDistrict(objective.get(), turn))
                 break;
             built.add(objective.get());
         }
 
         return built;
+    }
+
+    @Override
+    public Optional<Colors> pickBonusColor(Set<Colors> tookColors) {
+        for (Colors color : Colors.values()) {
+            if (color != Colors.NONE && !tookColors.contains(color)) {
+                return Optional.of(color);
+            }
+        }
+        return Optional.empty();
     }
 }
