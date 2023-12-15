@@ -5,7 +5,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 
 /**
- * Rebot player
+ * Robot player
  *
  * @author Team C
  */
@@ -83,16 +83,23 @@ public class Bot extends Player {
         return Optional.ofNullable(bestDistrict);
     }
 
+    /**
+     * The Bot choose an action to do during his turn
+     *
+     * @param remainingActions Set of actions that the bot could do during this turn
+     * @return The action choose by the bot
+     */
     @Override
-    public Action nextAction(List<Action> remainingActions) {
+    public Action nextAction(Set<Action> remainingActions) {
         var objective = districtObjective();
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
-            return Action.INCOME; // Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (remainingActions.contains(Action.DRAW)) return Action.DRAW;
+            return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+        if (remainingActions.contains(Action.DRAW))
+            return Action.DRAW;// Draw districts in the deck if the bot has no more cards in hand
         if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
-            return Action.BUILD;
+            return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
-            return Action.SPECIAL_INCOME;
+            return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
         return Action.NONE;
     }
 
@@ -119,7 +126,6 @@ public class Bot extends Player {
                 break;
             built.add(objective.get());
         }
-
         return built;
     }
 

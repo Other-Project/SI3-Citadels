@@ -104,13 +104,10 @@ public class Game {
      */
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
+        player.createActionSet();
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
-        List<Action> actionList = new ArrayList<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
-        if (player.getCharacter().orElseThrow().getColor() != Colors.NONE) {
-            actionList.add(Action.SPECIAL_INCOME); // if the character isn't white, he can claim a special income
-        }
         Action action;
-        while (!actionList.isEmpty() && (action = player.nextAction(actionList)) != Action.NONE) {
+        while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws");
@@ -118,12 +115,12 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
                             .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
-                    actionList.remove(Action.INCOME); // The player cannot gain any coin if he draws
+                    player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
-                    actionList.remove(Action.DRAW); // The player cannot draw cards if he gets the income
+                    player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
@@ -138,7 +135,7 @@ public class Game {
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
-            actionList.remove(action);
+            player.removeAction(action);
             LOGGER.log(Level.INFO, "{0}", player);
         }
     }

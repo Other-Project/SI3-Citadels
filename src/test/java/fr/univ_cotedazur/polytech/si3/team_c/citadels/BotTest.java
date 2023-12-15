@@ -5,7 +5,9 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,7 +35,7 @@ class BotTest {
         assertTrue(player1.pay(2));
         assertFalse(player1.pay(-1));
         assertEquals(0, player1.getCoins());
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
     }
 
     @Test
@@ -51,21 +53,21 @@ class BotTest {
 
     @Test
     void basicActions() {
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of card, he should get some coins
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of card, he should get some coins
         player1.gainCoins(4); // To be sure the player will build something we give 4 golds and not wait for having enough to build the DragonGate
-        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD)));
+        assertEquals(Action.BUILD, player1.nextAction(Set.of(Action.BUILD)));
         assertTrue(player1.buildDistrict(new DragonGate(), 0));
         assertEquals(List.of(new DragonGate()), player1.getBuiltDistricts());
         assertEquals(0, player1.getCoins());
 
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player has no gold he should definitely get some
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player has no gold he should definitely get some
         player1.gainCoins(1); // So the player can't build anything
-        assertEquals(Action.NONE, player1.nextAction(List.of(Action.BUILD))); // The player has nothing to build, he should end his turn there
+        assertEquals(Action.NONE, player1.nextAction(Set.of(Action.BUILD))); // The player has nothing to build, he should end his turn there
 
         player1.gainCoins(20); // So the player have enough to build everything in hand, and so he doesn't get coins
         for (var district : player1.getHandDistricts())
             assertTrue(player1.buildDistrict(district, 0)); // We build everything remaining to force the player to draw cards
-        assertEquals(Action.DRAW, player1.nextAction(List.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of gold but no cards
+        assertEquals(Action.DRAW, player1.nextAction(Set.of(Action.DRAW, Action.INCOME, Action.BUILD))); // The player already has a lot of gold but no cards
     }
 
     @Test
@@ -77,28 +79,28 @@ class BotTest {
         assertTrue(player1.buildDistrict(new DragonGate(), 0));
         assertEquals(0, player1.gainSpecialIncome()); // The player has no yellow districts
 
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
         assertEquals(2, player1.gainIncome());
         assertEquals(4, player1.getCoins());
-        var action = player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME));
+        var action = player1.nextAction(Set.of(Action.BUILD, Action.SPECIAL_INCOME));
         assertNotEquals(Action.SPECIAL_INCOME, action); // The player didn't build anything, he clearly shouldn't claim his special income now
-        assertEquals(action, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player shouldn't change his mind
-        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
+        assertEquals(action, player1.nextAction(Set.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player shouldn't change his mind
+        assertEquals(Action.NONE, player1.nextAction(Set.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
 
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
         assertEquals(2, player1.gainIncome());
         assertEquals(6, player1.getCoins());
-        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
+        assertEquals(Action.BUILD, player1.nextAction(Set.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
         assertTrue(player1.buildDistrict(new WatchTower(), 0));
-        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
+        assertEquals(Action.NONE, player1.nextAction(Set.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
 
         player1.pickCharacter(List.of(new Merchant(), new King(), new Bishop()));
-        assertEquals(Action.INCOME, player1.nextAction(List.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
         assertEquals(2, player1.gainIncome());
         assertEquals(7, player1.getCoins());
-        assertEquals(Action.BUILD, player1.nextAction(List.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
+        assertEquals(Action.BUILD, player1.nextAction(Set.of(Action.BUILD, Action.SPECIAL_INCOME))); // The player has enough to build whatever he wants
         assertTrue(player1.buildDistrict(new Prison(), 0)); // We force the player to build a red card (so we can test his special income)
-        assertEquals(Action.NONE, player1.nextAction(List.of(Action.SPECIAL_INCOME))); // The player has no card of the color of his character
+        assertEquals(Action.NONE, player1.nextAction(Set.of(Action.SPECIAL_INCOME))); // The player has no card of the color of his character
         assertEquals(0, player1.gainSpecialIncome());
 
         assertEquals(new Warlord(), player1.pickCharacter(List.of(new Merchant(), new Warlord()))); // The warlord is more profitable as the player will gain at least one more coins that with the merchant
@@ -197,5 +199,37 @@ class BotTest {
         assertEquals(1, bot1.numberOfDistrictsToKeep());
         bot1.buildDistrict(library, 0);
         assertEquals(2, bot1.numberOfDistrictsToKeep());
+    }
+
+    @Test
+    void createActionSetTest() {
+        player1.pickCharacter(List.of(new King()));
+        player1.createActionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
+        player1.pickCharacter(List.of(new Bishop()));
+        player1.createActionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
+        player1.pickCharacter(List.of(new Warlord()));
+        player1.createActionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
+        player1.pickCharacter(List.of(new Merchant()));
+        player1.createActionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
+    }
+
+    @Test
+    void removeActionSetTest() {
+        player1.pickCharacter(List.of(new King()));
+        player1.createActionSet();
+        assertTrue(player1.removeAction(Action.SPECIAL_INCOME));
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW, Action.INCOME)), player1.getActionSet());
+        assertTrue(player1.removeAction(Action.INCOME));
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW)), player1.getActionSet());
+        assertTrue(player1.removeAction(Action.BUILD));
+        assertEquals(new HashSet<>(List.of(Action.DRAW)), player1.getActionSet());
+        assertTrue(player1.removeAction(Action.DRAW));
+        assertEquals(new HashSet<>(), player1.getActionSet());
+        assertFalse(player1.removeAction(Action.DRAW));
+        assertEquals(new HashSet<>(), player1.getActionSet());
     }
 }

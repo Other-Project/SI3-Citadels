@@ -1,6 +1,8 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class Card {
     private final String name;
@@ -23,6 +25,16 @@ public abstract class Card {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Method to return the special action for a player based on the chosen character
+     * or some purple district constructs.
+     *
+     * @return Empty if the district does not provide additional actions for the player.
+     */
+    public Optional<List<Action>> getAction() {
+        return Optional.empty();
     }
 
     @Override

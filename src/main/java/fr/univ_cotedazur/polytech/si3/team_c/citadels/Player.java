@@ -20,11 +20,14 @@ public abstract class Player {
     private final ArrayList<District> handDistricts;
     private Character character;
 
+    private Set<Action> actionSet;
+
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
         this.coins = coins;
         handDistricts = new ArrayList<>(districts);
+        actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         builtDistricts = new HashMap<>();
     }
 
@@ -169,9 +172,20 @@ public abstract class Player {
     public abstract Character pickCharacter(List<Character> availableCharacters);
 
     /**
-     * Which action should be done (will be asked until there's no more actions to do)
+     * Ask the player which action should be done (will be asked until there's no more actions to do)
+     *
+     * @return The action chosen by the player to be done
      */
-    public abstract Action nextAction(List<Action> remainingActions);
+    public Action nextAction() {
+        return nextAction(getActionSet());
+    }
+
+    /**
+     * Ask the player which action should be done (will be asked until there's no more actions to do). The action will be chosen in the Set in entry
+     *
+     * @param actions Set of actions in which will be chosen the action to do
+     */
+    public abstract Action nextAction(Set<Action> actions);
 
     /**
      * Asks the player to choose districts among the drawn ones
@@ -296,6 +310,24 @@ public abstract class Player {
     }
 
     /**
+     * Creates a list of possible actions for a player, depending on the chosen character and the built districts.
+     */
+    public Set<Action> createActionSet() {
+        actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
+        getBuiltDistricts().forEach(district -> district.getAction().ifPresent(actionSet::addAll)); // Add the special action of each district if it has one
+        character.getAction().ifPresent(actionSet::addAll); // Add the special actions of the character
+        return actionSet;
+    }
+
+    public Set<Action> getActionSet() {
+        return actionSet;
+    }
+
+    public boolean removeAction(Action action) {
+        return actionSet.remove(action);// Remove the action of the actionSet
+    }
+
+     /**
      * Set the endPlayer boolean to true
      */
     public void endsGame() {
