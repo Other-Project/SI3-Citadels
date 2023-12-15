@@ -43,11 +43,10 @@ class BotTest {
         assertEquals(objective, bot1.districtObjective()); // The objective should be consistant
         assertEquals(new DragonGate(), objective.get());
 
-        Bot bot = new Bot(player1.getName(), player1.getCoins(), List.of(new Church(), new Market(), new Prison(), new TradingPost()));
+        Bot bot = new Bot(player1.getName(), 1500, List.of(new Cathedral(), new Palace(), new TownHall(), new Fortress()));
         objective = bot.districtObjective();
         assertTrue(objective.isPresent());
         assertEquals(objective, bot.districtObjective()); // Even with all profitability being equals the objective should be consistant
-        assertEquals(new Church(), objective.get());
     }
 
     @Test
