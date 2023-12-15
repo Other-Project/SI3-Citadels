@@ -37,6 +37,7 @@ public class Game {
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = new ArrayList<>(players);
+        roleList = new ArrayList<>();
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
