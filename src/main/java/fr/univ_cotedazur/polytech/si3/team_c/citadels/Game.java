@@ -132,6 +132,18 @@ public class Game {
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
+                case TAKE_THREE -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " pays 3 coins and draw 3 cards");
+                    List<District> drawnCards = deck.draw(3);
+                    player.pay(3);
+                    drawnCards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} payed 3 coins and receive 3 cards : {1}", new Object[]{player.getName(), drawnCards});
+                }
+                case DISCARD -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
+                    District discardCards = player.discardOne();
+                    LOGGER.log(Level.INFO, "{0} discarded {1} and received one coin", new Object[]{player.getName(), discardCards});
+                }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }

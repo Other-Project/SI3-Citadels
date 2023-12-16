@@ -84,6 +84,17 @@ public class Bot extends Player {
     }
 
     /**
+     * Method to have the district that the bot want discard
+     *
+     * @return The card to discard to gain one coin
+     */
+    @Override
+    public District cardToDiscard() {
+        District worst = getHandDistricts().get(0);
+        for (District d : getHandDistricts()) if (d.getPoint() < worst.getPoint()) worst = d;
+        return worst;
+    }
+    /**
      * The Bot choose an action to do during his turn
      *
      * @param remainingActions Set of actions that the bot could do during this turn
@@ -100,6 +111,12 @@ public class Bot extends Player {
             return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+        if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() > 1 && (objective.isPresent() && objective.get().getCost() > getCoins())) {
+            return Action.DISCARD;// Discard a card to receive one coin if there are at least two cards in hand and need money to build the objective
+        }
+        if (remainingActions.contains(Action.TAKE_THREE) && getCoins() > 3 && getHandDistricts().isEmpty() && objective.isEmpty()) {
+            return Action.TAKE_THREE;// Take three cards and pay 3 coins if it has enough money, no objective and it needs cards.
+        }
         return Action.NONE;
     }
 

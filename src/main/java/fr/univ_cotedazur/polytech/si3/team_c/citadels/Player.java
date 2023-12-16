@@ -85,6 +85,25 @@ public abstract class Player {
     }
 
     /**
+     * Discard a card of the player whose gain 1 coin
+     *
+     * @return The card discarded
+     */
+    public District discardOne() {
+        District card = cardToDiscard();
+        handDistricts.remove(card);
+        gainCoins(1);
+        return card;
+    }
+
+    /**
+     * Ask the player which card to discard
+     *
+     * @return The card that the player chose to discard
+     */
+    protected abstract District cardToDiscard();
+
+    /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add
