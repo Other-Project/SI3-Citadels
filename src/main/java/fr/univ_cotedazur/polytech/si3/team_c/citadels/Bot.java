@@ -100,6 +100,8 @@ public class Bot extends Player {
             return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+        if (remainingActions.contains(Action.STEAL))
+            return Action.STEAL;// Try to steal a role if the chosen character is the Thief
         return Action.NONE;
     }
 

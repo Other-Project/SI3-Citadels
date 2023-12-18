@@ -111,7 +111,10 @@ public class Game {
         player.createActionSet();
         roleList.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
-        if (player.getCharacter().orElseThrow() == characterToRob) {
+        if (player.getCharacter().orElseThrow().equals(characterToRob)) {
+            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
+            LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
+                    new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
             robber.gainCoins(player.getCoins());
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
