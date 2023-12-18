@@ -19,7 +19,7 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
-    private List<Character> roleList;
+    private List<Character> roleList; // The role list to interact with
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
@@ -147,6 +147,7 @@ public class Game {
                 }
                 case STEAL -> {
                     characterToRob = player.chooseCharacterToRob(roleList);
+                    LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
                 }
                 default ->
