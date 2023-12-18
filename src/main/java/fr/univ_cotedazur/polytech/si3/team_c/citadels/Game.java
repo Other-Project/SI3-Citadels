@@ -146,6 +146,7 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 case STEAL -> {
+                    if (roleList.isEmpty()) return;
                     characterToRob = player.chooseCharacterToRob(roleList);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
