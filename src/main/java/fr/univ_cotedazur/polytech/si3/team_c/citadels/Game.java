@@ -137,12 +137,12 @@ public class Game {
                     List<District> drawnCards = deck.draw(3);
                     player.pay(3);
                     drawnCards.forEach(player::addDistrictToHand);
-                    LOGGER.log(Level.INFO, "{0} payed 3 coins and receive 3 cards : {1}", new Object[]{player.getName(), drawnCards});
+                    LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
                 }
                 case DISCARD -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
                     District discardCards = player.discardOne();
-                    LOGGER.log(Level.INFO, "{0} discarded {1} and received one coin", new Object[]{player.getName(), discardCards});
+                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), discardCards});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");

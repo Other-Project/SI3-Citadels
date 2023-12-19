@@ -18,11 +18,11 @@ public enum Action {
      */
     BUILD,
     /**
-     * The player want to discard a card to gain a coin
+     * The player wants to discard a card to gain a coin
      */
     DISCARD,
     /**
-     * The player take 3 cards and pay 3 coins
+     * The player takes 3 cards and pays 3 coins
      */
     TAKE_THREE,
     /**
