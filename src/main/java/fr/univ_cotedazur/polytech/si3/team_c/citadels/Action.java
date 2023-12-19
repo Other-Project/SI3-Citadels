@@ -22,6 +22,10 @@ public enum Action {
      */
     STEAL,
     /**
+     * The player wants to kill a character. When a character has been killed, he can't play anymore
+     */
+    KILL,
+    /**
      * The player wants to end his turn
      */
     NONE

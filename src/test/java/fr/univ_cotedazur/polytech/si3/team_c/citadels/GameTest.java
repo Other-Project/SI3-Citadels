@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -183,5 +184,60 @@ class GameTest {
         game.addPlayer(trickedBot2);
         game.gameTurn();
         assertTrue(trickedBot1.getCoins() >= 500);
+    }
+
+    @Test
+    void testAssassinTurn() {
+        Bot assassinBot = new Bot("killer", 3000, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Assassin assassin = new Assassin();
+                setCharacter(assassin);
+                return assassin;
+            }
+
+            @Override
+            public Character chooseCharacterToKill(List<Character> characterList) {
+                return new Merchant();
+            }
+        };
+
+        List<District> merchantDistricts = game.getDeck().draw(2);
+        Bot merchantBot = new Bot("merchant", 0, merchantDistricts) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Merchant merchant = new Merchant();
+                setCharacter(merchant);
+                return merchant;
+            }
+        };
+
+
+        game.addPlayer(assassinBot);
+        game.addPlayer(merchantBot);
+        game.gameTurn();
+        assertEquals(0, merchantBot.getCoins());
+        assertTrue(merchantBot.getBuiltDistricts().isEmpty());
+        assertEquals(merchantDistricts, merchantBot.getHandDistricts());
+    }
+
+    @Test
+    void testMerchantTurn() {
+        Bot merchantBot = new Bot("merchant", 0, new ArrayList<>()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Merchant merchant = new Merchant();
+                setCharacter(merchant);
+                return merchant;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(merchantBot);
+        game.gameTurn();
+        assertEquals(1, merchantBot.getCoins());
     }
 }

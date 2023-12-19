@@ -26,4 +26,12 @@ public abstract class Character extends Card implements Comparable<Character> {
     public int compareTo(Character other) {
         return getTurn() - other.getTurn();
     }
+
+    /**
+     * @return the number of coins to be won at the start of a turn
+     */
+    public int coinsToEarnAtTurnStartup() {
+        return 0;
+    }
+
 }

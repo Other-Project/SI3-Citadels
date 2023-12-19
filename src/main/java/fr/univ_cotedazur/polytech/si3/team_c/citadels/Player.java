@@ -347,4 +347,19 @@ public abstract class Player {
      * @param characterList the list of character the player can rob
      */
     public abstract Character chooseCharacterToRob(List<Character> characterList);
+
+    /**
+     * Ask the player to choose a character to kill
+     *
+     * @param characterList the list of character the player can kill
+     * @return the player to kill
+     */
+    public abstract Character chooseCharacterToKill(List<Character> characterList);
+
+    /**
+     * Earn the turn startup coins of the character
+     */
+    public void earnTurnStartupCoins() {
+        gainCoins(character.coinsToEarnAtTurnStartup());
+    }
 }

@@ -22,6 +22,7 @@ public class Game {
     private List<Character> charactersToInteractWith; // The characters the player can interact with
     private Player robber;
     private Character characterToRob;
+    private Character characterToKill;
     private final Random random = new Random();
 
     public Game() {
@@ -119,6 +120,10 @@ public class Game {
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
+        if (player.getCharacter().orElseThrow().equals(characterToKill)) {
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
+            return;
+        } else player.earnTurnStartupCoins();
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
@@ -151,6 +156,11 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
                 }
+                case KILL -> {
+                    if (charactersToInteractWith.isEmpty()) return;
+                    characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
+                    LOGGER.log(Level.INFO, "{0} tries to kill the {1}", new Object[]{player.getName(), characterToKill});
+                }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
@@ -173,6 +183,7 @@ public class Game {
         int previousCrown = getCrown();
         characterToRob = null;
         robber = null;
+        characterToKill = null;
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
