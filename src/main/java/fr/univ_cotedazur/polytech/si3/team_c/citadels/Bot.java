@@ -93,7 +93,7 @@ public class Bot extends Player {
     public Action nextAction(Set<Action> remainingActions) {
         var objective = districtObjective();
         if (remainingActions.contains(Action.SPECIAL_DRAW))
-            return Action.SPECIAL_DRAW;// Draw 2 districts only if the player's character is the Architect
+            return Action.SPECIAL_DRAW;// Draw 2 extra districts
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
         if (remainingActions.contains(Action.DRAW))
