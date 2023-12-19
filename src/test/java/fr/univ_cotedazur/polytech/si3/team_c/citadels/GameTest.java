@@ -210,4 +210,20 @@ class GameTest {
         // trickedBot is the Architect, so he must draw 2 extra districts first
         assertTrue(trickedBot.getHandDistricts().size() >= 2);
     }
+
+    @Test
+    void testArchitectBuilding() {
+        Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        game.addPlayer(trickedBot);
+        game.characterSelectionTurn();
+        game.playerTurn(trickedBot);
+        assertTrue(trickedBot.getBuiltDistricts().size() == 3);
+    }
 }
