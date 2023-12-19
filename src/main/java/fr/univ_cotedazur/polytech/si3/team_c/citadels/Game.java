@@ -156,6 +156,7 @@ public class Game {
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
                     District discardCards = player.discardOne();
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), discardCards});
+                }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
