@@ -20,6 +20,7 @@ public class Game {
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
+    private final List<District> discard;
 
     public Game() {
         this(new ArrayList<>());
@@ -36,6 +37,7 @@ public class Game {
         playerList = new ArrayList<>(players);
         charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
+        discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
@@ -151,6 +153,7 @@ public class Game {
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
                     if (!cardsToExchange.isEmpty()) {
+                        discard.addAll(cardsToExchange);
                         player.removeFromHand(cardsToExchange);
                         List<District> cards = deck.draw(cardsToExchange.size());
                         cards.forEach(player::addDistrictToHand);
