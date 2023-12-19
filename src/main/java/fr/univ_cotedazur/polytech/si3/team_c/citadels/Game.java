@@ -123,9 +123,13 @@ public class Game {
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
                 case SPECIAL_DRAW -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " draws 2 districts because he his the Architect");
                     var drawnCards = deck.draw(2);
                     for (District district : drawnCards) {
                         player.addDistrictToHand(district);
+                        LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
+                    }
+                }
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
