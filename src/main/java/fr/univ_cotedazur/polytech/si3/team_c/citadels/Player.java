@@ -1,7 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Architect;
-
 import java.util.*;
 import java.util.function.Function;
 
@@ -14,7 +12,6 @@ public abstract class Player {
     private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
-    private static final int NUMBER_OF_DISTRICTS_TO_BUILD = 1;
     private final String name;
     private boolean gameEnder = false;
     private int coins;
@@ -214,9 +211,7 @@ public abstract class Player {
      * @return The chosen districts
      */
     public List<District> pickDistrictsToBuild(int turn) {
-        // The Architect can build up to 3 districts
-        if (getCharacter().orElseThrow().equals(new Architect())) return pickDistrictsToBuild(3, turn);
-        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD, turn);
+        return pickDistrictsToBuild(getCharacter().orElseThrow().numberOfDistrictToBuild(), turn);
     }
 
     /**

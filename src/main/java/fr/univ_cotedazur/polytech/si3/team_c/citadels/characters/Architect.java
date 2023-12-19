@@ -15,4 +15,9 @@ public class Architect extends Character {
     public Optional<List<Action>> getAction() {
         return Optional.of(List.of(Action.SPECIAL_DRAW));
     }
+
+    @Override
+    public int numberOfDistrictToBuild() {
+        return 3;
+    }
 }

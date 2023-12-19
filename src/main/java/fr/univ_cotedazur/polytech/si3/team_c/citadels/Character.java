@@ -26,4 +26,8 @@ public abstract class Character extends Card implements Comparable<Character> {
     public int compareTo(Character other) {
         return getTurn() - other.getTurn();
     }
+
+    public int numberOfDistrictToBuild() {
+        return 1;
+    }
 }
