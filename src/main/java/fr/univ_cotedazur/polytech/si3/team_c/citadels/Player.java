@@ -347,4 +347,15 @@ public abstract class Player {
      * @param characterList the list of character the player can rob
      */
     public abstract Character chooseCharacterToRob(List<Character> characterList);
+
+    /**
+     *
+     */
+    public abstract Optional<Player> choosePlayerToExchangeCards(List<Player> playerList);
+
+    public abstract List<District> chooseCardsToExchangeWithDeck();
+
+    public void removeFromHand(List<District> cards) {
+        handDistricts.removeAll(cards);
+    }
 }

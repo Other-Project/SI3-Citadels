@@ -102,6 +102,10 @@ public class Bot extends Player {
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
         if (remainingActions.contains(Action.STEAL))
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER))
+            return Action.EXCHANGE_PLAYER;
+        if (remainingActions.contains(Action.EXCHANGE_DECK))
+            return Action.EXCHANGE_DECK;
         return Action.NONE;
     }
 
@@ -144,5 +148,32 @@ public class Bot extends Player {
     @Override
     public Character chooseCharacterToRob(List<Character> characterList) {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+    }
+
+    @Override
+    public Optional<Player> choosePlayerToExchangeCards(List<Player> players) {
+        Player playerToExchange = null;
+        int nbCards = 0;
+        int handSize = getHandDistricts().size();
+        for (Player p : players) {
+            if (p != this) {
+                int playerHandSize = p.getHandDistricts().size();
+                if (playerHandSize > handSize && playerHandSize > nbCards) {
+                    playerToExchange = p;
+                    nbCards = playerHandSize;
+                }
+            }
+        }
+        return Optional.ofNullable(playerToExchange);
+    }
+
+    public List<District> chooseCardsToExchangeWithDeck() {
+        List<District> cardToExchange = new ArrayList<>();
+        var objective = districtObjective();
+        for (District d : getHandDistricts()) {
+            if ((objective.isPresent() && objective.get().equals(d)) || (d.getColor() != Colors.PURPLE))
+                cardToExchange.add(d);
+        }
+        return cardToExchange;
     }
 }

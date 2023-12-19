@@ -3,10 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -150,6 +147,29 @@ public class Game {
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
+                }
+                case EXCHANGE_DECK -> {
+                    List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
+                    if (!cardsToExchange.isEmpty()) {
+                        player.removeFromHand(cardsToExchange);
+                        List<District> cards = deck.draw(cardsToExchange.size());
+                        cards.forEach(player::addDistrictToHand);
+                        LOGGER.log(Level.INFO, "{0} exchanges some cards with the deck, he got {1}", new Object[]{player.getName(), cards});
+                        player.removeAction(Action.EXCHANGE_PLAYER);
+                    }
+                }
+                case EXCHANGE_PLAYER -> {
+                    Optional<Player> playerToExchangeCards = player.choosePlayerToExchangeCards(getPlayerList());
+                    if (playerToExchangeCards.isPresent()) {
+                        List<District> hand1 = player.getHandDistricts();
+                        List<District> handExchange = playerToExchangeCards.get().getHandDistricts();
+                        player.removeFromHand(hand1);
+                        playerToExchangeCards.get().removeFromHand(handExchange);
+                        hand1.forEach(playerToExchangeCards.get()::addDistrictToHand);
+                        handExchange.forEach(player::addDistrictToHand);
+                        LOGGER.log(Level.INFO, "{0} exchanges his cards with {1}, he got {2}", new Object[]{player.getName(), playerToExchangeCards, handExchange});
+                        player.removeAction(Action.EXCHANGE_DECK);
+                    }
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
