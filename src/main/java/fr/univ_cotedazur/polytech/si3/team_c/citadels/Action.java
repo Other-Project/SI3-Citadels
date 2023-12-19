@@ -22,6 +22,10 @@ public enum Action {
      */
     STEAL,
     /**
+     * The player draws 2 districts at the beginning of his turn if he is the Architect
+     */
+    SPECIAL_DRAW,
+    /**
      * The player wants to end his turn
      */
     NONE

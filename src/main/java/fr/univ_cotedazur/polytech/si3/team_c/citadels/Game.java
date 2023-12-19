@@ -122,6 +122,10 @@ public class Game {
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
+                case SPECIAL_DRAW -> {
+                    var drawnCards = deck.draw(2);
+                    for (District district : drawnCards) {
+                        player.addDistrictToHand(district);
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
