@@ -84,7 +84,7 @@ public class Bot extends Player {
     }
 
     /**
-     * Method to have the district that the bot want discard
+     * Gets the district that the bot wants to discard
      *
      * @return The card to discard to gain one coin
      */
