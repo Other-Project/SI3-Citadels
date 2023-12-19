@@ -342,7 +342,7 @@ public abstract class Player {
     }
 
     /**
-     * The player chooses a character to rob
+     * Ask the player to choose a character to rob
      *
      * @param characterList the list of character the player can rob
      */
