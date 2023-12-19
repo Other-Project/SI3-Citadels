@@ -111,12 +111,12 @@ public class Bot extends Player {
             return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
-        if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() > 1 && (objective.isPresent() && objective.get().getCost() > getCoins())) {
+        if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() > 1 && (objective.isPresent() && objective.get().getCost() > getCoins())) 
             return Action.DISCARD;// Discard a card to receive one coin if there are at least two cards in hand and need money to build the objective
-        }
-        if (remainingActions.contains(Action.TAKE_THREE) && getCoins() > 3 && getHandDistricts().isEmpty() && objective.isEmpty()) {
+        if (remainingActions.contains(Action.TAKE_THREE) && getCoins() > 3 && getHandDistricts().isEmpty() && objective.isEmpty())
             return Action.TAKE_THREE;// Take three cards and pay 3 coins if it has enough money, no objective and it needs cards.
-        }
+        if (remainingActions.contains(Action.STEAL))
+            return Action.STEAL;// Try to steal a character if the player's character is the Thief
         return Action.NONE;
     }
 
@@ -154,5 +154,10 @@ public class Bot extends Player {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Character chooseCharacterToRob(List<Character> characterList) {
+        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
     }
 }

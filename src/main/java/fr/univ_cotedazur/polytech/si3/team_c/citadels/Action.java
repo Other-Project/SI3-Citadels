@@ -26,6 +26,10 @@ public enum Action {
      */
     TAKE_THREE,
     /**
+     * The player wants to rob a character. When his turn begins, the player will take all his gold
+     */
+    STEAL,
+    /**
      * The player wants to end his turn
      */
     NONE
