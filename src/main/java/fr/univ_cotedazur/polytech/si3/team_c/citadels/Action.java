@@ -18,7 +18,7 @@ public enum Action {
      */
     BUILD,
     /**
-     * The player wants to rob a character. When his turn become, the player will take all his gold
+     * The player wants to rob a character. When his turn begins, the player will take all his gold
      */
     STEAL,
     /**
