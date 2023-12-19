@@ -19,6 +19,9 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
+    private List<Character> charactersToInteractWith; // The characters the player can interact with
+    private Player robber;
+    private Character characterToRob;
     private final Random random = new Random();
 
     public Game() {
@@ -34,6 +37,7 @@ public class Game {
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = new ArrayList<>(players);
+        charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
@@ -105,7 +109,16 @@ public class Game {
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
         player.createActionSet();
+        charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
+        if (player.getCharacter().orElseThrow().equals(characterToRob)) {
+            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
+            LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
+                    new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
+            robber.gainCoins(player.getCoins());
+            player.pay(player.getCoins());
+            // The player who has been robbed give all his coins to the Thief
+        }
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
@@ -132,6 +145,12 @@ public class Game {
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
+                case STEAL -> {
+                    if (charactersToInteractWith.isEmpty()) return;
+                    characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
+                    LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
+                    robber = player;
+                }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
@@ -152,6 +171,9 @@ public class Game {
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
+        characterToRob = null;
+        robber = null;
+        charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();

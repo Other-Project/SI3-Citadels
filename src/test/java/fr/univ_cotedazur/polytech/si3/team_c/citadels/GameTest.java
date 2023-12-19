@@ -154,4 +154,34 @@ class GameTest {
         assertEquals(new SimpleEntry<>(List.of(firstBot), 26), secondScriptedGame.getWinners());
         assertEquals("The player bot1 won with 26 points !", secondScriptedGame.winnersDisplay());
     }
+
+    @Test
+    void testThiefTurn() {
+        Bot trickedBot1 = new Bot("bot1", 0, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Thief()) ? new Thief() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Character chooseCharacterToRob(List<Character> characterList) {
+                return characterList.contains(new Merchant()) ? new Merchant() : characterList.get(0);
+            }
+        };
+        Bot trickedBot2 = new Bot("bot2", 500, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        // The bot1 will choose the thief and try to rob the merchant, which was chosen by bot2.
+        game.addPlayer(trickedBot1);
+        game.addPlayer(trickedBot2);
+        game.gameTurn();
+        assertTrue(trickedBot1.getCoins() >= 500);
+    }
 }
