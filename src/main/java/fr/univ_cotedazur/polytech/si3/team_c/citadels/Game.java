@@ -19,7 +19,7 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
-    private List<Character> roleList; // The role list to interact with
+    private List<Character> charactersToInteractWith; // The characters the player can interact with
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
@@ -37,7 +37,7 @@ public class Game {
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = new ArrayList<>(players);
-        roleList = new ArrayList<>();
+        charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
     }
 
@@ -109,7 +109,7 @@ public class Game {
     public void playerTurn(Player player) {
         LOGGER.log(Level.INFO, "{0}", player);
         player.createActionSet();
-        roleList.remove(player.getCharacter().orElseThrow());
+        charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         if (player.getCharacter().orElseThrow().equals(characterToRob)) {
             LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
@@ -146,8 +146,8 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 case STEAL -> {
-                    if (roleList.isEmpty()) return;
-                    characterToRob = player.chooseCharacterToRob(roleList);
+                    if (charactersToInteractWith.isEmpty()) return;
+                    characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
                 }
@@ -173,7 +173,7 @@ public class Game {
         int previousCrown = getCrown();
         characterToRob = null;
         robber = null;
-        roleList = defaultCharacterList();
+        charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();

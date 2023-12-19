@@ -101,7 +101,7 @@ public class Bot extends Player {
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
         if (remainingActions.contains(Action.STEAL))
-            return Action.STEAL;// Try to steal a role if the chosen character is the Thief
+            return Action.STEAL;// Try to steal a character if the player's character is the Thief
         return Action.NONE;
     }
 
@@ -143,6 +143,6 @@ public class Bot extends Player {
 
     @Override
     public Character chooseCharacterToRob(List<Character> characterList) {
-        return characterList.get(0);
+        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
     }
 }
