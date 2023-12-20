@@ -159,7 +159,7 @@ public class Game {
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    LOGGER.log(Level.INFO, "{0} tries to kill the {1}", new Object[]{player.getName(), characterToKill});
+                    LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
