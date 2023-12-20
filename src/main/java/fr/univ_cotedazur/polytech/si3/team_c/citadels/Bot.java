@@ -150,6 +150,12 @@ public class Bot extends Player {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
     }
 
+    /**
+     * The bot choose a player to exchange with him his cards, he chose if the other has more cards than him else he didn't do the action
+     *
+     * @param players List of player with whose he can exchange
+     * @return The player chose for the exchange if there is an exchange
+     */
     @Override
     public Optional<Player> choosePlayerToExchangeCards(List<Player> players) {
         Player playerToExchange = null;
@@ -167,11 +173,16 @@ public class Bot extends Player {
         return Optional.ofNullable(playerToExchange);
     }
 
+    /**
+     * The bot choose some cards to exchange with the deck, he chose if the card is not purple and not is objective to build.
+     *
+     * @return The List of cards he wants exchange with the deck
+     */
     public List<District> chooseCardsToExchangeWithDeck() {
         List<District> cardToExchange = new ArrayList<>();
         var objective = districtObjective();
         for (District d : getHandDistricts()) {
-            if ((objective.isPresent() && objective.get().equals(d)) || (d.getColor() != Colors.PURPLE))
+            if (!(objective.isPresent() && objective.get().equals(d)) && (d.getColor() != Colors.PURPLE))
                 cardToExchange.add(d);
         }
         return cardToExchange;

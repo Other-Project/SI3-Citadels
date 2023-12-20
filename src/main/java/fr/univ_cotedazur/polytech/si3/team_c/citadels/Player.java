@@ -319,6 +319,15 @@ public abstract class Player {
         return actionSet;
     }
 
+    /**
+     * Set the actionSet of the player
+     *
+     * @param actionSet Set of actions to put in the actionSet of the player
+     */
+    public void setActionSet(Set<Action> actionSet) {
+        this.actionSet = actionSet;
+    }
+
     public Set<Action> getActionSet() {
         return actionSet;
     }
@@ -349,12 +358,24 @@ public abstract class Player {
     public abstract Character chooseCharacterToRob(List<Character> characterList);
 
     /**
-     *
+     * The bot choose a player to exchange with him his cards, it could be nobody
+     * @param playerList List of player with which he can exchange
+     * @return The player chose for the exchange if there is an exchange
+
      */
     public abstract Optional<Player> choosePlayerToExchangeCards(List<Player> playerList);
 
+    /**
+     * The bot choose some cards to exchange with the deck
+     *
+     * @return The List of cards he wants exchange with the deck
+     */
     public abstract List<District> chooseCardsToExchangeWithDeck();
 
+    /**
+     * Remove the cards of the player hand
+     * @param cards List of cards to remove of the hand
+     */
     public void removeFromHand(List<District> cards) {
         handDistricts.removeAll(cards);
     }
