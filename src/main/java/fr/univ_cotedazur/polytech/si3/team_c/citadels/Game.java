@@ -123,7 +123,8 @@ public class Game {
         if (player.getCharacter().orElseThrow().equals(characterToKill)) {
             LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
             return;
-        } else player.earnTurnStartupCoins();
+        }
+        player.earnTurnStartupCoins();
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
