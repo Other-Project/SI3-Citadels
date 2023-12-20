@@ -237,7 +237,6 @@ class BotTest {
 
     @Test
     void MagicianTest() {
-        Game g = new Game();
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
@@ -248,16 +247,9 @@ class BotTest {
         };
         bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
         bot2.pickCharacter(List.of(new King()));
-        g.addPlayer(bot1);
-        g.addPlayer(bot2);
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
         assertEquals(bot2, bot1.choosePlayerToExchangeCards(List.of(bot2)).orElseThrow());
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
-        g.playerTurn(bot1); // The bot will exchange his cards with the other player
-        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()), bot1.getHandDistricts());
-        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()), bot2.getHandDistricts());
-        g.playerTurn(bot1); // The bot will exchange some cards with the deck because the other player has fewer cards than him, and he has somme non-purple cards
-        assertEquals(6, bot1.getHandDistricts().size());
     }
 }

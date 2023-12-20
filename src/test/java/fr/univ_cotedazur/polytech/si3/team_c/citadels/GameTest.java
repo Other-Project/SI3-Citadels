@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -183,5 +185,28 @@ class GameTest {
         game.addPlayer(trickedBot2);
         game.gameTurn();
         assertTrue(trickedBot1.getCoins() >= 500);
+    }
+
+    @Test
+    void MagicianTest() {
+        Bot bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
+
+        Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
+            @Override
+            public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
+                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
+                return getActionSet();
+            }
+
+        };
+        bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
+        bot2.pickCharacter(List.of(new King()));
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        game.playerTurn(bot1); // The bot will exchange his cards with the other player
+        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()), bot1.getHandDistricts());
+        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()), bot2.getHandDistricts());
+        game.playerTurn(bot1); // The bot will exchange some cards with the deck because the other player has fewer cards than him, and he has somme non-purple cards
+        assertEquals(6, bot1.getHandDistricts().size());
     }
 }
