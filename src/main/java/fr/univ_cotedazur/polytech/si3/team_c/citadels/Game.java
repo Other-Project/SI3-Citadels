@@ -16,13 +16,17 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
-    private List<Character> charactersToInteractWith; // The characters the player can interact with
+
+    /**
+     * The characters the player can interact with
+     */
+    private List<Character> charactersToInteractWith;
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
 
     public Game() {
-        this(new ArrayList<>());
+        this(Collections.emptyList());
     }
 
     public Game(int numberPlayers, Player... players) {
@@ -72,7 +76,7 @@ public class Game {
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
-            LOGGER.log(Level.INFO, "Turn {0}", i);
+            LOGGER.log(Level.INFO, "===== Turn {0} =====", i);
             currentTurn = i;
             if (gameTurn()) break;
         }
@@ -94,9 +98,11 @@ public class Game {
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
         int p = getCrown();
-        LOGGER.log(Level.INFO, "{0} have the crown", playerList.get(p).getName());
         for (int i = 0; i < playerList.size(); i++) {
-            characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
+            var player = playerList.get((p + i) % playerList.size());
+            var choosenCharacter = player.pickCharacter(characterList);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            characterList.remove(choosenCharacter);
         }
     }
 
@@ -144,6 +150,7 @@ public class Game {
                 }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
+                    LOGGER.info(player.getName() + " wants to steal a character");
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
@@ -219,7 +226,7 @@ public class Game {
     }
 
     public static void main(String... args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
         new Game(2).start();
     }
 }

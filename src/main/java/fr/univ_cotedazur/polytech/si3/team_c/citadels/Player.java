@@ -109,6 +109,7 @@ public abstract class Player {
         return new ArrayList<>(builtDistricts.values().stream().flatMap(List::stream).toList()) {
             @Override
             public String toString() {
+                if (isEmpty()) return "\n\tNo district built";
                 StringBuilder stringBuilder = new StringBuilder();
                 for (District d : this) stringBuilder.append("\n\t").append(d);
                 return stringBuilder.toString();
@@ -327,7 +328,7 @@ public abstract class Player {
         return actionSet.remove(action);// Remove the action of the actionSet
     }
 
-     /**
+    /**
      * Set the endPlayer boolean to true
      */
     public void endsGame() {
