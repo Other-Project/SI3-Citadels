@@ -346,4 +346,11 @@ public abstract class Player {
      * @param characterList the list of character the player can rob
      */
     public abstract Character chooseCharacterToRob(List<Character> characterList);
+
+    /**
+     * The player plays his star-of-turn action
+     */
+    public Action playStartOfTurnAction() {
+        return getCharacter().orElseThrow().startTurnAction();
+    }
 }

@@ -24,7 +24,7 @@ public enum Action {
     /**
      * The player draws 2 districts at the beginning of his turn
      */
-    SPECIAL_DRAW,
+    BEGIN_DRAW,
     /**
      * The player wants to end his turn
      */

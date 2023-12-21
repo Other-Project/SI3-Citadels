@@ -119,10 +119,10 @@ public class Game {
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
-        Action action;
-        while ((action = player.nextAction()) != Action.NONE) {
-            switch (action) {
-                case SPECIAL_DRAW -> {
+        Action startOfTurnAction = player.playStartOfTurnAction();
+        if (startOfTurnAction != Action.NONE) {
+            switch (startOfTurnAction) {
+                case BEGIN_DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws 2 extra districts");
                     var drawnCards = deck.draw(2);
                     for (District district : drawnCards) {
@@ -130,6 +130,13 @@ public class Game {
                         LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
                     }
                 }
+                default ->
+                        throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
+            }
+        }
+        Action action;
+        while ((action = player.nextAction()) != Action.NONE) {
+            switch (action) {
                 case DRAW -> {
                     LOGGER.log(Level.INFO, () -> player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
