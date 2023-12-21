@@ -89,10 +89,11 @@ public class Bot extends Player {
      * @return The card to discard to gain one coin
      */
     @Override
-    public District cardToDiscard() {
+    public Optional<District> cardToDiscard() {
+        if (getHandDistricts().isEmpty()) return Optional.empty();
         District worst = getHandDistricts().get(0);
         for (District d : getHandDistricts()) if (d.getPoint() < worst.getPoint()) worst = d;
-        return worst;
+        return Optional.ofNullable(worst);
     }
     /**
      * The Bot choose an action to do during his turn

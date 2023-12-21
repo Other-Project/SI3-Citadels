@@ -242,20 +242,13 @@ class BotTest {
 
     @Test
     void cardToDiscardTest() {
-        assertEquals(new Church(), bot1.cardToDiscard());
+        assertEquals(new Church(), bot1.cardToDiscard().orElseThrow());
         assertEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
         bot1.gainCoins(14);
         bot1.getHandDistricts().forEach(d -> bot1.buildDistrict(d, 0));
         assertNotEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
         bot1.addDistrictToHand(new Manor());
         assertNotEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
-    }
-
-    @Test
-    void discardOneTest() {
-        bot1.discardOne();
-        assertEquals(List.of(new Battlefield(), new Castle(), new DragonGate()), bot1.getHandDistricts());
-        assertEquals(3, bot1.getCoins());
     }
 
     @Test

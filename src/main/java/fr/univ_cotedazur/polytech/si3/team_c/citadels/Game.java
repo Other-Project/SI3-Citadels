@@ -3,10 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -153,9 +150,11 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
                 }
                 case DISCARD -> {
+                    Optional<District> card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
-                    District discardCards = player.discardOne();
-                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), discardCards});
+                    player.getHandDistricts().remove(card.orElseThrow()); // If no card chose the player would not be able to do this action
+                    player.gainCoins(1);
+                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card.orElseThrow()});
                 }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
