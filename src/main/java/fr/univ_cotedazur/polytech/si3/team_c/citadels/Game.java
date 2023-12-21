@@ -3,10 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -107,7 +104,7 @@ public class Game {
      * Player chooses the action he wants to play during his turn
      */
     public void playerTurn(Player player) {
-        LOGGER.log(Level.INFO, "{0}", player);
+        LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
@@ -123,25 +120,25 @@ public class Game {
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
                 case DRAW -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " draws");
+                    LOGGER.info(player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
-                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
+                            .forEach(district -> LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), district}));
                     player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
+                    LOGGER.info(player.getName() + " claims his income");
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
                     player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
+                    LOGGER.info(player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild(currentTurn)
-                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
+                            .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
                 }
                 case SPECIAL_INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
+                    LOGGER.info(player.getName() + " claims his special income");
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
@@ -155,7 +152,7 @@ public class Game {
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
             player.removeAction(action);
-            LOGGER.log(Level.INFO, "{0}", player);
+            LOGGER.info(player::toString);
         }
     }
 
