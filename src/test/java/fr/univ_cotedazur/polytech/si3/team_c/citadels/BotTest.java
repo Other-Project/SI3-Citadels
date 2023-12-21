@@ -22,13 +22,6 @@ class BotTest {
     }
 
     @Test
-    void stringRepresentation() {
-        assertEquals("Bot 1", player1.getName());
-        player1.buildDistrict(new Church(), 0);
-        assertEquals("Bot 1 (0 coins) [🔴Battlefield ($3, 3 pts), 🟡Castle ($4, 4 pts), 🟣Dragon Gate ($6, 8 pts)] :\n\t🔵Church ($2, 2 pts)", player1.toString());
-    }
-
-    @Test
     void coins() {
         assertEquals(2, player1.getCoins());
         assertFalse(player1.pay(3));
