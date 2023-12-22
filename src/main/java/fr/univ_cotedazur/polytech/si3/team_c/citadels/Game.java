@@ -157,7 +157,7 @@ public class Game {
                         player.removeFromHand(cardsToExchange);
                         List<District> cards = deck.draw(cardsToExchange.size());
                         cards.forEach(player::addDistrictToHand);
-                        LOGGER.log(Level.INFO, "{0} exchanges some cards with the deck, he got {1}", new Object[]{player.getName(), cards});
+                        LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
                         player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
                     }
                 }
@@ -170,7 +170,7 @@ public class Game {
                         playerToExchangeCards.get().removeFromHand(handExchange);
                         hand1.forEach(playerToExchangeCards.get()::addDistrictToHand);
                         handExchange.forEach(player::addDistrictToHand);
-                        LOGGER.log(Level.INFO, "{0} exchanges his cards with {1}, he got {2}", new Object[]{player.getName(), playerToExchangeCards, handExchange});
+                        LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
                         player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                     }
                 }

@@ -358,17 +358,17 @@ public abstract class Player {
     public abstract Character chooseCharacterToRob(List<Character> characterList);
 
     /**
-     * The bot choose a player to exchange with him his cards, it could be nobody
-     * @param playerList List of player with which he can exchange
-     * @return The player chose for the exchange if there is an exchange
+     * Asks the player to choose another player with whom to exchange his hand.
+     * @param playerList List of players he can exchange with
+     * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
 
      */
     public abstract Optional<Player> choosePlayerToExchangeCards(List<Player> playerList);
 
     /**
-     * The bot choose some cards to exchange with the deck
+     * Ask the player to choose cards to exchange with the deck
      *
-     * @return The List of cards he wants exchange with the deck
+     * @return The list of cards he wants to exchange with the deck
      */
     public abstract List<District> chooseCardsToExchangeWithDeck();
 

@@ -104,7 +104,7 @@ public class Bot extends Player {
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
         if (remainingActions.contains(Action.EXCHANGE_PLAYER))
             return Action.EXCHANGE_PLAYER;
-        if (remainingActions.contains(Action.EXCHANGE_DECK))
+        if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
         return Action.NONE;
     }
