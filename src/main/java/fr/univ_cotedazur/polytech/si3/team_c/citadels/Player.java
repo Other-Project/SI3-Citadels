@@ -22,6 +22,8 @@ public abstract class Player {
 
     private Set<Action> actionSet;
 
+    private GameObserver gameStatus;
+
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
@@ -378,5 +380,13 @@ public abstract class Player {
      */
     public void removeFromHand(List<District> cards) {
         handDistricts.removeAll(cards);
+    }
+
+    public void setGameStatus(GameObserver gameObserver) {
+        gameStatus = gameObserver;
+    }
+
+    public GameObserver getGameStatus() {
+        return gameStatus;
     }
 }

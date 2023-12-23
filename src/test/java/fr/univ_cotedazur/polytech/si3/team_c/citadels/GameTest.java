@@ -209,4 +209,38 @@ class GameTest {
         game.playerTurn(bot1); // The bot will exchange some cards with the deck because the other player has fewer cards than him, and he has somme non-purple cards
         assertEquals(6, bot1.getHandDistricts().size());
     }
+
+    @Test
+    void gameObserverTest() {
+        Game gameWithNumber = new Game(4);
+        GameObserver gameObserver = gameWithNumber.getGameObserver();
+        gameObserver.getCardsNumber().forEach((s, integer) -> assertEquals(2, (int) integer));
+        gameObserver.getCoins().forEach((s, integer) -> assertEquals(2, (int) integer));
+        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCardsNumber().get(p.getName())));
+        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCoins().get(p.getName())));
+        assertEquals(4, gameObserver.getPlayersNumber());
+        Player p1 = new Bot("P1", 200, game.getDeck().draw(3));
+        Player p2 = new Bot("P2", 10, game.getDeck().draw(7));
+        Player p3 = new Bot("P3", 1, game.getDeck().draw(8));
+        game.addPlayer(p1);
+        game.addPlayer(p2);
+        game.addPlayer(p3);
+        gameObserver = game.getGameObserver();
+        assertEquals(3, gameObserver.getPlayersNumber());
+        assertEquals(200, gameObserver.getCoins().get("P1"));
+        assertEquals(10, gameObserver.getCoins().get("P2"));
+        assertEquals(1, gameObserver.getCoins().get("P3"));
+        assertEquals(3, gameObserver.getCardsNumber().get("P1"));
+        assertEquals(7, gameObserver.getCardsNumber().get("P2"));
+        assertEquals(8, gameObserver.getCardsNumber().get("P3"));
+        List<District> districtsBuilt = new ArrayList<>();
+        districtsBuilt.add(p1.getHandDistricts().get(0));
+        p1.buildDistrict(p1.getHandDistricts().get(0), 0);
+        districtsBuilt.add(p1.getHandDistricts().get(0));
+        p1.buildDistrict(p1.getHandDistricts().get(0), 0);
+        gameObserver.actualise(p1);
+        assertEquals(1, gameObserver.getCardsNumber().get("P1"));
+        assertEquals(districtsBuilt, gameObserver.getBuiltDistrict().get("P1"));
+
+    }
 }
