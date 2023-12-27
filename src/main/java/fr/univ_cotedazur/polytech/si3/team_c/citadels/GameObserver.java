@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A class to have a view of the game from a player's perspective and make decisions based on all available informations
+ */
 public class GameObserver {
-
     Game game;
 
     public GameObserver(Game game) {
@@ -32,5 +34,9 @@ public class GameObserver {
 
     public int getPlayersNumber() {
         return game.getPlayerList().size();
+    }
+
+    public List<Player> getPlayerList() {
+        return game.getPlayerList();
     }
 }

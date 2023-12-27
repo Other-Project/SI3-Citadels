@@ -102,7 +102,7 @@ public class Bot extends Player {
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
         if (remainingActions.contains(Action.STEAL))
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER))
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()).isPresent())
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
