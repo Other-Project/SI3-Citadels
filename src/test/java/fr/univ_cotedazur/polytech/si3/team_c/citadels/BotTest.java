@@ -141,6 +141,7 @@ class BotTest {
                 return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
             }
         };
+        bot.setCharacter(new Bishop());
         assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild(0)); // Only one district should be built, and it should be the first in his hand
         assertEquals(List.of(new Battlefield()), bot.getBuiltDistricts()); // The district has been correctly built
         assertEquals(List.of(new Castle()), bot.pickDistrictsToBuild(2)); // The player can build 2 districts but only one of his objective can be afforded
