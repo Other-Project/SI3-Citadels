@@ -238,7 +238,6 @@ class GameTest {
         p1.buildDistrict(p1.getHandDistricts().get(0), 0);
         districtsBuilt.add(p1.getHandDistricts().get(0));
         p1.buildDistrict(p1.getHandDistricts().get(0), 0);
-        gameObserver.actualise(p1);
         assertEquals(1, gameObserver.getCardsNumber().get("P1"));
         assertEquals(districtsBuilt, gameObserver.getBuiltDistrict().get("P1"));
 

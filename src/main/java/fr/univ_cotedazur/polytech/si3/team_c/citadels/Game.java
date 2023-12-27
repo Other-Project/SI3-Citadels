@@ -21,7 +21,7 @@ public class Game {
     private Character characterToRob;
     private final Random random = new Random();
     private final List<District> discard;
-    private final GameObserver gameStatus = new GameObserver();
+    private final GameObserver gameStatus = new GameObserver(this);
 
     public GameObserver getGameObserver() {
         return gameStatus;
@@ -36,7 +36,6 @@ public class Game {
         for (int i = 1; i <= numberPlayers - initLength; i++) {
             Bot bot = new Bot("bot" + i, 2, deck.draw(2));
             playerList.add(bot);
-            gameStatus.actualise(bot);
             bot.setGameStatus(gameStatus);
         }
     }
@@ -47,7 +46,6 @@ public class Game {
         charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
-            gameStatus.actualise(p);
             p.setGameStatus(gameStatus);
         }
         discard = new ArrayList<>();
@@ -66,7 +64,6 @@ public class Game {
      */
     protected void addPlayer(Player player) {
         player.setGameStatus(gameStatus);
-        gameStatus.addPlayer(player);
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -195,7 +192,6 @@ public class Game {
             player.removeAction(action);
             LOGGER.log(Level.INFO, "{0}", player);
         }
-        gameStatus.actualise(player);
     }
 
     /**
