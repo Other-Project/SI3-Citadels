@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -183,5 +185,45 @@ class GameTest {
         game.addPlayer(trickedBot2);
         game.gameTurn();
         assertTrue(trickedBot1.getCoins() >= 500);
+    }
+
+    @Test
+    void testArchitectDrawing() {
+        Bot trickedBot = new Bot("bot1", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                // If he doesn't get his income, the player will not build any district, so we can check that he has 4 districts in hand.
+                remainingActions.remove(Action.INCOME);
+                return super.nextAction(remainingActions);
+            }
+        };
+        game.addPlayer(trickedBot);
+        game.characterSelectionTurn();
+        game.playerTurn(trickedBot);
+        // trickedBot is the Architect, so he must draw 2 extra districts first
+        assertTrue(trickedBot.getHandDistricts().size() >= 2);
+    }
+
+    @Test
+    void testArchitectBuilding() {
+        Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        game.addPlayer(trickedBot);
+        game.characterSelectionTurn();
+        game.playerTurn(trickedBot);
+        assertTrue(trickedBot.getBuiltDistricts().size() == 3);
     }
 }

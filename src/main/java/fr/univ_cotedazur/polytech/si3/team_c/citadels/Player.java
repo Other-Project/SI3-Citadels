@@ -12,7 +12,6 @@ public abstract class Player {
     private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
-    private static final int NUMBER_OF_DISTRICTS_TO_BUILD = 1;
     private final String name;
     private boolean gameEnder = false;
     private int coins;
@@ -212,7 +211,7 @@ public abstract class Player {
      * @return The chosen districts
      */
     public List<District> pickDistrictsToBuild(int turn) {
-        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD, turn);
+        return pickDistrictsToBuild(getCharacter().orElseThrow().numberOfDistrictToBuild(), turn);
     }
 
     /**
@@ -347,4 +346,11 @@ public abstract class Player {
      * @param characterList the list of character the player can rob
      */
     public abstract Character chooseCharacterToRob(List<Character> characterList);
+
+    /**
+     * The player plays his star-of-turn action
+     */
+    public Action playStartOfTurnAction() {
+        return getCharacter().orElseThrow().startTurnAction();
+    }
 }
