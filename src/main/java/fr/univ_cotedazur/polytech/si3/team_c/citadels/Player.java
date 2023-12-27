@@ -387,6 +387,8 @@ public abstract class Player {
 
     public GameObserver getGameStatus() {
         return gameStatus;
+    }
+
     /**
      * The player plays his star-of-turn action
      */

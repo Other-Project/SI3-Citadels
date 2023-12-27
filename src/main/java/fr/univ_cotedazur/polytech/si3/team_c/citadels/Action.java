@@ -29,6 +29,7 @@ public enum Action {
      * The player want exchange all his cards with the cards of another player
      */
     EXCHANGE_PLAYER,
+    /**
      * The player draws 2 districts at the beginning of his turn
      */
     BEGIN_DRAW,

@@ -6,11 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -241,7 +237,9 @@ class GameTest {
         p1.buildDistrict(p1.getHandDistricts().get(0), 0);
         assertEquals(1, gameObserver.getCardsNumber().get("P1"));
         assertEquals(districtsBuilt, gameObserver.getBuiltDistrict().get("P1"));
+    }
 
+    @Test
     void testArchitectDrawing() {
         Bot trickedBot = new Bot("bot1", 0, Collections.emptyList()) {
             @Override
@@ -278,6 +276,6 @@ class GameTest {
         game.addPlayer(trickedBot);
         game.characterSelectionTurn();
         game.playerTurn(trickedBot);
-        assertTrue(trickedBot.getBuiltDistricts().size() == 3);
+        assertEquals(3, trickedBot.getBuiltDistricts().size());
     }
 }
