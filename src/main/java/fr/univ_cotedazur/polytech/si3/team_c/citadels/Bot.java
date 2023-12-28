@@ -184,9 +184,9 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot choose some cards to exchange with the deck, he chose if the card is not purple and not is objective to build.
+     * The bot chooses a few cards to exchange with the deck. He chooses if the card is not purple and is not the objective to build.
      *
-     * @return The List of cards he wants exchange with the deck
+     * @return The List of cards he wants to exchange with the deck
      */
     public List<District> chooseCardsToExchangeWithDeck() {
         List<District> cardToExchange = new ArrayList<>();
