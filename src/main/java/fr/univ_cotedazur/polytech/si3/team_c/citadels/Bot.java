@@ -151,12 +151,11 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot choose a player to exchange with him his cards, he chose if the other has more cards than him else he didn't do the action
+     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
      *
      * @param players List of player with whose he can exchange
      * @return The player chose for the exchange if there is an exchange
      */
-    @Override
     public Optional<Player> choosePlayerToExchangeCards(List<Player> players) {
         Player playerToExchange = null;
         int nbCards = 0;
@@ -171,6 +170,17 @@ public class Bot extends Player {
             }
         }
         return Optional.ofNullable(playerToExchange);
+    }
+
+    /**
+     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
+     *
+     * @param players List of player with whose he can exchange
+     * @return The player chose for the exchange if there is an exchange
+     */
+    @Override
+    public Player playerToExchangeCards(List<Player> players) {
+        return choosePlayerToExchangeCards(getGameStatus().getPlayerList()).orElseThrow();
     }
 
     /**

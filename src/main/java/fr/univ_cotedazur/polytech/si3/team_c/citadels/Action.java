@@ -22,11 +22,11 @@ public enum Action {
      */
     STEAL,
     /**
-     * The player want exchange some of his cards with the deck
+     * The player wants to exchange some of his cards with the deck
      */
     EXCHANGE_DECK,
     /**
-     * The player want exchange all his cards with the cards of another player
+     * The player wants to exchange all his cards with the cards of another player
      */
     EXCHANGE_PLAYER,
     /**

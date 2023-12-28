@@ -364,7 +364,7 @@ public abstract class Player {
      * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
 
      */
-    public abstract Optional<Player> choosePlayerToExchangeCards(List<Player> playerList);
+    public abstract Player playerToExchangeCards(List<Player> playerList);
 
     /**
      * Ask the player to choose cards to exchange with the deck

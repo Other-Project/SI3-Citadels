@@ -3,7 +3,10 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -179,27 +182,24 @@ public class Game {
                 }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
-                    if (!cardsToExchange.isEmpty()) {
-                        discard.addAll(cardsToExchange);
-                        player.removeFromHand(cardsToExchange);
-                        List<District> cards = deck.draw(cardsToExchange.size());
-                        cards.forEach(player::addDistrictToHand);
-                        LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
-                        player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
-                    }
+                    if (cardsToExchange.isEmpty()) throw new UnsupportedOperationException();
+                    discard.addAll(cardsToExchange);
+                    player.removeFromHand(cardsToExchange);
+                    List<District> cards = deck.draw(cardsToExchange.size());
+                    cards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
+                    player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
                 }
                 case EXCHANGE_PLAYER -> {
-                    Optional<Player> playerToExchangeCards = player.choosePlayerToExchangeCards(getPlayerList());
-                    if (playerToExchangeCards.isPresent()) {
-                        List<District> hand1 = player.getHandDistricts();
-                        List<District> handExchange = playerToExchangeCards.get().getHandDistricts();
-                        player.removeFromHand(hand1);
-                        playerToExchangeCards.get().removeFromHand(handExchange);
-                        hand1.forEach(playerToExchangeCards.get()::addDistrictToHand);
-                        handExchange.forEach(player::addDistrictToHand);
-                        LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
-                        player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
-                    }
+                    Player playerToExchangeCards = player.playerToExchangeCards(getPlayerList());
+                    List<District> hand1 = player.getHandDistricts();
+                    List<District> handExchange = playerToExchangeCards.getHandDistricts();
+                    player.removeFromHand(hand1);
+                    playerToExchangeCards.removeFromHand(handExchange);
+                    hand1.forEach(playerToExchangeCards::addDistrictToHand);
+                    handExchange.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
+                    player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
