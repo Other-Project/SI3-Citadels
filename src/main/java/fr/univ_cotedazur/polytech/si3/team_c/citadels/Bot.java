@@ -180,7 +180,7 @@ public class Bot extends Player {
      */
     @Override
     public Player playerToExchangeCards(List<Player> players) {
-        return choosePlayerToExchangeCards(getGameStatus().getPlayerList()).orElseThrow();
+        return choosePlayerToExchangeCards(players).orElseThrow();
     }
 
     /**
