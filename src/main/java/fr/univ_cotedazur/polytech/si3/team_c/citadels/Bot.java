@@ -184,7 +184,7 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot chooses a few cards to exchange with the deck. He chooses if the card is not purple and is not the objective to build.
+     * The bot chooses a few cards to exchange with the deck. He chooses the card if its profitability is under 1.
      *
      * @return The List of cards he wants to exchange with the deck
      */

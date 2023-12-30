@@ -182,7 +182,7 @@ public class Game {
                 }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
-                    if (cardsToExchange.isEmpty()) throw new UnsupportedOperationException();
+                    assert (!cardsToExchange.isEmpty());
                     discard.addAll(cardsToExchange);
                     player.removeFromHand(cardsToExchange);
                     List<District> cards = deck.draw(cardsToExchange.size());
