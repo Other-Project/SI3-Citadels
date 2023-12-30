@@ -190,10 +190,8 @@ public class Bot extends Player {
      */
     public List<District> chooseCardsToExchangeWithDeck() {
         List<District> cardToExchange = new ArrayList<>();
-        var objective = districtObjective();
         for (District d : getHandDistricts()) {
-            if (!(objective.isPresent() && objective.get().equals(d)) && (d.getColor() != Colors.PURPLE))
-                cardToExchange.add(d);
+            if (districtProfitability(d) < 1) cardToExchange.add(d);
         }
         return cardToExchange;
     }
