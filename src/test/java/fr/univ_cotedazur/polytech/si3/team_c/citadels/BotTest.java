@@ -13,12 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotTest {
 
-    Player player1;
-    Bot bot1;
+    Player player1, player2;
+    Bot bot1, bot2;
 
     @BeforeEach
     void setUp() {
         player1 = bot1 = new Bot("Bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()));
+        player2 = bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
     }
 
     @Test
@@ -35,13 +36,13 @@ class BotTest {
     void objective() {
         var objective = bot1.districtObjective();
         assertTrue(objective.isPresent());
-        assertEquals(objective, bot1.districtObjective()); // The objective should be consistant
+        assertEquals(objective, bot1.districtObjective()); // The objective should be consistent
         assertEquals(new DragonGate(), objective.get());
 
         Bot bot = new Bot(player1.getName(), 1500, List.of(new Cathedral(), new Palace(), new TownHall(), new Fortress()));
         objective = bot.districtObjective();
         assertTrue(objective.isPresent());
-        assertEquals(objective, bot.districtObjective()); // Even with all profitability being equals the objective should be consistant
+        assertEquals(objective, bot.districtObjective()); // Even with all profitability being equals the objective should be consistent
     }
 
     @Test
@@ -225,5 +226,31 @@ class BotTest {
         assertEquals(new HashSet<>(), player1.getActionSet());
         assertFalse(player1.removeAction(Action.DRAW));
         assertEquals(new HashSet<>(), player1.getActionSet());
+    }
+
+
+    @Test
+    void MagicianTest() {
+        Game g = new Game();
+        Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
+            @Override
+            public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
+                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
+                return getActionSet();
+            }
+
+        };
+        g.addPlayer(bot1);
+        g.addPlayer(bot2);
+        bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
+        bot2.pickCharacter(List.of(new King()));
+        assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
+        assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
+        assertEquals(player2, bot1.choosePlayerToExchangeCards(List.of(bot2)));
+        assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
+        bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
+        assertNull(bot1.choosePlayerToExchangeCards(List.of(bot2)));
+        bot1.removeAction(Action.EXCHANGE_DECK);
+        assertEquals(Action.NONE, bot1.nextAction());
     }
 }

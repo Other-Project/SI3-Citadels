@@ -21,6 +21,8 @@ public abstract class Player {
 
     private Set<Action> actionSet;
 
+    private GameObserver gameStatus;
+
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
@@ -319,6 +321,15 @@ public abstract class Player {
         return actionSet;
     }
 
+    /**
+     * Set the actionSet of the player
+     *
+     * @param actionSet Set of actions to put in the actionSet of the player
+     */
+    public void setActionSet(Set<Action> actionSet) {
+        this.actionSet = actionSet;
+    }
+
     public Set<Action> getActionSet() {
         return actionSet;
     }
@@ -347,6 +358,37 @@ public abstract class Player {
      * @param characterList the list of character the player can rob
      */
     public abstract Character chooseCharacterToRob(List<Character> characterList);
+
+    /**
+     * Asks the player to choose another player with whom to exchange his hand.
+     * @param playerList List of players he can exchange with
+     * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
+
+     */
+    public abstract Player playerToExchangeCards(List<Player> playerList);
+
+    /**
+     * Ask the player to choose cards to exchange with the deck
+     *
+     * @return The list of cards he wants to exchange with the deck
+     */
+    public abstract List<District> chooseCardsToExchangeWithDeck();
+
+    /**
+     * Remove the cards of the player hand
+     * @param cards List of cards to remove of the hand
+     */
+    public void removeFromHand(List<District> cards) {
+        handDistricts.removeAll(cards);
+    }
+
+    public void setGameStatus(GameObserver gameObserver) {
+        gameStatus = gameObserver;
+    }
+
+    public GameObserver getGameStatus() {
+        return gameStatus;
+    }
 
     /**
      * The player plays his star-of-turn action

@@ -24,7 +24,12 @@ public class Game {
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
+    private final List<District> discard;
+    private final GameObserver gameStatus = new GameObserver(this);
 
+    public GameObserver getGameObserver() {
+        return gameStatus;
+    }
     public Game() {
         this(Collections.emptyList());
     }
@@ -32,14 +37,22 @@ public class Game {
     public Game(int numberPlayers, Player... players) {
         this(List.of(players));
         int initLength = playerList.size();
-        for (int i = 1; i <= numberPlayers - initLength; i++) playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        for (int i = 1; i <= numberPlayers - initLength; i++) {
+            Bot bot = new Bot("bot" + i, 2, deck.draw(2));
+            playerList.add(bot);
+            bot.setGameStatus(gameStatus);
+        }
     }
 
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = new ArrayList<>(players);
         charactersToInteractWith = new ArrayList<>();
-        for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
+        for (Player p : playerList) {
+            p.pickDistrictsFromDeck(deck.draw(2), 2);
+            p.setGameStatus(gameStatus);
+        }
+        discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
@@ -54,6 +67,7 @@ public class Game {
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
+        player.setGameStatus(gameStatus);
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -169,6 +183,27 @@ public class Game {
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
+                }
+                case EXCHANGE_DECK -> {
+                    List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
+                    assert (!cardsToExchange.isEmpty());
+                    discard.addAll(cardsToExchange);
+                    player.removeFromHand(cardsToExchange);
+                    List<District> cards = deck.draw(cardsToExchange.size());
+                    cards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
+                    player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
+                }
+                case EXCHANGE_PLAYER -> {
+                    Player playerToExchangeCards = player.playerToExchangeCards(getPlayerList());
+                    List<District> hand1 = player.getHandDistricts();
+                    List<District> handExchange = playerToExchangeCards.getHandDistricts();
+                    player.removeFromHand(hand1);
+                    playerToExchangeCards.removeFromHand(handExchange);
+                    hand1.forEach(playerToExchangeCards::addDistrictToHand);
+                    handExchange.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
+                    player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");

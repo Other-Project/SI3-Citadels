@@ -22,6 +22,14 @@ public enum Action {
      */
     STEAL,
     /**
+     * The player wants to exchange some of his cards with the deck
+     */
+    EXCHANGE_DECK,
+    /**
+     * The player wants to exchange all his cards with the cards of another player
+     */
+    EXCHANGE_PLAYER,
+    /**
      * The player draws 2 districts at the beginning of his turn
      */
     BEGIN_DRAW,
