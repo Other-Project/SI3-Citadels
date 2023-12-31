@@ -102,7 +102,7 @@ public class Bot extends Player {
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
         if (remainingActions.contains(Action.STEAL))
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()).isPresent())
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()) != null)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
@@ -156,7 +156,7 @@ public class Bot extends Player {
      * @param players List of player with whose he can exchange
      * @return The player chose for the exchange if there is an exchange
      */
-    public Optional<Player> choosePlayerToExchangeCards(List<Player> players) {
+    public Player choosePlayerToExchangeCards(List<Player> players) {
         Player playerToExchange = null;
         int nbCards = 0;
         int handSize = getHandDistricts().size();
@@ -169,7 +169,7 @@ public class Bot extends Player {
                 }
             }
         }
-        return Optional.ofNullable(playerToExchange);
+        return playerToExchange;
     }
 
     /**
@@ -180,7 +180,9 @@ public class Bot extends Player {
      */
     @Override
     public Player playerToExchangeCards(List<Player> players) {
-        return choosePlayerToExchangeCards(players).orElseThrow();
+        Player res = choosePlayerToExchangeCards(players);
+        assert (res != null);
+        return choosePlayerToExchangeCards(players);
     }
 
     /**

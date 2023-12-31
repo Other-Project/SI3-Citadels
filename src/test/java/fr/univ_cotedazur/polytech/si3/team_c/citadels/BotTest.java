@@ -253,10 +253,10 @@ class BotTest {
         bot2.pickCharacter(List.of(new King()));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
-        assertEquals(bot2, bot1.choosePlayerToExchangeCards(List.of(bot2)).orElseThrow());
+        assertEquals(player2, bot1.choosePlayerToExchangeCards(List.of(bot2)));
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
         bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
-        assertTrue(bot1.choosePlayerToExchangeCards(List.of(bot2)).isEmpty());
+        assertNull(bot1.choosePlayerToExchangeCards(List.of(bot2)));
         bot1.removeAction(Action.EXCHANGE_DECK);
         assertEquals(Action.NONE, bot1.nextAction());
     }
