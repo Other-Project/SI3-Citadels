@@ -104,6 +104,10 @@ public class Bot extends Player {
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
         if (remainingActions.contains(Action.KILL))
             return Action.KILL;// Try to kill a character if the player's character is the Assassin
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()) != null)
+            return Action.EXCHANGE_PLAYER;
+        if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
+            return Action.EXCHANGE_DECK;
         return Action.NONE;
     }
 
@@ -151,5 +155,52 @@ public class Bot extends Player {
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+
+    /**
+     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
+     *
+     * @param players List of player with whose he can exchange
+     * @return The player chose for the exchange if there is an exchange
+     */
+    public Player choosePlayerToExchangeCards(List<Player> players) {
+        Player playerToExchange = null;
+        int nbCards = 0;
+        int handSize = getHandDistricts().size();
+        for (Player p : players) {
+            if (p != this) {
+                int playerHandSize = p.getHandDistricts().size();
+                if (playerHandSize > handSize && playerHandSize > nbCards) {
+                    playerToExchange = p;
+                    nbCards = playerHandSize;
+                }
+            }
+        }
+        return playerToExchange;
+    }
+
+    /**
+     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
+     *
+     * @param players List of player with whose he can exchange
+     * @return The player chose for the exchange if there is an exchange
+     */
+    @Override
+    public Player playerToExchangeCards(List<Player> players) {
+        Player res = choosePlayerToExchangeCards(players);
+        assert (res != null);
+        return choosePlayerToExchangeCards(players);
+    }
+
+    /**
+     * The bot chooses a few cards to exchange with the deck. He chooses the card if its profitability is under 1.
+     *
+     * @return The List of cards he wants to exchange with the deck
+     */
+    public List<District> chooseCardsToExchangeWithDeck() {
+        List<District> cardToExchange = new ArrayList<>();
+        for (District d : getHandDistricts()) {
+            if (districtProfitability(d) < 1) cardToExchange.add(d);
+        }
+        return cardToExchange;
     }
 }

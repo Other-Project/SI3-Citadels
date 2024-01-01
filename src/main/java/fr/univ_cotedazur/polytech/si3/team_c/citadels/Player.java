@@ -12,7 +12,6 @@ public abstract class Player {
     private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
-    private static final int NUMBER_OF_DISTRICTS_TO_BUILD = 1;
     private final String name;
     private boolean gameEnder = false;
     private int coins;
@@ -21,6 +20,8 @@ public abstract class Player {
     private Character character;
 
     private Set<Action> actionSet;
+
+    private GameObserver gameStatus;
 
 
     protected Player(String name, int coins, List<District> districts) {
@@ -109,6 +110,7 @@ public abstract class Player {
         return new ArrayList<>(builtDistricts.values().stream().flatMap(List::stream).toList()) {
             @Override
             public String toString() {
+                if (isEmpty()) return "\n\tNo district built";
                 StringBuilder stringBuilder = new StringBuilder();
                 for (District d : this) stringBuilder.append("\n\t").append(d);
                 return stringBuilder.toString();
@@ -212,7 +214,7 @@ public abstract class Player {
      * @return The chosen districts
      */
     public List<District> pickDistrictsToBuild(int turn) {
-        return pickDistrictsToBuild(NUMBER_OF_DISTRICTS_TO_BUILD, turn);
+        return pickDistrictsToBuild(getCharacter().orElseThrow().numberOfDistrictToBuild(), turn);
     }
 
     /**
@@ -319,6 +321,15 @@ public abstract class Player {
         return actionSet;
     }
 
+    /**
+     * Set the actionSet of the player
+     *
+     * @param actionSet Set of actions to put in the actionSet of the player
+     */
+    public void setActionSet(Set<Action> actionSet) {
+        this.actionSet = actionSet;
+    }
+
     public Set<Action> getActionSet() {
         return actionSet;
     }
@@ -327,7 +338,7 @@ public abstract class Player {
         return actionSet.remove(action);// Remove the action of the actionSet
     }
 
-     /**
+    /**
      * Set the endPlayer boolean to true
      */
     public void endsGame() {
@@ -361,5 +372,41 @@ public abstract class Player {
      */
     public void earnTurnStartupCoins() {
         gainCoins(character.coinsToEarnAtTurnStartup());
+      
+     * Asks the player to choose another player with whom to exchange his hand.
+     * @param playerList List of players he can exchange with
+     * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
+
+     */
+    public abstract Player playerToExchangeCards(List<Player> playerList);
+
+    /**
+     * Ask the player to choose cards to exchange with the deck
+     *
+     * @return The list of cards he wants to exchange with the deck
+     */
+    public abstract List<District> chooseCardsToExchangeWithDeck();
+
+    /**
+     * Remove the cards of the player hand
+     * @param cards List of cards to remove of the hand
+     */
+    public void removeFromHand(List<District> cards) {
+        handDistricts.removeAll(cards);
+    }
+
+    public void setGameStatus(GameObserver gameObserver) {
+        gameStatus = gameObserver;
+    }
+
+    public GameObserver getGameStatus() {
+        return gameStatus;
+    }
+
+    /**
+     * The player plays his star-of-turn action
+     */
+    public Action playStartOfTurnAction() {
+        return getCharacter().orElseThrow().startTurnAction();
     }
 }

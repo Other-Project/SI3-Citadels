@@ -66,6 +66,8 @@ public abstract class District extends Card {
 
     @Override
     public String toString() {
-        return super.toString() + " ($" + getCost() + ", " + getPoint() + " pts)";
+        String text = super.toString() + " ($" + getCost();
+        if (getPoint() != getCost()) text += ", " + getPoint() + " pts";
+        return text + ")";
     }
 }

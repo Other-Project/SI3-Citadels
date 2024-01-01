@@ -25,6 +25,17 @@ public enum Action {
      * The player wants to kill a character. When a character has been killed, he can't play anymore
      */
     KILL,
+     * The player wants to exchange some of his cards with the deck
+     */
+    EXCHANGE_DECK,
+    /**
+     * The player wants to exchange all his cards with the cards of another player
+     */
+    EXCHANGE_PLAYER,
+    /**
+     * The player draws 2 districts at the beginning of his turn
+     */
+    BEGIN_DRAW,
     /**
      * The player wants to end his turn
      */
