@@ -372,11 +372,13 @@ public abstract class Player {
      */
     public void earnTurnStartupCoins() {
         gainCoins(character.coinsToEarnAtTurnStartup());
-      
+    }
+
+    /**
      * Asks the player to choose another player with whom to exchange his hand.
+     *
      * @param playerList List of players he can exchange with
      * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
-
      */
     public abstract Player playerToExchangeCards(List<Player> playerList);
 

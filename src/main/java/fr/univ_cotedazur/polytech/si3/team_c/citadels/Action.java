@@ -25,6 +25,7 @@ public enum Action {
      * The player wants to kill a character. When a character has been killed, he can't play anymore
      */
     KILL,
+    /**
      * The player wants to exchange some of his cards with the deck
      */
     EXCHANGE_DECK,

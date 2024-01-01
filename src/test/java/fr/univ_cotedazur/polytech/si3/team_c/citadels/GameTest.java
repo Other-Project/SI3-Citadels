@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
-
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -228,7 +227,19 @@ class GameTest {
                 Merchant merchant = new Merchant();
                 setCharacter(merchant);
                 return merchant;
-              
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(merchantBot);
+        game.gameTurn();
+        assertEquals(1, merchantBot.getCoins());
+    }
+    
+    @Test
     void MagicianTest() {
         Bot bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
 

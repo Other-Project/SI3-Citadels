@@ -194,6 +194,7 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
+                }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
                     assert (!cardsToExchange.isEmpty());

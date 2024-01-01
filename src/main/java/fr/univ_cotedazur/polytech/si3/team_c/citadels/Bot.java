@@ -155,6 +155,7 @@ public class Bot extends Player {
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+    }
 
     /**
      * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
