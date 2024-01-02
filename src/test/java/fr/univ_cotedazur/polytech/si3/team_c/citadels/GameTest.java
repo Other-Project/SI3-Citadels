@@ -242,14 +242,12 @@ class GameTest {
     @Test
     void MagicianTest() {
         Bot bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
-
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
                 setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
                 return getActionSet();
             }
-
         };
         bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
         bot2.pickCharacter(List.of(new King()));
@@ -303,7 +301,6 @@ class GameTest {
                 setCharacter(best);
                 return best;
             }
-          
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 // If he doesn't get his income, the player will not build any district, so we can check that he has 4 districts in hand.
