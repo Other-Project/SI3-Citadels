@@ -18,7 +18,7 @@ public class Merchant extends Character {
     }
 
     @Override
-    public int coinsToEarnAtTurnStartup() {
-        return 1;
+    public Action startTurnAction() {
+        return Action.STARTUP_INCOME;
     }
 }

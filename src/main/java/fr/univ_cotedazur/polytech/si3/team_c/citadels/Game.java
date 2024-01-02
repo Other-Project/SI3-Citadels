@@ -141,7 +141,6 @@ public class Game {
             LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
             return;
         }
-        player.earnTurnStartupCoins();
         Action startOfTurnAction = player.playStartOfTurnAction();
         if (startOfTurnAction != Action.NONE) {
             switch (startOfTurnAction) {
@@ -152,6 +151,10 @@ public class Game {
                         player.addDistrictToHand(district);
                         LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
                     }
+                }
+                case STARTUP_INCOME -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " earn a coin because he is the " + player.getCharacter().orElseThrow());
+                    player.gainCoins(1);
                 }
                 default ->
                         throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");

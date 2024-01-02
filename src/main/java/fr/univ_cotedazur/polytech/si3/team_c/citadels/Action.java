@@ -38,6 +38,10 @@ public enum Action {
      */
     BEGIN_DRAW,
     /**
+     * The player gets a coin at the game startup
+     */
+    STARTUP_INCOME,
+    /**
      * The player wants to end his turn
      */
     NONE

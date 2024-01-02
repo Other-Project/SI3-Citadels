@@ -368,13 +368,6 @@ public abstract class Player {
     public abstract Character chooseCharacterToKill(List<Character> characterList);
 
     /**
-     * Earn the turn startup coins of the character
-     */
-    public void earnTurnStartupCoins() {
-        gainCoins(character.coinsToEarnAtTurnStartup());
-    }
-
-    /**
      * Asks the player to choose another player with whom to exchange his hand.
      *
      * @param playerList List of players he can exchange with
