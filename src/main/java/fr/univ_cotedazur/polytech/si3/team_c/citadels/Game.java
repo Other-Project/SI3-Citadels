@@ -153,7 +153,7 @@ public class Game {
                     }
                 }
                 case STARTUP_INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " earn a coin because he is the " + player.getCharacter().orElseThrow());
+                    LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
                     player.gainCoins(1);
                 }
                 default ->
