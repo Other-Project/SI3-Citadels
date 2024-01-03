@@ -56,7 +56,7 @@ public class Game {
     }
 
     public List<Player> getPlayerList() {
-        return playerList;
+        return new ArrayList<>(playerList);
     }
 
     public Deck getDeck() {
