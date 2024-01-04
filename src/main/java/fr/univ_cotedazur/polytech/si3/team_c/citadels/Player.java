@@ -157,6 +157,14 @@ public abstract class Player {
     }
 
     /**
+     * The player wants to destroy a district
+     *
+     * @param districtList the list from which the district to be destroyed is selected
+     * @return the district to be destroyed
+     */
+    protected abstract Map<String, District> destroyDistrict(Map<String, List<District>> districtList);
+
+    /**
      * Adds a district to the player's hand
      *
      * @param district The district to add

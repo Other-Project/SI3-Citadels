@@ -246,4 +246,29 @@ public class Bot extends Player {
         }
         return false;
     }
+
+    @Override
+    protected Map<String, District> destroyDistrict(Map<String, List<District>> districtList) {
+        if (!canDestroy())
+            return Collections.emptyMap();// In case the method is called, but the bot cannot destroy any district
+        Map<String, District> res = new HashMap<>();
+        List<Player> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
+        int index = 0;
+        Player playerToTarget = playerToTargetList.get(index);
+        while (!canDestroyFromList(playerToTarget.getBuiltDistricts())) {
+            index++;
+            playerToTarget = playerToTargetList.get(index);
+        }// We select the right player to target according to our means
+        Comparator<District> comparator = Comparator.comparing(district -> district.getColor() == Colors.PURPLE ? 1 : 0);
+        List<District> districtListFromPlayerToTarget = playerToTarget.getBuiltDistricts().stream().sorted(
+                comparator.thenComparing(District::getPoint).reversed()).toList();
+        // We order the district list first on the purple colour, then on the district's points
+        for (District district : districtListFromPlayerToTarget) {
+            if (district.getCost() - 1 <= getCoins()) {
+                res.put(playerToTarget.getName(), district);
+                break;
+            }
+        }
+        return res;
+    }
 }
