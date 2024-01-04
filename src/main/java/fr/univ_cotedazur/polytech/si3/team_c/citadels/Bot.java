@@ -199,4 +199,51 @@ public class Bot extends Player {
         }
         return cardToExchange;
     }
+
+    /**
+     * Get a list of the players sorted by their dangerousness level (number of district built, then amount of coins)
+     */
+    protected List<Player> getMostDangerousPlayersByBuiltDistricts() {
+        GameObserver gameObserver = getGameStatus();
+        List<Player> playerList = new ArrayList<>();
+        for (Player player : gameObserver.getPlayerList()) {
+            if (!player.equals(this)) playerList.add(player);
+        }// The bot doesn't include himself as the most dangerous player
+        Comparator<Player> comparator = Comparator.comparing(player -> player.getBuiltDistricts().size());
+        return playerList.stream().sorted(comparator.thenComparingInt(Player::getCoins).reversed()).toList();
+    }
+
+    /**
+     * Checks if a district can be destroyed among all the districts the players built (except the current bot)
+     */
+    protected boolean canDestroy() {
+        GameObserver gameObserver = getGameStatus();
+        Map<String, List<District>> districtsBuilt = new HashMap<>();
+        for (Map.Entry<String, List<District>> mapEntry : gameObserver.getBuiltDistrict().entrySet()) {
+            if (!mapEntry.getKey().equals(getName())) districtsBuilt.put(mapEntry.getKey(), mapEntry.getValue());
+        } // The bot doesn't include his own cards for the moment
+        District smallestDistrictToDestroy = null;
+        for (Map.Entry<String, List<District>> mapEntry : districtsBuilt.entrySet()) {
+            for (District district : mapEntry.getValue()) {
+                if (smallestDistrictToDestroy == null || district.getCost() < smallestDistrictToDestroy.getCost()) {
+                    smallestDistrictToDestroy = district;
+                }
+            }
+        }
+        if (smallestDistrictToDestroy == null) return false;
+        return (smallestDistrictToDestroy.getCost() - 1 <= getCoins());
+    }
+
+    /**
+     * Checks if a district from the given list can be destroyed
+     *
+     * @return true if a single district can be destroyed from the given list
+     */
+    protected boolean canDestroyFromList(List<District> districtList) {
+        if (districtList.isEmpty()) return false;
+        for (District district : districtList) {
+            if (district.getCost() - 1 <= getCoins()) return true;
+        }
+        return false;
+    }
 }
