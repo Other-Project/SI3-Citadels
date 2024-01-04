@@ -185,11 +185,11 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
                 }
                 case DISCARD -> {
-                    Optional<District> card = player.cardToDiscard();
+                    District card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
-                    player.getHandDistricts().remove(card.orElseThrow()); // If no card chose the player would not be able to do this action
+                    player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
                     player.gainCoins(1);
-                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card.orElseThrow()});
+                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
                 }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;

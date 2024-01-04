@@ -263,7 +263,7 @@ class BotTest {
 
     @Test
     void cardToDiscardTest() {
-        assertEquals(new Church(), bot1.cardToDiscard().orElseThrow());
+        assertEquals(new Church(), bot1.cardToDiscard());
         assertEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
         bot1.gainCoins(14);
         bot1.getHandDistricts().forEach(d -> bot1.buildDistrict(d, 0));

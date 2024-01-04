@@ -90,7 +90,7 @@ public abstract class Player {
      *
      * @return The card that the player chose to discard
      */
-    protected abstract Optional<District> cardToDiscard();
+    protected abstract District cardToDiscard();
 
     /**
      * Add some coins to the player "wallet"
