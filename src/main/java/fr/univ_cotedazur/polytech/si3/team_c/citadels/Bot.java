@@ -90,6 +90,7 @@ public class Bot extends Player {
      */
     @Override
     public District cardToDiscard() {
+        assert (!getHandDistricts().isEmpty());
         District worst = getHandDistricts().get(0);
         for (District d : getHandDistricts()) if (d.getPoint() < worst.getPoint()) worst = d;
         return worst;
@@ -117,7 +118,7 @@ public class Bot extends Player {
             return Action.TAKE_THREE;// Take three cards and pay 3 coins if it has enough money, no objective and it needs cards.
         if (remainingActions.contains(Action.STEAL))
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()) != null)
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getCardsNumber()) != null)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
@@ -171,15 +172,15 @@ public class Bot extends Player {
      * @param players List of player with whose he can exchange
      * @return The player chose for the exchange if there is an exchange
      */
-    public Player choosePlayerToExchangeCards(List<Player> players) {
-        Player playerToExchange = null;
+    public String choosePlayerToExchangeCards(Map<String, Integer> players) {
+        String playerToExchange = null;
         int nbCards = 0;
         int handSize = getHandDistricts().size();
-        for (Player p : players) {
-            if (p != this) {
-                int playerHandSize = p.getHandDistricts().size();
+        for (Map.Entry<String, Integer> p : players.entrySet()) {
+            if (!p.getKey().equals(this.getName())) {
+                int playerHandSize = p.getValue();
                 if (playerHandSize > handSize && playerHandSize > nbCards) {
-                    playerToExchange = p;
+                    playerToExchange = p.getKey();
                     nbCards = playerHandSize;
                 }
             }
@@ -195,9 +196,14 @@ public class Bot extends Player {
      */
     @Override
     public Player playerToExchangeCards(List<Player> players) {
-        Player res = choosePlayerToExchangeCards(players);
+        String res = choosePlayerToExchangeCards(getGameStatus().getCardsNumber());
         assert (res != null);
-        return choosePlayerToExchangeCards(players);
+        Player pChoose = null;
+        for (Player p : players) {
+            if (p.getName().equals(res)) pChoose = p;
+        }
+        assert (pChoose != null);
+        return pChoose;
     }
 
     /**
