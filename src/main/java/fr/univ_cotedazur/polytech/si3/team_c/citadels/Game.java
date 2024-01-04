@@ -16,30 +16,47 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
-    private List<Character> charactersToInteractWith; // The characters the player can interact with
+
+    /**
+     * The characters the player can interact with
+     */
+    private List<Character> charactersToInteractWith;
     private Player robber;
     private Character characterToRob;
     private final Random random = new Random();
+    private final List<District> discard;
+    private final GameObserver gameStatus = new GameObserver(this);
 
+    public GameObserver getGameObserver() {
+        return gameStatus;
+    }
     public Game() {
-        this(new ArrayList<>());
+        this(Collections.emptyList());
     }
 
     public Game(int numberPlayers, Player... players) {
         this(List.of(players));
         int initLength = playerList.size();
-        for (int i = 1; i <= numberPlayers - initLength; i++) playerList.add(new Bot("bot" + i, 2, deck.draw(2)));
+        for (int i = 1; i <= numberPlayers - initLength; i++) {
+            Bot bot = new Bot("bot" + i, 2, deck.draw(2));
+            playerList.add(bot);
+            bot.setGameStatus(gameStatus);
+        }
     }
 
     public Game(List<Player> players) {
         deck = new Deck();
         playerList = new ArrayList<>(players);
         charactersToInteractWith = new ArrayList<>();
-        for (Player p : playerList) p.pickDistrictsFromDeck(deck.draw(2), 2);
+        for (Player p : playerList) {
+            p.pickDistrictsFromDeck(deck.draw(2), 2);
+            p.setGameStatus(gameStatus);
+        }
+        discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
-        return playerList;
+        return new ArrayList<>(playerList);
     }
 
     public Deck getDeck() {
@@ -50,6 +67,7 @@ public class Game {
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
+        player.setGameStatus(gameStatus);
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -72,7 +90,7 @@ public class Game {
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
-            LOGGER.log(Level.INFO, "Turn {0}", i);
+            LOGGER.log(Level.INFO, "===== Turn {0} =====", i);
             currentTurn = i;
             if (gameTurn()) break;
         }
@@ -94,9 +112,11 @@ public class Game {
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
         int p = getCrown();
-        LOGGER.log(Level.INFO, "{0} have the crown", playerList.get(p).getName());
         for (int i = 0; i < playerList.size(); i++) {
-            characterList.remove(playerList.get((p + i) % playerList.size()).pickCharacter(characterList));
+            var player = playerList.get((p + i) % playerList.size());
+            var choosenCharacter = player.pickCharacter(characterList);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            characterList.remove(choosenCharacter);
         }
     }
 
@@ -104,7 +124,7 @@ public class Game {
      * Player chooses the action he wants to play during his turn
      */
     public void playerTurn(Player player) {
-        LOGGER.log(Level.INFO, "{0}", player);
+        LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
@@ -116,29 +136,44 @@ public class Game {
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
+        Action startOfTurnAction = player.playStartOfTurnAction();
+        if (startOfTurnAction != Action.NONE) {
+            switch (startOfTurnAction) {
+                case BEGIN_DRAW -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " draws 2 extra districts");
+                    var drawnCards = deck.draw(2);
+                    for (District district : drawnCards) {
+                        player.addDistrictToHand(district);
+                        LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
+                    }
+                }
+                default ->
+                        throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
+            }
+        }
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             switch (action) {
                 case DRAW -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " draws");
+                    LOGGER.info(player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
-                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " kept " + district));
+                            .forEach(district -> LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), district}));
                     player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his income");
+                    LOGGER.info(player.getName() + " claims his income");
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
                     player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " chooses to build a district");
+                    LOGGER.info(player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild(currentTurn)
-                            .forEach(district -> LOGGER.log(Level.INFO, () -> player.getName() + " built " + district));
+                            .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
                 }
                 case SPECIAL_INCOME -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " claims his special income");
+                    LOGGER.info(player.getName() + " claims his special income");
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
@@ -158,15 +193,37 @@ public class Game {
                 }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
+                    LOGGER.info(player.getName() + " wants to steal a character");
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
+                }
+                case EXCHANGE_DECK -> {
+                    List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
+                    assert (!cardsToExchange.isEmpty());
+                    discard.addAll(cardsToExchange);
+                    player.removeFromHand(cardsToExchange);
+                    List<District> cards = deck.draw(cardsToExchange.size());
+                    cards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
+                    player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
+                }
+                case EXCHANGE_PLAYER -> {
+                    Player playerToExchangeCards = player.playerToExchangeCards(getPlayerList());
+                    List<District> hand1 = player.getHandDistricts();
+                    List<District> handExchange = playerToExchangeCards.getHandDistricts();
+                    player.removeFromHand(hand1);
+                    playerToExchangeCards.removeFromHand(handExchange);
+                    hand1.forEach(playerToExchangeCards::addDistrictToHand);
+                    handExchange.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
+                    player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
             player.removeAction(action);
-            LOGGER.log(Level.INFO, "{0}", player);
+            LOGGER.info(player::toString);
         }
     }
 
@@ -233,7 +290,7 @@ public class Game {
     }
 
     public static void main(String... args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "-%4$s- %5$s%6$s%n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
         new Game(2).start();
     }
 }

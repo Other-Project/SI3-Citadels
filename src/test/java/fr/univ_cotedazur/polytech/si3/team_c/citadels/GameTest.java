@@ -6,8 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -183,5 +182,100 @@ class GameTest {
         game.addPlayer(trickedBot2);
         game.gameTurn();
         assertTrue(trickedBot1.getCoins() >= 500);
+    }
+
+    @Test
+    void MagicianTest() {
+        Bot bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
+
+        Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
+            @Override
+            public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
+                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
+                return getActionSet();
+            }
+
+        };
+        bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
+        bot2.pickCharacter(List.of(new King()));
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        game.playerTurn(bot1); // The bot will exchange his cards with the other player
+        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()), bot1.getHandDistricts());
+        assertEquals(List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()), bot2.getHandDistricts());
+        game.playerTurn(bot1); // The bot will exchange some cards with the deck because the other player has fewer cards than him, and he has somme non-purple cards
+        assertEquals(6, bot1.getHandDistricts().size());
+    }
+
+    @Test
+    void gameObserverTest() {
+        Game gameWithNumber = new Game(4);
+        GameObserver gameObserver = gameWithNumber.getGameObserver();
+        gameObserver.getCardsNumber().forEach((s, integer) -> assertEquals(2, (int) integer));
+        gameObserver.getCoins().forEach((s, integer) -> assertEquals(2, (int) integer));
+        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCardsNumber().get(p.getName())));
+        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCoins().get(p.getName())));
+        assertEquals(4, gameObserver.getPlayersNumber());
+        Player p1 = new Bot("P1", 200, game.getDeck().draw(3));
+        Player p2 = new Bot("P2", 10, game.getDeck().draw(7));
+        Player p3 = new Bot("P3", 1, game.getDeck().draw(8));
+        game.addPlayer(p1);
+        game.addPlayer(p2);
+        game.addPlayer(p3);
+        gameObserver = game.getGameObserver();
+        assertEquals(3, gameObserver.getPlayersNumber());
+        assertEquals(200, gameObserver.getCoins().get("P1"));
+        assertEquals(10, gameObserver.getCoins().get("P2"));
+        assertEquals(1, gameObserver.getCoins().get("P3"));
+        assertEquals(3, gameObserver.getCardsNumber().get("P1"));
+        assertEquals(7, gameObserver.getCardsNumber().get("P2"));
+        assertEquals(8, gameObserver.getCardsNumber().get("P3"));
+        List<District> districtsBuilt = new ArrayList<>();
+        districtsBuilt.add(p1.getHandDistricts().get(0));
+        p1.buildDistrict(p1.getHandDistricts().get(0), 0);
+        districtsBuilt.add(p1.getHandDistricts().get(0));
+        p1.buildDistrict(p1.getHandDistricts().get(0), 0);
+        assertEquals(1, gameObserver.getCardsNumber().get("P1"));
+        assertEquals(districtsBuilt, gameObserver.getBuiltDistrict().get("P1"));
+    }
+
+    @Test
+    void testArchitectDrawing() {
+        Bot trickedBot = new Bot("bot1", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                // If he doesn't get his income, the player will not build any district, so we can check that he has 4 districts in hand.
+                remainingActions.remove(Action.INCOME);
+                return super.nextAction(remainingActions);
+            }
+        };
+        game.addPlayer(trickedBot);
+        game.characterSelectionTurn();
+        game.playerTurn(trickedBot);
+        // trickedBot is the Architect, so he must draw 2 extra districts first
+        assertTrue(trickedBot.getHandDistricts().size() >= 2);
+    }
+
+    @Test
+    void testArchitectBuilding() {
+        Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        game.addPlayer(trickedBot);
+        game.characterSelectionTurn();
+        game.playerTurn(trickedBot);
+        assertEquals(3, trickedBot.getBuiltDistricts().size());
     }
 }

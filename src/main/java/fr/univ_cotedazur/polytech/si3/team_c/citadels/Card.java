@@ -50,6 +50,6 @@ public abstract class Card {
 
     @Override
     public String toString() {
-        return getColor() + getName();
+        return getColor() + getName() + "\033[0m";
     }
 }

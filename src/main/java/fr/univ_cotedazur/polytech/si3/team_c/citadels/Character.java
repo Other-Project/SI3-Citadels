@@ -26,4 +26,15 @@ public abstract class Character extends Card implements Comparable<Character> {
     public int compareTo(Character other) {
         return getTurn() - other.getTurn();
     }
+
+    public int numberOfDistrictToBuild() {
+        return 1;
+    }
+
+    /**
+     * Defines an action that the character do in his start-of-turn
+     */
+    public Action startTurnAction() {
+        return Action.NONE;
+    }
 }

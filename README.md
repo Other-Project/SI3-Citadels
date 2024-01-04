@@ -38,6 +38,13 @@ Il faut ainsi dans un premier temps réaliser:
 
 ## Lancement avec Maven:
 
+> **Note**  
+> The terminal must use UTF8 encoding for emoji to be displayed correctly.  
+> On Windows, you may need to run the following PowerShell command before launching the program
+> ```pwsh
+> [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+> ```
+
 - ### Le programme principal
 
   ```
