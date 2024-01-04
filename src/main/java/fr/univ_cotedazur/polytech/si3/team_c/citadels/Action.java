@@ -30,6 +30,10 @@ public enum Action {
      */
     EXCHANGE_PLAYER,
     /**
+     * The player destroys a district
+     */
+    DESTROY,
+    /**
      * The player draws 2 districts at the beginning of his turn
      */
     BEGIN_DRAW,
