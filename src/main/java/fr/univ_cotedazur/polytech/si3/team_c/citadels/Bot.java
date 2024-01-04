@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -248,10 +249,10 @@ public class Bot extends Player {
     }
 
     @Override
-    protected Map<String, District> destroyDistrict(Map<String, List<District>> districtList) {
+    protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList) {
         if (!canDestroy())
-            return Collections.emptyMap();// In case the method is called, but the bot cannot destroy any district
-        Map<String, District> res = new HashMap<>();
+            return Optional.empty();// In case the method is called, but the bot cannot destroy any district
+        SimpleEntry<String, District> res = null;
         List<Player> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
         int index = 0;
         Player playerToTarget = playerToTargetList.get(index);
@@ -265,10 +266,10 @@ public class Bot extends Player {
         // We order the district list first on the purple colour, then on the district's points
         for (District district : districtListFromPlayerToTarget) {
             if (district.getCost() - 1 <= getCoins()) {
-                res.put(playerToTarget.getName(), district);
+                res = new SimpleEntry<>(playerToTarget.getName(), district);
                 break;
             }
         }
-        return res;
+        return Optional.ofNullable(res);
     }
 }

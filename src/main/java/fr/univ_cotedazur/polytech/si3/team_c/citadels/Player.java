@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.Function;
 
@@ -162,7 +163,7 @@ public abstract class Player {
      * @param districtList the list from which the district to be destroyed is selected
      * @return the district to be destroyed
      */
-    protected abstract Map<String, District> destroyDistrict(Map<String, List<District>> districtList);
+    protected abstract Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList);
 
     /**
      * Adds a district to the player's hand

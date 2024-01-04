@@ -5,7 +5,11 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -398,18 +402,16 @@ class BotTest {
         game.playerTurn(bot3);
         game.playerTurn(bot3);
         assertEquals(List.of(bot3, bot2, bot4), bot1.getMostDangerousPlayersByBuiltDistricts());
-        Map<String, District> resMap1 = new HashMap<>();
-        resMap1.put(bot3.getName(), new Harbor());
+        SimpleEntry<String, District> res1 = new SimpleEntry<>(bot3.getName(), new Harbor());
         assertTrue(bot1.canDestroy());
         assertTrue(bot1.canDestroyFromList(bot3.getBuiltDistricts()));
-        assertEquals(resMap1, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()));
+        assertEquals(res1, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
         game.playerTurn(bot4);
         game.playerTurn(bot4);
         game.playerTurn(bot4);
         game.playerTurn(bot4);
-        Map<String, District> resMap2 = new HashMap<>();
-        resMap2.put(bot4.getName(), new University());
-        assertEquals(resMap2, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()));
+        SimpleEntry<String, District> res2 = new SimpleEntry<>(bot4.getName(), new University());
+        assertEquals(res2, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
     }
 
 
