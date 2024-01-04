@@ -17,4 +17,8 @@ public class Merchant extends Character {
         return Optional.of(List.of(Action.SPECIAL_INCOME));
     }
 
+    @Override
+    public Action startTurnAction() {
+        return Action.STARTUP_INCOME;
+    }
 }

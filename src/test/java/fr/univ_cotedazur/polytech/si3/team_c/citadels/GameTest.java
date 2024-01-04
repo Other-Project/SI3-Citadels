@@ -185,16 +185,69 @@ class GameTest {
     }
 
     @Test
+    void testAssassinTurn() {
+        Bot assassinBot = new Bot("killer", 3000, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Assassin assassin = new Assassin();
+                setCharacter(assassin);
+                return assassin;
+            }
+
+            @Override
+            public Character chooseCharacterToKill(List<Character> characterList) {
+                return new Merchant();
+            }
+        };
+
+        List<District> merchantDistricts = game.getDeck().draw(2);
+        Bot merchantBot = new Bot("merchant", 0, merchantDistricts) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Merchant merchant = new Merchant();
+                setCharacter(merchant);
+                return merchant;
+            }
+        };
+
+
+        game.addPlayer(assassinBot);
+        game.addPlayer(merchantBot);
+        game.gameTurn();
+        assertEquals(0, merchantBot.getCoins());
+        assertTrue(merchantBot.getBuiltDistricts().isEmpty());
+        assertEquals(merchantDistricts, merchantBot.getHandDistricts());
+    }
+
+    @Test
+    void testMerchantTurn() {
+        Bot merchantBot = new Bot("merchant", 0, new ArrayList<>()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Merchant merchant = new Merchant();
+                setCharacter(merchant);
+                return merchant;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(merchantBot);
+        game.gameTurn();
+        assertEquals(1, merchantBot.getCoins());
+    }
+    
+    @Test
     void MagicianTest() {
         Bot bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
-
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
                 setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
                 return getActionSet();
             }
-
         };
         bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
         bot2.pickCharacter(List.of(new King()));
@@ -248,7 +301,6 @@ class GameTest {
                 setCharacter(best);
                 return best;
             }
-
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 // If he doesn't get his income, the player will not build any district, so we can check that he has 4 districts in hand.
