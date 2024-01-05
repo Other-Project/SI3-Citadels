@@ -202,30 +202,29 @@ public class Bot extends Player {
     }
 
     /**
-     * Get a list of the players sorted by their dangerousness level (number of district built, then amount of coins)
+     * Get a list of the players names sorted by their dangerousness level
+     * (number of district built, then amount of purple district built)
      */
-    protected List<Player> getMostDangerousPlayersByBuiltDistricts() {
+    protected List<String> getMostDangerousPlayersByBuiltDistricts() {
         GameObserver gameObserver = getGameStatus();
-        List<Player> playerList = new ArrayList<>();
-        for (Player player : gameObserver.getPlayerList()) {
-            if (!player.equals(this)) playerList.add(player);
-        }// The bot doesn't include himself as the most dangerous player
-        Comparator<Player> comparator = Comparator.comparing(player -> player.getBuiltDistricts().size());
-        return playerList.stream().sorted(comparator.thenComparingInt(Player::getCoins).reversed()).toList();
+        Comparator<Map.Entry<String, List<District>>> entrySizeComparator = Comparator.comparing(entry -> entry.getValue().size());
+        return gameObserver.getBuiltDistrict().entrySet().stream().sorted(entrySizeComparator
+                        .thenComparingInt(entry -> entry.getValue().stream().filter(district -> district.getColor() == Colors.PURPLE)
+                                .toList().size()).reversed())
+                .map(Map.Entry::getKey).filter(string -> !string.equals(this.getName())).toList();
     }
 
     /**
-     * Checks if a district can be destroyed among all the districts the players built (except the current bot)
+     * Checks if the bot can destroy a district among all the districts the players built (except the current bot)
      */
     protected boolean canDestroy() {
         GameObserver gameObserver = getGameStatus();
-        Map<String, List<District>> districtsBuilt = new HashMap<>();
-        for (Map.Entry<String, List<District>> mapEntry : gameObserver.getBuiltDistrict().entrySet()) {
-            if (!mapEntry.getKey().equals(getName())) districtsBuilt.put(mapEntry.getKey(), mapEntry.getValue());
-        } // The bot doesn't include his own cards for the moment
+        Map<String, List<District>> districtsBuilt = gameObserver.getBuiltDistrict();
+        districtsBuilt.remove(this.getName()); // The bot doesn't include his own cards for the moment
         District smallestDistrictToDestroy = null;
         for (Map.Entry<String, List<District>> mapEntry : districtsBuilt.entrySet()) {
             for (District district : mapEntry.getValue()) {
+                if (!district.isDestructible()) continue; // We skip the districts that can't be destroyed
                 if (smallestDistrictToDestroy == null || district.getCost() < smallestDistrictToDestroy.getCost()) {
                     smallestDistrictToDestroy = district;
                 }
@@ -248,25 +247,31 @@ public class Bot extends Player {
         return false;
     }
 
+    /**
+     * The bot chooses a district to destroy among the districtList
+     *
+     * @param districtList the list from which the district to be destroyed is selected
+     * @return The district to destroy
+     */
     @Override
     protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList) {
         if (!canDestroy())
             return Optional.empty();// In case the method is called, but the bot cannot destroy any district
         SimpleEntry<String, District> res = null;
-        List<Player> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
+        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
         int index = 0;
-        Player playerToTarget = playerToTargetList.get(index);
-        while (!canDestroyFromList(playerToTarget.getBuiltDistricts())) {
+        String playerToTarget = playerToTargetList.get(index);
+        while (!canDestroyFromList(districtList.get(playerToTarget))) {
             index++;
             playerToTarget = playerToTargetList.get(index);
         }// We select the right player to target according to our means
-        Comparator<District> comparator = Comparator.comparing(district -> district.getColor() == Colors.PURPLE ? 1 : 0);
-        List<District> districtListFromPlayerToTarget = playerToTarget.getBuiltDistricts().stream().sorted(
-                comparator.thenComparing(District::getPoint).reversed()).toList();
+        Comparator<District> purpleColorComparator = Comparator.comparing(district -> district.getColor() == Colors.PURPLE ? 1 : 0);
+        List<District> districtListFromPlayerToTarget = districtList.get(playerToTarget).stream().sorted(
+                purpleColorComparator.thenComparing(District::getPoint).reversed()).filter(District::isDestructible).toList();
         // We order the district list first on the purple colour, then on the district's points
         for (District district : districtListFromPlayerToTarget) {
             if (district.getCost() - 1 <= getCoins()) {
-                res = new SimpleEntry<>(playerToTarget.getName(), district);
+                res = new SimpleEntry<>(playerToTarget, district);
                 break;
             }
         }
