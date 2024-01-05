@@ -259,10 +259,50 @@ class BotTest {
     @Test
     void getMostDangerousPlayersByBuiltDistrictsTest() {
         Game game = new Game();
-        Bot bot1 = new Bot("bot 1", 10, game.getDeck().draw(1));
-        Bot bot2 = new Bot("bot 2", 15, game.getDeck().draw(2));
-        Bot bot3 = new Bot("bot 3", 20, game.getDeck().draw(3));
-        Bot bot4 = new Bot("bot 4", 50, game.getDeck().draw(4));
+        Bot bot1 = new Bot("bot 1", 10, List.of(new Temple())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot bot2 = new Bot("bot 2", 15, List.of(new Manor(), new Harbor())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot bot3 = new Bot("bot 3", 20, List.of(new Church(), new Monastery(), new Cathedral(), new Fortress())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot bot4 = new Bot("bot 4", 50, List.of(new Castle(), new Library(), new Tavern(), new TownHall())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         game.addPlayer(bot3);
@@ -282,12 +322,12 @@ class BotTest {
         assertEquals(2, bot2.getBuiltDistricts().size());
         assertEquals(3, bot3.getBuiltDistricts().size());
         assertEquals(4, bot4.getBuiltDistricts().size());
-        assertEquals(List.of(bot4, bot3, bot2), bot1.getMostDangerousPlayersByBuiltDistricts());
-        assertEquals(List.of(bot3, bot2, bot1), bot4.getMostDangerousPlayersByBuiltDistricts());
-        assertEquals(List.of(bot4, bot3, bot1), bot2.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 3", "bot 2", "bot 1"), bot4.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 4", "bot 3", "bot 1"), bot2.getMostDangerousPlayersByBuiltDistricts());
         game.playerTurn(bot3);
-        // As the bot4 has way more coins than other players, he should be first in dangerousness level
-        assertEquals(List.of(bot4, bot3, bot2), bot1.getMostDangerousPlayersByBuiltDistricts());
+        // As the bot4 has more purple district built than bot3, he should be first in dangerousness level
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts());
     }
 
     @Test
@@ -295,12 +335,25 @@ class BotTest {
         Game game = new Game();
         Bot bot1 = new Bot("bot 1", 10, Collections.emptyList());
         Bot bot2 = new Bot("bot 2", 10, Collections.emptyList());
+        Bot bot3 = new Bot("bot 3", 10, List.of(new TheKeep())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
         game.addPlayer(bot1);
         game.addPlayer(bot2);
+        game.addPlayer(bot3);
         game.characterSelectionTurn();
         assertFalse(bot1.canDestroy());
         assertFalse(bot2.canDestroy());
         game.playerTurn(bot1);
+        game.playerTurn(bot3); // bot3 builds a non-destroyable district
         assertFalse(bot1.canDestroy());
         assertTrue(bot2.canDestroy());
         game.playerTurn(bot2);
@@ -329,7 +382,7 @@ class BotTest {
                 return best;
             }
         };
-        Bot bot2 = new Bot("bot 2", 50, List.of(new Castle(), new Temple())) {
+        Bot bot2 = new Bot("bot 2", 50, List.of(new TheKeep(), new Temple())) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
                 Character best = availableCharacters.contains(new Bishop()) ? new Bishop() : availableCharacters.get(0);
@@ -398,10 +451,12 @@ class BotTest {
         game.characterSelectionTurn();
         game.playerTurn(bot2);
         game.playerTurn(bot2);
+        SimpleEntry<String, District> res3 = new SimpleEntry<>(bot2.getName(), new Temple());
+        assertEquals(res3, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
         game.playerTurn(bot3);
         game.playerTurn(bot3);
         game.playerTurn(bot3);
-        assertEquals(List.of(bot3, bot2, bot4), bot1.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 3", "bot 2", "bot 4"), bot1.getMostDangerousPlayersByBuiltDistricts());
         SimpleEntry<String, District> res1 = new SimpleEntry<>(bot3.getName(), new Harbor());
         assertTrue(bot1.canDestroy());
         assertTrue(bot1.canDestroyFromList(bot3.getBuiltDistricts()));
