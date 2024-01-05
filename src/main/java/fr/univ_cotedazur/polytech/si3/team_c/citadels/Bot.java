@@ -242,6 +242,7 @@ public class Bot extends Player {
     protected boolean canDestroyFromList(List<District> districtList) {
         if (districtList.isEmpty()) return false;
         for (District district : districtList) {
+            if (!district.isDestructible()) continue;
             if (district.getCost() - 1 <= getCoins()) return true;
         }
         return false;
