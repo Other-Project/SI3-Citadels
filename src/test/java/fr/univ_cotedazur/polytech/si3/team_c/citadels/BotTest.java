@@ -397,8 +397,6 @@ class BotTest {
                     return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
                 if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
-                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
-                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
                 return Action.NONE;
             }
         };
@@ -417,8 +415,6 @@ class BotTest {
                     return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
                 if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
-                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
-                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
                 return Action.NONE;
             }
         };
@@ -437,8 +433,6 @@ class BotTest {
                     return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
                 if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
-                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
-                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
                 return Action.NONE;
             }
         };
@@ -467,6 +461,30 @@ class BotTest {
         game.playerTurn(bot4);
         SimpleEntry<String, District> res2 = new SimpleEntry<>(bot4.getName(), new University());
         assertEquals(res2, bot1.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
+    }
+
+    @Test
+    void removeDistrictFromDistrictBuiltTest() {
+        Bot bot1 = new Bot("bot1", 10, List.of(new Temple())) {
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+        };
+        Game game = new Game();
+        game.addPlayer(bot1);
+        game.characterSelectionTurn();
+        game.playerTurn(bot1);
+        assertEquals(1, bot1.getBuiltDistricts().size());
+        bot1.removeDistrictFromDistrictBuilt(bot1.getBuiltDistricts().get(0));
+        assertEquals(0, bot1.getBuiltDistricts().size());
     }
 
 
