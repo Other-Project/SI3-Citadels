@@ -120,7 +120,7 @@ public class Bot extends Player {
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
         if (remainingActions.contains(Action.KILL))
             return Action.KILL;// Try to kill a character if the player's character is the Assassin
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()) != null)
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getCardsNumber()) != null)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
