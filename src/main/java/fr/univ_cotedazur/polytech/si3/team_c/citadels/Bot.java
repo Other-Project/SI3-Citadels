@@ -184,13 +184,13 @@ public class Bot extends Player {
         int nbCards = 0;
         int handSize = getHandDistricts().size();
         for (Map.Entry<String, Integer> p : players.entrySet()) {
-            if (!p.getKey().equals(this.getName())) {
-                int playerHandSize = p.getValue();
-                if (playerHandSize > handSize && playerHandSize > nbCards) {
-                    playerToExchange = p.getKey();
-                    nbCards = playerHandSize;
-                }
+            if (p.getKey().equals(this.getName())) continue;
+            int playerHandSize = p.getValue();
+            if (playerHandSize > handSize && playerHandSize > nbCards) {
+                playerToExchange = p.getKey();
+                nbCards = playerHandSize;
             }
+
         }
         return playerToExchange;
     }
