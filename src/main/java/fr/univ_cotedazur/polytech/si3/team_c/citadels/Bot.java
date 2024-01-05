@@ -118,7 +118,9 @@ public class Bot extends Player {
             return Action.TAKE_THREE;// Take three cards and pay 3 coins if it has enough money, no objective and it needs cards.
         if (remainingActions.contains(Action.STEAL))
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getCardsNumber()) != null)
+        if (remainingActions.contains(Action.KILL))
+            return Action.KILL;// Try to kill a character if the player's character is the Assassin
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getPlayerList()) != null)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
@@ -163,6 +165,11 @@ public class Bot extends Player {
 
     @Override
     public Character chooseCharacterToRob(List<Character> characterList) {
+        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+    }
+
+    @Override
+    public Character chooseCharacterToKill(List<Character> characterList) {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
     }
 
