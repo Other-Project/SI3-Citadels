@@ -166,6 +166,22 @@ public abstract class Player {
     protected abstract Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList);
 
     /**
+     * The player removes a district from his built district
+     *
+     * @param district the district to remove
+     */
+    protected void removeDistrictFromDistrictBuilt(District district) {
+        for (Map.Entry<Integer, List<District>> mapEntry : builtDistricts.entrySet()) {
+            if (mapEntry.getValue().contains(district)) {
+                List<District> newDistrictList = mapEntry.getValue();
+                newDistrictList.remove(district);
+                mapEntry.setValue(newDistrictList);
+                break;
+            }
+        }
+    }
+
+    /**
      * Adds a district to the player's hand
      *
      * @param district The district to add
