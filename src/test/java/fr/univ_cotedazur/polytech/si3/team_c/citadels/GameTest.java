@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
     private Game game;
+
     @BeforeEach
     void setup() {
         game = new Game();
@@ -277,5 +278,88 @@ class GameTest {
         game.characterSelectionTurn();
         game.playerTurn(trickedBot);
         assertEquals(3, trickedBot.getBuiltDistricts().size());
+    }
+
+    @Test
+    void warlordTest() {
+        Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot bot2 = new Bot("bot 2", 10, List.of(new Church(), new Monastery())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+
+        };
+        Game game2 = new Game();
+        // game1 test
+        game.addPlayer(warlordBot);
+        game.addPlayer(bot2);
+        game.characterSelectionTurn();
+        game.playerTurn(bot2);
+        assertEquals(1, bot2.getBuiltDistricts().size());
+        game.playerTurn(bot2);
+        assertEquals(2, bot2.getBuiltDistricts().size());
+        game.playerTurn(warlordBot);
+        assertEquals(1, bot2.getBuiltDistricts().size());
+    }
+
+    @Test
+    void warlordAgainstBishopTest() {
+        Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot bishopBot = new Bot("bot 3", 10, List.of(new Harbor())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Bishop()) ? new Bishop() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(warlordBot);
+        game.addPlayer(bishopBot);
+        game.characterSelectionTurn();
+        game.playerTurn(bishopBot);
+        assertEquals(1, bishopBot.getBuiltDistricts().size());
+        game.playerTurn(warlordBot);
+        assertEquals(1, bishopBot.getBuiltDistricts().size());
     }
 }

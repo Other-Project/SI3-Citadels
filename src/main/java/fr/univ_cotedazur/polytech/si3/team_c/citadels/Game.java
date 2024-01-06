@@ -56,7 +56,7 @@ public class Game {
     }
 
     public List<Player> getPlayerList() {
-        return playerList;
+        return new ArrayList<>(playerList);
     }
 
     public Deck getDeck() {
@@ -205,12 +205,50 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
                     player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
+                case DESTROY -> {
+                    Map<String, List<District>> districtListToDestroyFrom = getDistrictListToDestroyFrom();
+                    SimpleEntry<String, District> districtToDestroy = player.destroyDistrict(districtListToDestroyFrom).orElseThrow();
+                    Player playerToTarget = linkStringToPlayer(districtToDestroy.getKey());
+                    playerToTarget.removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
+                    player.pay(districtToDestroy.getValue().getCost() - 1);
+                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n {0} has now {3} coins", new Object[]{
+                            player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
+                }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
             }
             player.removeAction(action);
             LOGGER.info(player::toString);
         }
+    }
+
+    /**
+     * This method create the list of district that can be destroyed by the Warlord
+     */
+    protected Map<String, List<District>> getDistrictListToDestroyFrom() {
+        Map<String, List<District>> districtListToDestroyFrom = getGameObserver().getBuiltDistrict();
+        for (Player playerInList : playerList) {
+            if (playerInList.getCharacter().orElseThrow().equals(new Bishop()))
+                districtListToDestroyFrom.remove(playerInList.getName());// If a player is the Bishop, he can't be targeted by the Warlord
+        }
+        for (Map.Entry<String, List<District>> mapEntry : districtListToDestroyFrom.entrySet()) {
+            if (!mapEntry.getValue().isEmpty())
+                mapEntry.setValue(mapEntry.getValue().stream().filter(District::isDestructible).toList());
+        }
+        return districtListToDestroyFrom;
+    }
+
+    /**
+     * This method links a player to his name
+     *
+     * @param playerName the name of the player
+     * @return the player associated to playerName
+     */
+    private Player linkStringToPlayer(String playerName) {
+        for (Player player : getPlayerList()) {
+            if (playerName.equals(player.getName())) return player;
+        }
+        throw new NoSuchElementException("The player is not in the game");
     }
 
     /**
