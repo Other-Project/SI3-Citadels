@@ -37,4 +37,11 @@ public abstract class Character extends Card implements Comparable<Character> {
     public Action startTurnAction() {
         return Action.NONE;
     }
+
+    /**
+     * @return true if the character can have a district destroyed
+     */
+    public boolean canHaveADistrictDestroyed() {
+        return true;
+    }
 }
