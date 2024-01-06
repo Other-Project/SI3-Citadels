@@ -1,5 +1,7 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Warlord;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,5 +40,32 @@ public class GameObserver {
 
     public List<Player> getPlayerList() {
         return game.getPlayerList();
+    }
+
+    public Map<String, Character> getCharacters() {
+        Map<String, Character> res = new HashMap<>();
+        for (Player player : game.getPlayerList()) {
+            res.put(player.getName(), player.getCharacter().orElseThrow());
+        }
+        return res;
+    }
+
+
+    /**
+     * returns true if a player is able to destroy at least a district of other players
+     */
+    public boolean playerCanDestroyOthers(Player player) {
+        if (!player.getCharacter().orElseThrow().equals(new Warlord())) return false;
+        Map<String, Character> characterList = getCharacters();
+        for (Map.Entry<String, List<District>> mapEntry : getBuiltDistrict().entrySet()) {
+            if (!characterList.get(mapEntry.getKey()).canHaveADistrictDestroyed() || mapEntry.getKey().equals(player.getName())) {
+                continue;
+            }// If a player can't get attacked, he is not put in the map
+            mapEntry.setValue(mapEntry.getValue().stream()
+                    .filter(district -> district.getCost() - 1 <= player.getCoins()).filter(District::isDestructible).toList());
+            if (!mapEntry.getValue().isEmpty()) return true;
+            // If we're here, it means it exists at least one district that can get destroyed
+        }
+        return false;
     }
 }

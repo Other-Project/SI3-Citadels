@@ -92,6 +92,7 @@ public class Bot extends Player {
      */
     @Override
     public Action nextAction(Set<Action> remainingActions) {
+        GameObserver gameObserver = getGameStatus();
         var objective = districtObjective();
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
@@ -107,7 +108,7 @@ public class Bot extends Player {
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
-        if (remainingActions.contains(Action.DESTROY) && canDestroy())
+        if (remainingActions.contains(Action.DESTROY) && gameObserver.playerCanDestroyOthers(this))
             return Action.DESTROY;// The player destroys a district
         return Action.NONE;
     }
@@ -215,26 +216,6 @@ public class Bot extends Player {
     }
 
     /**
-     * Checks if the bot can destroy a district among all the districts the players built (except the current bot)
-     */
-    protected boolean canDestroy() {
-        GameObserver gameObserver = getGameStatus();
-        Map<String, List<District>> districtsBuilt = gameObserver.getBuiltDistrict();
-        districtsBuilt.remove(this.getName()); // The bot doesn't include his own cards for the moment
-        District smallestDistrictToDestroy = null;
-        for (Map.Entry<String, List<District>> mapEntry : districtsBuilt.entrySet()) {
-            for (District district : mapEntry.getValue()) {
-                if (!district.isDestructible()) continue; // We skip the districts that can't be destroyed
-                if (smallestDistrictToDestroy == null || district.getCost() < smallestDistrictToDestroy.getCost()) {
-                    smallestDistrictToDestroy = district;
-                }
-            }
-        }
-        if (smallestDistrictToDestroy == null) return false;
-        return (smallestDistrictToDestroy.getCost() - 1 <= getCoins());
-    }
-
-    /**
      * Checks if a district from the given list can be destroyed
      *
      * @return true if a single district can be destroyed from the given list
@@ -256,7 +237,8 @@ public class Bot extends Player {
      */
     @Override
     protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList) {
-        if (!canDestroy())
+        GameObserver gameObserver = getGameStatus();
+        if (!gameObserver.playerCanDestroyOthers(this))
             return Optional.empty();// In case the method is called, but the bot cannot destroy any district
         SimpleEntry<String, District> res = null;
         List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
