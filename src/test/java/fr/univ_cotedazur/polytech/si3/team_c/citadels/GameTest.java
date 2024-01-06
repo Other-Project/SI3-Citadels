@@ -311,7 +311,6 @@ class GameTest {
             }
 
         };
-        Game game2 = new Game();
         // game1 test
         game.addPlayer(warlordBot);
         game.addPlayer(bot2);
