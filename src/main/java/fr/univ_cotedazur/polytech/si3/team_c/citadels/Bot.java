@@ -221,7 +221,7 @@ public class Bot extends Player {
      * @return true if a single district can be destroyed from the given list
      */
     protected boolean canDestroyFromList(List<District> districtList) {
-        if (districtList.isEmpty()) return false;
+        if (districtList == null) return false;
         for (District district : districtList) {
             if (!district.isDestructible()) continue;
             if (district.getCost() - 1 <= getCoins()) return true;
@@ -244,9 +244,9 @@ public class Bot extends Player {
         List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
         int index = 0;
         String playerToTarget = playerToTargetList.get(index);
-        while (!canDestroyFromList(districtList.get(playerToTarget))) {
-            index++;
+        while (!canDestroyFromList(districtList.get(playerToTarget)) && index < playerToTargetList.size()) {
             playerToTarget = playerToTargetList.get(index);
+            index++;
         }// We select the right player to target according to our means
         Comparator<District> purpleColorComparator = Comparator.comparing(district -> district.getColor() == Colors.PURPLE ? 1 : 0);
         List<District> districtListFromPlayerToTarget = districtList.get(playerToTarget).stream().sorted(
