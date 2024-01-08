@@ -1,7 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Warlord;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +53,6 @@ public class GameObserver {
      * returns true if a player is able to destroy at least a district of other players
      */
     public boolean playerCanDestroyOthers(Player player) {
-        if (!player.getCharacter().orElseThrow().equals(new Warlord())) return false;
         Map<String, Character> characterList = getCharacters();
         for (Map.Entry<String, List<District>> mapEntry : getBuiltDistrict().entrySet()) {
             if (!characterList.get(mapEntry.getKey()).canHaveADistrictDestroyed() || mapEntry.getKey().equals(player.getName())) {

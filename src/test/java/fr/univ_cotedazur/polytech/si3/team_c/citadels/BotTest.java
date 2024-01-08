@@ -424,13 +424,14 @@ class BotTest {
         SimpleEntry<String, District> res1 = new SimpleEntry<>(merchantBot.getName(), new Harbor());
         assertTrue(gameObserver.playerCanDestroyOthers(warlordBot));
         assertTrue(warlordBot.canDestroyFromList(merchantBot.getBuiltDistricts()));
-        assertEquals(res1, warlordBot.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
+        assertEquals(res1, warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         SimpleEntry<String, District> res2 = new SimpleEntry<>(kingBot.getName(), new University());
-        assertEquals(res2, warlordBot.destroyDistrict(game.getGameObserver().getBuiltDistrict()).orElseThrow());
+        var districtToDestroy = warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow();
+        assertEquals(res2, districtToDestroy);
     }
 
     @Test

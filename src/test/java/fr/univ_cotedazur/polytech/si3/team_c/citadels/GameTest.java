@@ -290,7 +290,7 @@ class GameTest {
                 return best;
             }
         };
-        Bot bot2 = new Bot("bot 2", 10, List.of(new Church(), new Monastery())) {
+        Bot merchantBot = new Bot("merchantBot", 10, List.of(new Church(), new Monastery())) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
                 Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
@@ -313,14 +313,14 @@ class GameTest {
         };
         // game1 test
         game.addPlayer(warlordBot);
-        game.addPlayer(bot2);
+        game.addPlayer(merchantBot);
         game.characterSelectionTurn();
-        game.playerTurn(bot2);
-        assertEquals(1, bot2.getBuiltDistricts().size());
-        game.playerTurn(bot2);
-        assertEquals(2, bot2.getBuiltDistricts().size());
+        game.playerTurn(merchantBot);
+        assertEquals(1, merchantBot.getBuiltDistricts().size());
+        game.playerTurn(merchantBot);
+        assertEquals(2, merchantBot.getBuiltDistricts().size());
         game.playerTurn(warlordBot);
-        assertEquals(1, bot2.getBuiltDistricts().size());
+        assertEquals(1, merchantBot.getBuiltDistricts().size());
     }
 
     @Test

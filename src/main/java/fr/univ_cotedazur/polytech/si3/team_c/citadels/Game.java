@@ -228,8 +228,8 @@ public class Game {
     protected Map<String, List<District>> getDistrictListToDestroyFrom() {
         Map<String, List<District>> districtListToDestroyFrom = getGameObserver().getBuiltDistrict();
         for (Player playerInList : playerList) {
-            if (playerInList.getCharacter().orElseThrow().equals(new Bishop()))
-                districtListToDestroyFrom.remove(playerInList.getName());// If a player is the Bishop, he can't be targeted by the Warlord
+            if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed())
+                districtListToDestroyFrom.remove(playerInList.getName());// Removes the player who can't get target by the Warlord
         }
         for (Map.Entry<String, List<District>> mapEntry : districtListToDestroyFrom.entrySet()) {
             if (!mapEntry.getValue().isEmpty())

@@ -239,24 +239,14 @@ public class Bot extends Player {
         GameObserver gameObserver = getGameStatus();
         if (!gameObserver.playerCanDestroyOthers(this))
             return Optional.empty();// In case the method is called, but the bot cannot destroy any district
-        SimpleEntry<String, District> res = null;
         List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districtList);
-        int index = 0;
-        String playerToTarget = playerToTargetList.get(index);
-        while (!canDestroyFromList(districtList.get(playerToTarget)) && index < playerToTargetList.size()) {
-            playerToTarget = playerToTargetList.get(index);
-            index++;
-        }// We select the right player to target according to our means
-        Comparator<District> purpleColorComparator = Comparator.comparing(district -> district.getColor() == Colors.PURPLE ? 1 : 0);
-        List<District> districtListFromPlayerToTarget = districtList.get(playerToTarget).stream().sorted(
-                purpleColorComparator.thenComparing(District::getPoint).reversed()).filter(District::isDestructible).toList();
+        Comparator<Map.Entry<String, District>> comparatorStringDistrict = Comparator.comparing(entry -> playerToTargetList.indexOf(entry.getKey()));
+        return districtList.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())) && canDestroyFromList(entry.getValue()))
+                .flatMap(entry -> entry.getValue().stream().map(v -> new SimpleEntry<>(entry.getKey(), v)))
+                .filter(entry -> entry.getValue().isDestructible() && entry.getValue().getCost() - 1 <= getCoins())
+                .max(comparatorStringDistrict.reversed()
+                        .thenComparing(entry -> entry.getValue().getColor() == Colors.PURPLE ? 1 : 0)
+                        .thenComparing(entry -> entry.getValue().getPoint()));
         // We order the district list first on the purple colour, then on the district's points
-        for (District district : districtListFromPlayerToTarget) {
-            if (district.getCost() - 1 <= getCoins()) {
-                res = new SimpleEntry<>(playerToTarget, district);
-                break;
-            }
-        }
-        return Optional.ofNullable(res);
     }
 }
