@@ -206,10 +206,9 @@ public class Bot extends Player {
      * Get a list of the players names sorted by their dangerousness level
      * (number of district built, then amount of purple district built)
      */
-    protected List<String> getMostDangerousPlayersByBuiltDistricts() {
-        GameObserver gameObserver = getGameStatus();
+    protected List<String> getMostDangerousPlayersByBuiltDistricts(Map<String, List<District>> districtBuilt) {
         Comparator<Map.Entry<String, List<District>>> entrySizeComparator = Comparator.comparing(entry -> entry.getValue().size());
-        return gameObserver.getBuiltDistrict().entrySet().stream().sorted(entrySizeComparator
+        return districtBuilt.entrySet().stream().sorted(entrySizeComparator
                         .thenComparingInt(entry -> entry.getValue().stream().filter(district -> district.getColor() == Colors.PURPLE)
                                 .toList().size()).reversed())
                 .map(Map.Entry::getKey).filter(string -> !string.equals(this.getName())).toList();
@@ -241,7 +240,7 @@ public class Bot extends Player {
         if (!gameObserver.playerCanDestroyOthers(this))
             return Optional.empty();// In case the method is called, but the bot cannot destroy any district
         SimpleEntry<String, District> res = null;
-        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts();
+        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districtList);
         int index = 0;
         String playerToTarget = playerToTargetList.get(index);
         while (!canDestroyFromList(districtList.get(playerToTarget)) && index < playerToTargetList.size()) {

@@ -303,6 +303,7 @@ class BotTest {
                 return Action.NONE;
             }
         };
+        GameObserver gameObserver = new GameObserver(game);
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         game.addPlayer(bot3);
@@ -322,12 +323,12 @@ class BotTest {
         assertEquals(2, bot2.getBuiltDistricts().size());
         assertEquals(3, bot3.getBuiltDistricts().size());
         assertEquals(4, bot4.getBuiltDistricts().size());
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts());
-        assertEquals(List.of("bot 3", "bot 2", "bot 1"), bot4.getMostDangerousPlayersByBuiltDistricts());
-        assertEquals(List.of("bot 4", "bot 3", "bot 1"), bot2.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 3", "bot 2", "bot 1"), bot4.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 4", "bot 3", "bot 1"), bot2.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
         game.playerTurn(bot3);
         // As the bot4 has more purple district built than bot3, he should be first in dangerousness level
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
     }
 
     @Test
@@ -419,7 +420,7 @@ class BotTest {
         game.playerTurn(merchantBot);
         game.playerTurn(merchantBot);
         game.playerTurn(merchantBot);
-        assertEquals(List.of("merchantBot", "bishopBot", "kingBot"), warlordBot.getMostDangerousPlayersByBuiltDistricts());
+        assertEquals(List.of("merchantBot", "bishopBot", "kingBot"), warlordBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
         SimpleEntry<String, District> res1 = new SimpleEntry<>(merchantBot.getName(), new Harbor());
         assertTrue(gameObserver.playerCanDestroyOthers(warlordBot));
         assertTrue(warlordBot.canDestroyFromList(merchantBot.getBuiltDistricts()));
