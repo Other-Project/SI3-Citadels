@@ -4,6 +4,8 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Robot player
@@ -11,6 +13,7 @@ import java.util.function.Function;
  * @author Team C
  */
 public class Bot extends Player {
+    private static final Logger LOGGER = Logger.getGlobal();
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
@@ -36,7 +39,71 @@ public class Bot extends Player {
      * @param character The character whose profitability is to be calculated
      */
     protected double characterProfitability(Character character) {
-        return quantityOfColorBuilt(character.getColor());
+        List<SimpleEntry<District, Double>> districtsByProfitability = getHandDistricts().stream()
+                .map(district -> new SimpleEntry<>(district, districtProfitability(district)))
+                .sorted(Comparator.<SimpleEntry<District, Double>>comparingDouble(SimpleEntry::getValue).reversed()).toList();
+        int availableCoins = getCoins();
+        double coinNecessity = (8 - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / 8.0;
+        double securityNecessity = getBuiltDistricts().size() / 8.0;
+        double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / 8.0;
+        double cardNecessity = (4 - getHandDistricts().size()) / 4.0; // The need to gain cards
+        double fear = 0.5 + getGameStatus().getBuiltDistrict().values().stream().mapToInt(built -> built.size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
+
+        double coinProfitability = quantityOfColorBuilt(character.getColor());
+        double securityProfitability = 0;
+        double buildProfitability = 0;
+        double cardProfitability = 0;
+        double fearProfitability = 0;
+
+        if (!character.canHaveADistrictDestroyed()) securityProfitability += 1;
+        buildProfitability += character.numberOfDistrictToBuild();
+        switch (character.startTurnAction()) {
+            case STARTUP_INCOME -> {
+                coinProfitability++;
+                cardProfitability+=0.5; // Because if there's already an income there's less need to use the income action
+            }
+            case BEGIN_DRAW -> {
+                cardProfitability += 2;
+                coinProfitability += 1;
+            }
+            case CROWN -> {
+                coinProfitability += 0.125;
+                securityProfitability += 0.125;
+                buildProfitability += 0.125;
+                cardProfitability += 0.125;
+                fearProfitability += 0.125;
+            }
+            default -> { /* do nothing */ }
+        }
+        for (Action action : character.getAction().orElse(Collections.emptyList())) {
+            switch (action) {
+                case KILL -> {
+                    securityProfitability += 0.5;
+                    fearProfitability++;
+                }
+                case STEAL -> {
+                    securityProfitability += 0.25;
+                    fearProfitability += 0.5;
+                    coinProfitability += 0.5;
+                }
+                case EXCHANGE_DECK ->
+                        cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count();
+                case EXCHANGE_PLAYER -> {
+                    cardProfitability =
+                            fearProfitability += 0.5;
+                }
+                case DESTROY -> {
+                    fearProfitability++;
+                }
+                default -> { /* do nothing */ }
+            }
+        }
+
+        return coinProfitability * coinNecessity
+                + securityProfitability * securityNecessity
+                + buildProfitability * buildNecessity
+                + cardProfitability * cardNecessity
+                + fearProfitability * fear;
     }
 
     /**
@@ -96,6 +163,7 @@ public class Bot extends Player {
         for (District d : getHandDistricts()) if (d.getPoint() < worst.getPoint()) worst = d;
         return worst;
     }
+
     /**
      * The Bot choose an action to do during his turn
      *
@@ -114,7 +182,7 @@ public class Bot extends Player {
             return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
             return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
-        if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() > 1 && (objective.isPresent() && objective.get().getCost() > getCoins())) 
+        if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() > 1 && (objective.isPresent() && objective.get().getCost() > getCoins()))
             return Action.DISCARD;// Discard a card to receive one coin if there are at least two cards in hand and need money to build the objective
         if (remainingActions.contains(Action.TAKE_THREE) && getCoins() > 3 && getHandDistricts().isEmpty() && objective.isEmpty())
             return Action.TAKE_THREE;// Take three cards and pay 3 coins if it has enough money, no objective and it needs cards.
