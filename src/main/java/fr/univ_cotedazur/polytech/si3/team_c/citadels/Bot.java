@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -103,6 +104,7 @@ public class Bot extends Player {
      */
     @Override
     public Action nextAction(Set<Action> remainingActions) {
+        GameObserver gameObserver = getGameStatus();
         var objective = districtObjective();
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
@@ -124,6 +126,8 @@ public class Bot extends Player {
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
+        if (remainingActions.contains(Action.DESTROY) && destroyDistrict(gameObserver.getDistrictListToDestroyFrom()).isPresent())
+            return Action.DESTROY;// The player wants to destroy a district
         return Action.NONE;
     }
 
@@ -224,5 +228,40 @@ public class Bot extends Player {
             if (districtProfitability(d) < 1) cardToExchange.add(d);
         }
         return cardToExchange;
+    }
+
+    /**
+     * Get a list of the players names sorted by their dangerousness level
+     * (number of district built, then amount of purple district built)
+     */
+    protected List<String> getMostDangerousPlayersByBuiltDistricts(Map<String, List<District>> districtBuilt) {
+        Comparator<Map.Entry<String, List<District>>> entrySizeComparator = Comparator.comparing(entry -> entry.getValue().size());
+        return districtBuilt.entrySet().stream().sorted(entrySizeComparator
+                        .thenComparingLong(entry -> entry.getValue().stream()
+                                .filter(district -> district.getColor() == Colors.PURPLE).count()).reversed())
+                .map(Map.Entry::getKey).filter(string -> !string.equals(this.getName())).toList();
+    }
+
+    /**
+     * The bot chooses a district to destroy among the districts
+     *
+     * @param districts the list from which the district to be destroyed is selected
+     * @return The district to destroy
+     */
+    @Override
+    protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districts) {
+        GameObserver gameObserver = getGameStatus();
+        if (!gameObserver.playerCanDestroyOthers(this))
+            return Optional.empty();// In case the method is called, but the bot cannot destroy any district
+        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districts);
+        Comparator<Map.Entry<String, District>> comparatorStringDistrict = Comparator.comparing(entry -> playerToTargetList.indexOf(entry.getKey()));
+        return districts.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())))
+                .flatMap(entry -> entry.getValue().stream().map(v -> new SimpleEntry<>(entry.getKey(), v)))
+                .filter(entry -> entry.getValue().isDestructible() && (entry.getValue().getCost() - 1 <= getCoins() - 1) || entry.getValue().getCost() == 1)
+                .max(comparatorStringDistrict.reversed()
+                        .thenComparing(entry -> entry.getValue().getColor() == Colors.PURPLE ? 1 : 0)
+                        .thenComparing(entry -> entry.getValue().getPoint()));
+        /* We order the district list first on the purple colour, then on the district's points.
+        We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
     }
 }

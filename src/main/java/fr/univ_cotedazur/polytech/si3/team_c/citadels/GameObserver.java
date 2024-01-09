@@ -35,4 +35,39 @@ public class GameObserver {
     public int getPlayersNumber() {
         return game.getPlayerList().size();
     }
+
+    public Map<String, Character> getCharacters() {
+        Map<String, Character> res = new HashMap<>();
+        for (Player player : game.getPlayerList()) {
+            res.put(player.getName(), player.getCharacter().orElseThrow());
+        }
+        return res;
+    }
+
+
+    /**
+     * returns true if a player is able to destroy at least a district of other players
+     */
+    public boolean playerCanDestroyOthers(Player player) {
+        Map<String, Character> characterList = getCharacters();
+        for (Map.Entry<String, List<District>> mapEntry : getBuiltDistrict().entrySet()) {
+            if (!characterList.get(mapEntry.getKey()).canHaveADistrictDestroyed() || mapEntry.getKey().equals(player.getName())) {
+                continue;
+            }// If a player can't get attacked, he is not put in the map
+            mapEntry.setValue(mapEntry.getValue().stream()
+                    .filter(district -> district.getCost() - 1 <= player.getCoins()).filter(District::isDestructible).toList());
+            if (!mapEntry.getValue().isEmpty()) return true;
+            // If we're here, it means it exists at least one district that can get destroyed
+        }
+        return false;
+    }
+
+    /**
+     * Get the destructible district list
+     *
+     * @return A map of the players names associated with their built districts
+     */
+    public Map<String, List<District>> getDistrictListToDestroyFrom() {
+        return game.getDistrictListToDestroyFrom();
+    }
 }

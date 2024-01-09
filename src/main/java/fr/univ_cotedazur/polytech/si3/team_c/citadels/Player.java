@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.Function;
 
@@ -161,6 +162,30 @@ public abstract class Player {
         builtDistricts.putIfAbsent(turn, new ArrayList<>());
         builtDistricts.get(turn).add(district);
         return true;
+    }
+
+    /**
+     * The player wants to destroy a district
+     *
+     * @param districtList the list from which the district to be destroyed is selected
+     * @return the district to be destroyed
+     */
+    protected abstract Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList);
+
+    /**
+     * The player removes a district from his built district
+     *
+     * @param district the district to remove
+     */
+    protected void removeDistrictFromDistrictBuilt(District district) {
+        for (Map.Entry<Integer, List<District>> mapEntry : builtDistricts.entrySet()) {
+            if (mapEntry.getValue().contains(district)) {
+                List<District> newDistrictList = mapEntry.getValue();
+                newDistrictList.remove(district);
+                mapEntry.setValue(newDistrictList);
+                break;
+            }
+        }
     }
 
     /**

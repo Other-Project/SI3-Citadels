@@ -17,4 +17,8 @@ public class Bishop extends Character {
         return Optional.of(List.of(Action.SPECIAL_INCOME));
     }
 
+    @Override
+    public boolean canHaveADistrictDestroyed() {
+        return false;
+    }
 }

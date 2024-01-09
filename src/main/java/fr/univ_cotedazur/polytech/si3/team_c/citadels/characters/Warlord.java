@@ -14,6 +14,6 @@ public class Warlord extends Character {
 
     @Override
     public Optional<List<Action>> getAction() {
-        return Optional.of(List.of(Action.SPECIAL_INCOME));
+        return Optional.of(List.of(Action.SPECIAL_INCOME, Action.DESTROY));
     }
 }
