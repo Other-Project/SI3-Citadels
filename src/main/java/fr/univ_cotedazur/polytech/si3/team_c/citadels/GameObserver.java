@@ -65,4 +65,13 @@ public class GameObserver {
         }
         return false;
     }
+
+    /**
+     * Get the destructible district list
+     *
+     * @return A map of the players names associated with their built districts
+     */
+    public Map<String, List<District>> getDistrictListToDestroyFrom() {
+        return game.getDistrictListToDestroyFrom();
+    }
 }
