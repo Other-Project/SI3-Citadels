@@ -209,6 +209,13 @@ class BotTest {
         player1.pickCharacter(List.of(new Merchant()));
         player1.createActionSet();
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
+        bot1.gainCoins(10);
+        bot1.addDistrictToHand(new Smithy());
+        bot1.addDistrictToHand(new Laboratory());
+        bot1.buildDistrict(new Smithy(), 0);
+        bot1.buildDistrict(new Laboratory(), 0);
+        bot1.createActionSet();
+        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME, Action.TAKE_THREE, Action.DISCARD)), player1.getActionSet());
     }
 
     @Test
@@ -245,10 +252,10 @@ class BotTest {
         bot2.pickCharacter(List.of(new King()));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
-        assertEquals(player2, bot1.choosePlayerToExchangeCards(List.of(bot2)));
+        assertEquals("Bot 2", bot1.choosePlayerToExchangeCards(bot1.getGameStatus().getCardsNumber()));
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
         bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
-        assertNull(bot1.choosePlayerToExchangeCards(List.of(bot2)));
+        assertNull(bot1.choosePlayerToExchangeCards(bot1.getGameStatus().getCardsNumber()));
         bot1.removeAction(Action.EXCHANGE_DECK);
         assertEquals(Action.NONE, bot1.nextAction());
     }
@@ -514,5 +521,27 @@ class BotTest {
 
     }
 
+    @Test
+    void cardToDiscardTest() {
+        assertEquals(new Church(), bot1.cardToDiscard());
+        assertEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
+        bot1.gainCoins(14);
+        bot1.getHandDistricts().forEach(d -> bot1.buildDistrict(d, 0));
+        assertNotEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
+        bot1.addDistrictToHand(new Manor());
+        assertNotEquals(Action.DISCARD, bot1.nextAction(Set.of(Action.DISCARD)));
+    }
 
+    @Test
+    void cardToDiscard() {
+        bot1.gainCoins(1000);
+        bot1.getHandDistricts().forEach(d -> bot1.buildDistrict(d, 0));
+        System.out.println(bot1.getCoins());
+        assertEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
+        bot1.pay(987);
+        assertNotEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
+        bot1.gainCoins(1000);
+        bot1.addDistrictToHand(new Manor());
+        assertNotEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
+    }
 }

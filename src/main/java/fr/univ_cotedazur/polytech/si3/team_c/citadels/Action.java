@@ -18,9 +18,21 @@ public enum Action {
      */
     BUILD,
     /**
+     * The player wants to discard a card to gain a coin
+     */
+    DISCARD,
+    /**
+     * The player takes 3 cards and pays 3 coins
+     */
+    TAKE_THREE,
+    /**
      * The player wants to rob a character. When his turn begins, the player will take all his gold
      */
     STEAL,
+    /**
+     * The player wants to kill a character. When a character has been killed, he can't play anymore
+     */
+    KILL,
     /**
      * The player wants to exchange some of his cards with the deck
      */
@@ -37,6 +49,10 @@ public enum Action {
      * The player draws 2 districts at the beginning of his turn
      */
     BEGIN_DRAW,
+    /**
+     * The player gets a coin at the game startup
+     */
+    STARTUP_INCOME,
     /**
      * The player wants to end his turn
      */

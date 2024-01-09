@@ -8,7 +8,7 @@ import java.util.Map;
  * A class to have a view of the game from a player's perspective and make decisions based on all available informations
  */
 public class GameObserver {
-    Game game;
+    private Game game;
 
     public GameObserver(Game game) {
         this.game = game;
@@ -34,10 +34,6 @@ public class GameObserver {
 
     public int getPlayersNumber() {
         return game.getPlayerList().size();
-    }
-
-    public List<Player> getPlayerList() {
-        return game.getPlayerList();
     }
 
     public Map<String, Character> getCharacters() {

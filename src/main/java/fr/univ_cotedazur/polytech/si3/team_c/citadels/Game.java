@@ -23,6 +23,7 @@ public class Game {
     private List<Character> charactersToInteractWith;
     private Player robber;
     private Character characterToRob;
+    private Character characterToKill;
     private final Random random = new Random();
     private final List<District> discard;
     private final GameObserver gameStatus = new GameObserver(this);
@@ -136,6 +137,10 @@ public class Game {
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
+        if (player.getCharacter().orElseThrow().equals(characterToKill)) {
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
+            return;
+        }
         Action startOfTurnAction = player.playStartOfTurnAction();
         if (startOfTurnAction != Action.NONE) {
             switch (startOfTurnAction) {
@@ -146,6 +151,10 @@ public class Game {
                         player.addDistrictToHand(district);
                         LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
                     }
+                }
+                case STARTUP_INCOME -> {
+                    LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+                    player.gainCoins(1);
                 }
                 default ->
                         throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
@@ -177,12 +186,31 @@ public class Game {
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
+                case TAKE_THREE -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " pays 3 coins and draw 3 cards");
+                    List<District> drawnCards = deck.draw(3);
+                    player.pay(3);
+                    drawnCards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
+                }
+                case DISCARD -> {
+                    District card = player.cardToDiscard();
+                    LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
+                    player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
+                    player.gainCoins(1);
+                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
+                }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
+                }
+                case KILL -> {
+                    if (charactersToInteractWith.isEmpty()) return;
+                    characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
+                    LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
@@ -263,6 +291,7 @@ public class Game {
         int previousCrown = getCrown();
         characterToRob = null;
         robber = null;
+        characterToKill = null;
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");

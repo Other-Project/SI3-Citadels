@@ -87,6 +87,13 @@ public abstract class Player {
     }
 
     /**
+     * Ask the player which card to discard
+     *
+     * @return The card that the player chose to discard
+     */
+    protected abstract District cardToDiscard();
+
+    /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add
@@ -385,10 +392,18 @@ public abstract class Player {
     public abstract Character chooseCharacterToRob(List<Character> characterList);
 
     /**
+     * Ask the player to choose a character to kill
+     *
+     * @param characterList the list of character the player can kill
+     * @return the player to kill
+     */
+    public abstract Character chooseCharacterToKill(List<Character> characterList);
+
+    /**
      * Asks the player to choose another player with whom to exchange his hand.
+     *
      * @param playerList List of players he can exchange with
      * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
-
      */
     public abstract Player playerToExchangeCards(List<Player> playerList);
 
