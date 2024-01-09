@@ -50,8 +50,5 @@ approved your changes, they can then merge it with the `main` branch.
 #### Participate in Reviews
 
 Helping to review pull requests is another great way to contribute. Your feedback
-can help to shape the implementation of new features. When reviewing pull requests,
-however, please refrain from approving or rejecting a PR unless you are a core
-committer for the Spring Framework.
-
+can help to shape the implementation of new features.
 
