@@ -108,10 +108,8 @@ public class Bot extends Player {
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
-        if (remainingActions.contains(Action.DESTROY)
-                && gameObserver.playerCanDestroyOthers(this)
-                && destroyDistrict(gameObserver.getDistrictListToDestroyFrom()).isPresent())
-            return Action.DESTROY;// The player destroys a district
+        if (remainingActions.contains(Action.DESTROY) && destroyDistrict(gameObserver.getDistrictListToDestroyFrom()).isPresent())
+            return Action.DESTROY;// The player wants to destroy a district
         return Action.NONE;
     }
 

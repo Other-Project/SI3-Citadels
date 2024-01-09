@@ -30,7 +30,7 @@ public enum Action {
      */
     EXCHANGE_PLAYER,
     /**
-     * The player destroys a district
+     * The player wants to destroy a district
      */
     DESTROY,
     /**
