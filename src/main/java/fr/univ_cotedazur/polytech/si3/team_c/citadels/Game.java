@@ -162,32 +162,26 @@ public class Game {
         }
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
+            LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
             switch (action) {
                 case DRAW -> {
-                    LOGGER.info(player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
                     player.pickDistrictsFromDeck(drawnCard)
                             .forEach(district -> LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), district}));
-                    player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
-                    LOGGER.info(player.getName() + " claims his income");
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
-                    player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
                 }
                 case BUILD -> {
-                    LOGGER.info(player.getName() + " chooses to build a district");
                     player.pickDistrictsToBuild(currentTurn)
                             .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
                 }
                 case SPECIAL_INCOME -> {
-                    LOGGER.info(player.getName() + " claims his special income");
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
                 case TAKE_THREE -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " pays 3 coins and draw 3 cards");
                     List<District> drawnCards = deck.draw(3);
                     player.pay(3);
                     drawnCards.forEach(player::addDistrictToHand);
@@ -195,14 +189,12 @@ public class Game {
                 }
                 case DISCARD -> {
                     District card = player.cardToDiscard();
-                    LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
                     player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
                     player.gainCoins(1);
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
                 }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
-                    LOGGER.info(player.getName() + " wants to steal a character");
                     characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                     robber = player;
@@ -220,7 +212,6 @@ public class Game {
                     List<District> cards = deck.draw(cardsToExchange.size());
                     cards.forEach(player::addDistrictToHand);
                     LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
-                    player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
                 }
                 case EXCHANGE_PLAYER -> {
                     Player playerToExchangeCards = player.playerToExchangeCards(getPlayerList());
@@ -231,7 +222,6 @@ public class Game {
                     hand1.forEach(playerToExchangeCards::addDistrictToHand);
                     handExchange.forEach(player::addDistrictToHand);
                     LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
-                    player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
                 case DESTROY -> {
                     Map<String, List<District>> districtListToDestroyFrom = getDistrictListToDestroyFrom();

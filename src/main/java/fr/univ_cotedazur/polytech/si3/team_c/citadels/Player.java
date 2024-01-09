@@ -366,8 +366,16 @@ public abstract class Player {
         return actionSet;
     }
 
+    /**
+     * Remove an action and it's incompatibilities
+     *
+     * @param action The action to remove
+     * @return True if the action has been deleted successfully
+     */
     public boolean removeAction(Action action) {
-        return actionSet.remove(action);// Remove the action of the actionSet
+        boolean success = actionSet.remove(action);
+        if (success) actionSet.removeAll(action.getIncompatibleActions());
+        return success;
     }
 
     /**
@@ -416,6 +424,7 @@ public abstract class Player {
 
     /**
      * Remove the cards of the player hand
+     *
      * @param cards List of cards to remove of the hand
      */
     public void removeFromHand(List<District> cards) {

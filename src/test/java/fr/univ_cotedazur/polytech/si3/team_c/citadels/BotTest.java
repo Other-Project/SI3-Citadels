@@ -225,12 +225,10 @@ class BotTest {
         assertTrue(player1.removeAction(Action.SPECIAL_INCOME));
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW, Action.INCOME)), player1.getActionSet());
         assertTrue(player1.removeAction(Action.INCOME));
-        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW)), player1.getActionSet());
+        assertEquals(new HashSet<>(List.of(Action.BUILD)), player1.getActionSet());
         assertTrue(player1.removeAction(Action.BUILD));
-        assertEquals(new HashSet<>(List.of(Action.DRAW)), player1.getActionSet());
-        assertTrue(player1.removeAction(Action.DRAW));
         assertEquals(new HashSet<>(), player1.getActionSet());
-        assertFalse(player1.removeAction(Action.DRAW));
+        assertFalse(player1.removeAction(Action.BUILD));
         assertEquals(new HashSet<>(), player1.getActionSet());
     }
 
