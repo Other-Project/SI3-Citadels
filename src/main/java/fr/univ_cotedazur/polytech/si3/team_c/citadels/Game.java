@@ -239,7 +239,7 @@ public class Game {
                     Player playerToTarget = linkStringToPlayer(districtToDestroy.getKey());
                     playerToTarget.removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
                     player.pay(districtToDestroy.getValue().getCost() - 1);
-                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n {0} has now {3} coins", new Object[]{
+                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
                             player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
                 }
                 default ->
