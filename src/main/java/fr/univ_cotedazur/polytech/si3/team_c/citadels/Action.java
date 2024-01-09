@@ -18,6 +18,14 @@ public enum Action {
      */
     BUILD,
     /**
+     * The player wants to discard a card to gain a coin
+     */
+    DISCARD,
+    /**
+     * The player takes 3 cards and pays 3 coins
+     */
+    TAKE_THREE,
+    /**
      * The player wants to rob a character. When his turn begins, the player will take all his gold
      */
     STEAL,

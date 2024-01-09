@@ -86,6 +86,13 @@ public abstract class Player {
     }
 
     /**
+     * Ask the player which card to discard
+     *
+     * @return The card that the player chose to discard
+     */
+    protected abstract District cardToDiscard();
+
+    /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add

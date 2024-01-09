@@ -186,6 +186,20 @@ public class Game {
                     int claimedCoins = player.gainSpecialIncome();
                     LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
                 }
+                case TAKE_THREE -> {
+                    LOGGER.log(Level.INFO, () -> player.getName() + " pays 3 coins and draw 3 cards");
+                    List<District> drawnCards = deck.draw(3);
+                    player.pay(3);
+                    drawnCards.forEach(player::addDistrictToHand);
+                    LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
+                }
+                case DISCARD -> {
+                    District card = player.cardToDiscard();
+                    LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
+                    player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
+                    player.gainCoins(1);
+                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
+                }
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
