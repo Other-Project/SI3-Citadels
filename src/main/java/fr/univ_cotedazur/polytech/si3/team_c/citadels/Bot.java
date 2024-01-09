@@ -209,39 +209,25 @@ public class Bot extends Player {
     protected List<String> getMostDangerousPlayersByBuiltDistricts(Map<String, List<District>> districtBuilt) {
         Comparator<Map.Entry<String, List<District>>> entrySizeComparator = Comparator.comparing(entry -> entry.getValue().size());
         return districtBuilt.entrySet().stream().sorted(entrySizeComparator
-                        .thenComparingInt(entry -> entry.getValue().stream().filter(district -> district.getColor() == Colors.PURPLE)
-                                .toList().size()).reversed())
+                        .thenComparingLong(entry -> entry.getValue().stream()
+                                .filter(district -> district.getColor() == Colors.PURPLE).count()).reversed())
                 .map(Map.Entry::getKey).filter(string -> !string.equals(this.getName())).toList();
     }
 
     /**
-     * Checks if a district from the given list can be destroyed
+     * The bot chooses a district to destroy among the districts
      *
-     * @return true if a single district can be destroyed from the given list
-     */
-    protected boolean canDestroyFromList(List<District> districtList) {
-        if (districtList == null) return false;
-        for (District district : districtList) {
-            if (!district.isDestructible()) continue;
-            if (district.getCost() - 1 <= getCoins()) return true;
-        }
-        return false;
-    }
-
-    /**
-     * The bot chooses a district to destroy among the districtList
-     *
-     * @param districtList the list from which the district to be destroyed is selected
+     * @param districts the list from which the district to be destroyed is selected
      * @return The district to destroy
      */
     @Override
-    protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList) {
+    protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districts) {
         GameObserver gameObserver = getGameStatus();
         if (!gameObserver.playerCanDestroyOthers(this))
             return Optional.empty();// In case the method is called, but the bot cannot destroy any district
-        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districtList);
+        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districts);
         Comparator<Map.Entry<String, District>> comparatorStringDistrict = Comparator.comparing(entry -> playerToTargetList.indexOf(entry.getKey()));
-        return districtList.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())) && canDestroyFromList(entry.getValue()))
+        return districts.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())))
                 .flatMap(entry -> entry.getValue().stream().map(v -> new SimpleEntry<>(entry.getKey(), v)))
                 .filter(entry -> entry.getValue().isDestructible() && (entry.getValue().getCost() - 1 <= getCoins() - 1) || entry.getValue().getCost() == 1)
                 .max(comparatorStringDistrict.reversed()

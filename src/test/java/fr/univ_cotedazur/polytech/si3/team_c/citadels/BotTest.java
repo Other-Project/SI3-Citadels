@@ -329,17 +329,6 @@ class BotTest {
     }
 
     @Test
-    void canDestroyFromListTest() {
-        Bot bot1 = new Bot("bot 1", 0, Collections.emptyList());
-        assertFalse(bot1.canDestroyFromList(Collections.emptyList()));
-        assertTrue(bot1.canDestroyFromList(List.of(new Temple()))); // The Temple costs 1 so the bot should be able to destroy it
-        assertTrue(bot1.canDestroyFromList(List.of(new Temple(), new Docks(), new Harbor())));
-        assertFalse(bot1.canDestroyFromList(List.of(new Harbor()))); // The Harbor costs 4, so the bot shouldn't be able to destroy it
-        bot1.gainCoins(3);
-        assertTrue(bot1.canDestroyFromList(List.of(new Harbor())));
-    }
-
-    @Test
     void destroyDistrictTest() {
         Bot warlordBot = new Bot("warlordBot", 50, Collections.emptyList()) {
             @Override
@@ -420,7 +409,6 @@ class BotTest {
         assertEquals(List.of("merchantBot", "bishopBot", "kingBot"), warlordBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
         SimpleEntry<String, District> res1 = new SimpleEntry<>(merchantBot.getName(), new Harbor());
         assertTrue(gameObserver.playerCanDestroyOthers(warlordBot));
-        assertTrue(warlordBot.canDestroyFromList(merchantBot.getBuiltDistricts()));
         assertEquals(res1, warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);

@@ -230,10 +230,8 @@ public class Game {
         for (Player playerInList : playerList) {
             if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed())
                 districtListToDestroyFrom.remove(playerInList.getName());// Removes the player who can't get target by the Warlord
-        }
-        for (Map.Entry<String, List<District>> mapEntry : districtListToDestroyFrom.entrySet()) {
-            if (!mapEntry.getValue().isEmpty())
-                mapEntry.setValue(mapEntry.getValue().stream().filter(District::isDestructible).toList());
+            else districtListToDestroyFrom.replace(playerInList.getName(),
+                    districtListToDestroyFrom.get(playerInList.getName()).stream().filter(District::isDestructible).toList());
         }
         return districtListToDestroyFrom;
     }
