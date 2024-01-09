@@ -128,7 +128,6 @@ public class Game {
         LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
-        if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
         if (player.getCharacter().orElseThrow().equals(characterToRob)) {
             LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
@@ -155,6 +154,10 @@ public class Game {
                 case STARTUP_INCOME -> {
                     LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
                     player.gainCoins(1);
+                }
+                case GET_CROWN -> {
+                    LOGGER.log(Level.INFO, "{0} get the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+                    setCrown(playerList.indexOf(player));
                 }
                 default ->
                         throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");

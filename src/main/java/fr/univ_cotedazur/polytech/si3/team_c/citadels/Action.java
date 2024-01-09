@@ -54,6 +54,10 @@ public enum Action {
      */
     STARTUP_INCOME,
     /**
+     * The player gets the crown at the beginning of his turn
+     */
+    GET_CROWN,
+    /**
      * The player wants to end his turn
      */
     NONE
