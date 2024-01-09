@@ -21,9 +21,9 @@ public class Game {
      * The characters the player can interact with
      */
     private List<Character> charactersToInteractWith;
-    private Player robber;
-    private Character characterToRob;
-    private Character characterToKill;
+
+    private Map<Action, SimpleEntry<Player, Character>> waitingActions;
+    private Map<Action, Player> evenementialActions;
     private final Random random = new Random();
     private final List<District> discard;
     private final GameObserver gameStatus = new GameObserver(this);
@@ -54,6 +54,9 @@ public class Game {
             p.setGameStatus(gameStatus);
         }
         discard = new ArrayList<>();
+        waitingActions = new HashMap<>();
+        evenementialActions = new HashMap<>();
+
     }
 
     public List<Player> getPlayerList() {
@@ -129,16 +132,18 @@ public class Game {
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
-        if (player.getCharacter().orElseThrow().equals(characterToRob)) {
-            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
+        if (waitingActions.containsKey(Action.STEAL) && player.getCharacter().orElseThrow().equals(waitingActions.get(Action.STEAL).getValue())) {
+            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), waitingActions.get(Action.STEAL).getValue()});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
-                    new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
-            robber.gainCoins(player.getCoins());
+                    new Object[]{waitingActions.get(Action.STEAL).getKey(), player.getCoins(), player.getName(), player.getCoins() + waitingActions.get(Action.STEAL).getKey().getCoins()});
+            waitingActions.get(Action.STEAL).getKey().gainCoins(player.getCoins());
             player.pay(player.getCoins());
+            waitingActions.remove(Action.STEAL);
             // The player who has been robbed give all his coins to the Thief
         }
-        if (player.getCharacter().orElseThrow().equals(characterToKill)) {
-            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
+        if (waitingActions.containsKey(Action.KILL) && player.getCharacter().orElseThrow().equals(waitingActions.get(Action.KILL).getValue())) {
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), waitingActions.get(Action.KILL).getValue()});
+            waitingActions.remove(Action.KILL);
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
@@ -178,8 +183,14 @@ public class Game {
                 }
                 case BUILD -> {
                     LOGGER.info(player.getName() + " chooses to build a district");
-                    player.pickDistrictsToBuild(currentTurn)
-                            .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
+                    List<District> disctrictToBuild = player.pickDistrictsToBuild(currentTurn);
+                    disctrictToBuild.forEach(district ->
+                    {
+                        LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
+                        if (district.getEvenementialAction().isPresent())
+                            district.getEvenementialAction().get().forEach(a -> evenementialActions.put(a, player));
+                    });
+
                 }
                 case SPECIAL_INCOME -> {
                     LOGGER.info(player.getName() + " claims his special income");
@@ -203,14 +214,15 @@ public class Game {
                 case STEAL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
-                    characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
+                    Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
-                    robber = player;
+                    waitingActions.put(Action.STEAL, new SimpleEntry<>(player, characterToRob));
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
-                    characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
+                    Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
+                    waitingActions.put(Action.KILL, new SimpleEntry<>(player, characterToKill));
                 }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
@@ -241,6 +253,12 @@ public class Game {
                     player.pay(districtToDestroy.getValue().getCost() - 1);
                     LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
                             player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
+                    if (districtToDestroy.getValue().getEvenementialAction().isPresent())
+                        districtToDestroy.getValue().getEvenementialAction().get().forEach(a -> evenementialActions.remove(a));
+                    if (evenementialActions.containsKey(Action.GRAVEYARD) && !evenementialActions.get(Action.GRAVEYARD).equals(player) && evenementialActions.get(Action.GRAVEYARD).wantTakeDestroyedDistrict()) {
+                        player.pay(1);
+                        player.addDistrictToHand(districtToDestroy.getValue());
+                    }
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
@@ -289,9 +307,6 @@ public class Game {
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
-        characterToRob = null;
-        robber = null;
-        characterToKill = null;
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");

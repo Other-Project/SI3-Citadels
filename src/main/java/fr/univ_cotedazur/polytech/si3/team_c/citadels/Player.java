@@ -436,4 +436,6 @@ public abstract class Player {
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
     }
+
+    public abstract boolean wantTakeDestroyedDistrict();
 }

@@ -264,4 +264,9 @@ public class Bot extends Player {
         /* We order the district list first on the purple colour, then on the district's points.
         We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
     }
+
+    public boolean wantTakeDestroyedDistrict() {
+        if (getCoins() > 1) return true; //TODO interest to take the district destroyed
+        return false;
+    }
 }

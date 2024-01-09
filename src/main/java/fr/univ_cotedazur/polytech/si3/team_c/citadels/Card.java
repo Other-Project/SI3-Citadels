@@ -37,6 +37,10 @@ public abstract class Card {
         return Optional.empty();
     }
 
+    public Optional<List<Action>> getEvenementialAction() {
+        return Optional.empty();
+    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(name);

@@ -54,6 +54,10 @@ public enum Action {
      */
     STARTUP_INCOME,
     /**
+     * The player could pay one coin to take the district when ones is destroyed by the Warlord
+     */
+    GRAVEYARD,
+    /**
      * The player wants to end his turn
      */
     NONE
