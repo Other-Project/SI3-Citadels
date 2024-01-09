@@ -6,10 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -456,6 +453,77 @@ class BotTest {
         assertEquals(1, bot1.getBuiltDistricts().size());
         bot1.removeDistrictFromDistrictBuilt(bot1.getBuiltDistricts().get(0));
         assertEquals(0, bot1.getBuiltDistricts().size());
+    }
+
+    @Test
+    void destroyDistrictTest2() {
+        Bot warlordBot = new Bot("warlordBot", 1, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot merchantBot = new Bot("merchantBot", 50, List.of(new Observatory(), new HauntedCity(), new Temple(), new Church(), new Harbor())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            protected double districtProfitability(District district) {
+                return getHandDistricts().indexOf(district);
+            } // To control the districts the bot will build
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Game game = new Game();
+        GameObserver gameObserver = new GameObserver(game);
+        game.addPlayer(merchantBot);
+        game.addPlayer(warlordBot);
+        game.characterSelectionTurn();
+        assertFalse(gameObserver.playerCanDestroyOthers(warlordBot));
+        game.playerTurn(merchantBot);
+        assertEquals(Optional.empty(), warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()));
+        game.playerTurn(merchantBot);
+        assertEquals(Optional.empty(), warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()));
+        game.playerTurn(merchantBot);
+        assertEquals(new SimpleEntry<>(merchantBot.getName(), new Temple()),
+                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        warlordBot.gainCoins(3);
+        assertEquals(4, warlordBot.getCoins());
+        game.playerTurn(merchantBot);
+        assertEquals(new SimpleEntry<>(merchantBot.getName(), new HauntedCity()),
+                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        game.playerTurn(merchantBot);
+        assertEquals(new SimpleEntry<>(merchantBot.getName(), new HauntedCity()),
+                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        warlordBot.gainCoins(1);
+        assertEquals(5, warlordBot.getCoins());
+        assertEquals(new SimpleEntry<>(merchantBot.getName(), new Observatory()),
+                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+
     }
 
 

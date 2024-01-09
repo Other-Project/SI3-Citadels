@@ -243,10 +243,11 @@ public class Bot extends Player {
         Comparator<Map.Entry<String, District>> comparatorStringDistrict = Comparator.comparing(entry -> playerToTargetList.indexOf(entry.getKey()));
         return districtList.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())) && canDestroyFromList(entry.getValue()))
                 .flatMap(entry -> entry.getValue().stream().map(v -> new SimpleEntry<>(entry.getKey(), v)))
-                .filter(entry -> entry.getValue().isDestructible() && entry.getValue().getCost() - 1 <= getCoins())
+                .filter(entry -> entry.getValue().isDestructible() && (entry.getValue().getCost() - 1 <= getCoins() - 1) || entry.getValue().getCost() == 1)
                 .max(comparatorStringDistrict.reversed()
                         .thenComparing(entry -> entry.getValue().getColor() == Colors.PURPLE ? 1 : 0)
                         .thenComparing(entry -> entry.getValue().getPoint()));
-        // We order the district list first on the purple colour, then on the district's points
+        /* We order the district list first on the purple colour, then on the district's points.
+        We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
     }
 }
