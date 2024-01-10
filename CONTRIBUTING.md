@@ -33,7 +33,7 @@ follow-up reports will need to be created as new issues with a fresh description
 
 1. Always check out the `main` branch and submit pull requests against it.
 
-2. Create a branch of the following form: 'feature/feature_name' and check out it.
+2. Create a branch of the following form: 'feature/feature_name' and check it out.
 
 3. For all the commit you will make in this branch use
    the [GitHub commit convention](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13).
