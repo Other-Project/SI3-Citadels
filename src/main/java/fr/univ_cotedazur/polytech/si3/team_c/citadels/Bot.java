@@ -45,8 +45,8 @@ public class Bot extends Player {
         double coinNecessity = (8 - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / 8.0;
         double securityNecessity = getBuiltDistricts().size() / 8.0;
         double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / 8.0;
-        double cardNecessity = (4 - getHandDistricts().size()) / 4.0; // The need to gain cards
-        double fear = 0.5 + getGameStatus().getBuiltDistrict().values().stream().mapToInt(built -> built.size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
+        double cardNecessity = 1.0 / (getHandDistricts().size() + 1); // The need to gain cards
+        double fear = 0.5 + getGameStatus().getBuiltDistrict().entrySet().stream().mapToInt(built -> built.getValue().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
 
         double coinProfitability = quantityOfColorBuilt(character.getColor());
         double securityProfitability = 0;
@@ -67,7 +67,7 @@ public class Bot extends Player {
             }
             case CROWN -> {
                 coinProfitability += 0.125;
-                securityProfitability += 0.125;
+                securityProfitability += 2;
                 buildProfitability += 0.125;
                 cardProfitability += 0.125;
                 fearProfitability += 0.125;
@@ -78,12 +78,12 @@ public class Bot extends Player {
             switch (action) {
                 case KILL -> {
                     securityProfitability += 0.5;
-                    fearProfitability++;
+                    fearProfitability += 1;
                 }
                 case STEAL -> {
                     securityProfitability += 0.25;
                     fearProfitability += 0.5;
-                    coinProfitability += 0.5;
+                    coinProfitability += getGameStatus().getCoins().entrySet().stream().filter(entry -> !Objects.equals(entry.getKey(), getName())).mapToInt(Map.Entry::getValue).average().orElse(0);
                 }
                 case EXCHANGE_DECK ->
                         cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count();
@@ -93,7 +93,7 @@ public class Bot extends Player {
                     cardProfitability += getGameStatus().getCardsNumber().get(playerToExchangeWith) - getHandDistricts().size();
                     fearProfitability += 0.5;
                 }
-                case DESTROY -> fearProfitability++;
+                case DESTROY -> fearProfitability += 2;
                 default -> { /* do nothing */ }
             }
         }

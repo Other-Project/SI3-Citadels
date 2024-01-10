@@ -103,12 +103,53 @@ class BotTest {
     }
 
     @Test
-    void pickCharacter() {
+    void pickCharacterSetsPlayer() {
         assertTrue(player1.getCharacter().isEmpty());
         assertEquals(new Architect(), player1.pickCharacter(List.of(new Architect())));
         assertEquals(new Architect(), player1.getCharacter().get());
         assertEquals(new Magician(), player1.pickCharacter(List.of(new Magician())));
         assertEquals(new Magician(), player1.getCharacter().get());
+    }
+
+    @Test
+    void pickCharacterDecision() {
+        List<Character> AllCharacters = List.of(new Assassin(), new Thief(), new Magician(), new King(),
+                new Bishop(), new Merchant(), new Architect(), new Warlord());
+        Player feared = new Bot("feared", 100, List.of(new Graveyard(), new Church(), new Castle(), new Smithy(), new Cathedral(), new DragonGate(), new Monastery()));
+        Game game = new Game();
+        game.addPlayer(player1);
+
+        List<Character> characters = new ArrayList<>(AllCharacters);
+        assertEquals(new Architect(), player1.pickCharacter(characters)); // The bot should choose the architect as he gains 2 more coins
+        characters.remove(new Architect());
+        assertEquals(new Merchant(), player1.pickCharacter(characters)); // The bot should choose the merchant as he gains 1 more coin
+        List<District> someBlueDistricts = List.of(new Monastery(), new Cathedral());
+        for (District district : someBlueDistricts) {
+            player1.addDistrictToHand(district);
+            player1.gainCoins(district.getCost());
+            assertTrue(player1.buildDistrict(district, 0));
+        }
+        assertEquals(new Bishop(), player1.pickCharacter(characters)); // The bot should choose the merchant as he gains 2 more coins and some security (from the warlord)
+        for (District district : someBlueDistricts) player1.removeDistrictFromDistrictBuilt(district);
+
+
+        game.addPlayer(feared);
+        game.setCrown(0);
+        characters = new ArrayList<>(AllCharacters);
+        assertEquals(new Thief(), player1.pickCharacter(characters)); // The bot should choose the thief as the other player has a lot of money
+
+        feared.pay(100);
+        player1.gainCoins(10);
+        player1.removeFromHand(List.of(new DragonGate()));
+        assertEquals(0, feared.getCoins());
+        assertEquals(new Magician(), player1.pickCharacter(characters)); // The bot should choose the magician as the other player has a lot of cards, the bot already have some money and none of his card are really valuable
+
+        for (District district : feared.getHandDistricts()) {
+            feared.gainCoins(district.getCost());
+            assertTrue(feared.buildDistrict(district, 0));
+        }
+        Character picked = player1.pickCharacter(characters);
+        assertTrue(List.of(new Assassin(), new Warlord()).contains(picked), picked::toString); // The bot should try to prevent the other player from winning
     }
 
     @Test
