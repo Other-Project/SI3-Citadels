@@ -468,6 +468,13 @@ class BotTest {
                     return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
                 return Action.NONE;
             }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new King()) ? new King() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
         };
         Game game = new Game();
         game.addPlayer(bot1);
