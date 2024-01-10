@@ -256,7 +256,7 @@ public class Game {
     protected Map<String, List<District>> getDistrictListToDestroyFrom() {
         Map<String, List<District>> districtListToDestroyFrom = getGameObserver().getBuiltDistrict();
         for (Player playerInList : playerList) {
-            if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed())
+            if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed() || end(playerInList))
                 districtListToDestroyFrom.remove(playerInList.getName());// Removes the player who can't get target by the Warlord
             else districtListToDestroyFrom.replace(playerInList.getName(),
                     districtListToDestroyFrom.get(playerInList.getName()).stream().filter(District::isDestructible).toList());
