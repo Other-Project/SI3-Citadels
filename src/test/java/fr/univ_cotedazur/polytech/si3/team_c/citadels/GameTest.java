@@ -270,7 +270,7 @@ class GameTest {
         gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCardsNumber().get(p.getName())));
         gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCoins().get(p.getName())));
         assertEquals(4, gameObserver.getPlayersNumber());
-        Player p1 = new Bot("P1", 200, game.getDeck().draw(3));
+        Player p1 = new Bot("P1", 200, List.of(new Tavern(), new Castle(), new DragonGate()));
         Player p2 = new Bot("P2", 10, game.getDeck().draw(7));
         Player p3 = new Bot("P3", 1, game.getDeck().draw(8));
         game.addPlayer(p1);

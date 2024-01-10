@@ -176,11 +176,26 @@ class BotTest {
                 return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
             }
         };
+        Bot bot2 = new Bot("bot", 15, List.of(new Temple(), new Church(), new Temple(), new Harbor())) {
+            @Override
+            protected double districtProfitability(District district) {
+                return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
+            }
+        };
         bot.setCharacter(new Bishop());
         assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild(0)); // Only one district should be built, and it should be the first in his hand
         assertEquals(List.of(new Battlefield()), bot.getBuiltDistricts()); // The district has been correctly built
         assertEquals(List.of(new Castle()), bot.pickDistrictsToBuild(2)); // The player can build 2 districts but only one of his objective can be afforded
         assertEquals(List.of(new Battlefield(), new Castle()), bot.getBuiltDistricts());
+        bot2.setCharacter(new Thief());
+        assertTrue(bot2.buildDistrict(new Temple(), 0));
+        assertEquals(List.of(new Temple()), bot2.getBuiltDistricts());
+        assertTrue(bot2.buildDistrict(new Church(), 0));
+        assertEquals(List.of(new Temple(), new Church()), bot2.getBuiltDistricts());
+        assertTrue(bot2.buildDistrict(new Harbor(), 0));
+        assertFalse(bot2.buildDistrict(new Temple(), 0));
+        assertEquals(List.of(new Temple(), new Church(), new Harbor()), bot2.getBuiltDistricts());
+
     }
 
     @Test
@@ -306,7 +321,7 @@ class BotTest {
     @Test
     void getMostDangerousPlayersByBuiltDistrictsTest() {
         Game game = new Game();
-        Bot bot1 = new Bot("bot 1", 10, List.of(new Temple())) {
+        Bot kingBot = new Bot("bot 1", 10, List.of(new Temple())) {
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 var objective = districtObjective();
@@ -316,8 +331,15 @@ class BotTest {
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
                 return Action.NONE;
             }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new King()) ? new King() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
         };
-        Bot bot2 = new Bot("bot 2", 15, List.of(new Manor(), new Harbor())) {
+        Bot merchantBot = new Bot("bot 2", 15, List.of(new Manor(), new Harbor())) {
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 var objective = districtObjective();
@@ -327,8 +349,15 @@ class BotTest {
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
                 return Action.NONE;
             }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
         };
-        Bot bot3 = new Bot("bot 3", 20, List.of(new Church(), new Monastery(), new Cathedral(), new Fortress())) {
+        Bot bishopBot = new Bot("bot 3", 20, List.of(new Church(), new Monastery(), new Cathedral(), new Fortress())) {
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 var objective = districtObjective();
@@ -338,8 +367,15 @@ class BotTest {
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
                 return Action.NONE;
             }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Bishop()) ? new Bishop() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
         };
-        Bot bot4 = new Bot("bot 4", 50, List.of(new Castle(), new Library(), new Tavern(), new TownHall())) {
+        Bot warlordBot = new Bot("bot 4", 50, List.of(new Castle(), new Library(), new Tavern(), new TownHall())) {
             @Override
             public Action nextAction(Set<Action> remainingActions) {
                 var objective = districtObjective();
@@ -348,34 +384,41 @@ class BotTest {
                 if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
                     return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
                 return Action.NONE;
+            }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
             }
         };
         GameObserver gameObserver = game.getGameObserver();
-        game.addPlayer(bot1);
-        game.addPlayer(bot2);
-        game.addPlayer(bot3);
-        game.addPlayer(bot4);
+        game.addPlayer(kingBot);
+        game.addPlayer(merchantBot);
+        game.addPlayer(bishopBot);
+        game.addPlayer(warlordBot);
         game.characterSelectionTurn();
-        game.playerTurn(bot1);
-        game.playerTurn(bot2);
-        game.playerTurn(bot2);
-        game.playerTurn(bot3);
-        game.playerTurn(bot3);
-        game.playerTurn(bot3);
-        game.playerTurn(bot4);
-        game.playerTurn(bot4);
-        game.playerTurn(bot4);
-        game.playerTurn(bot4);
-        assertEquals(1, bot1.getBuiltDistricts().size());
-        assertEquals(2, bot2.getBuiltDistricts().size());
-        assertEquals(3, bot3.getBuiltDistricts().size());
-        assertEquals(4, bot4.getBuiltDistricts().size());
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
-        assertEquals(List.of("bot 3", "bot 2", "bot 1"), bot4.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
-        assertEquals(List.of("bot 4", "bot 3", "bot 1"), bot2.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
-        game.playerTurn(bot3);
-        // As the bot4 has more purple district built than bot3, he should be first in dangerousness level
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), bot1.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        game.playerTurn(kingBot);
+        game.playerTurn(merchantBot);
+        game.playerTurn(merchantBot);
+        game.playerTurn(bishopBot);
+        game.playerTurn(bishopBot);
+        game.playerTurn(bishopBot);
+        game.playerTurn(warlordBot);
+        game.playerTurn(warlordBot);
+        game.playerTurn(warlordBot);
+        game.playerTurn(warlordBot);
+        assertEquals(1, kingBot.getBuiltDistricts().size());
+        assertEquals(2, merchantBot.getBuiltDistricts().size());
+        assertEquals(3, bishopBot.getBuiltDistricts().size());
+        assertEquals(4, warlordBot.getBuiltDistricts().size());
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 3", "bot 2", "bot 1"), warlordBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 4", "bot 3", "bot 1"), merchantBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        game.playerTurn(bishopBot);
+        // As the warlordBot has more purple district built than bishopBot, he should be first in dangerousness level
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
     }
 
     @Test
@@ -482,6 +525,13 @@ class BotTest {
                 if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
                     return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
                 return Action.NONE;
+            }
+
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new King()) ? new King() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
             }
         };
         Game game = new Game();
