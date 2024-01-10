@@ -155,7 +155,10 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
                     player.gainCoins(1);
                 }
-                case CROWN -> setCrown(playerList.indexOf(player));
+                case GET_CROWN -> {
+                    LOGGER.log(Level.INFO, "{0} got the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+                    setCrown(playerList.indexOf(player));
+                }
                 default ->
                         throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
             }

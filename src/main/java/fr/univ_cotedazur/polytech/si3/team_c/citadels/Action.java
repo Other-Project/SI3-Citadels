@@ -54,9 +54,9 @@ public enum Action {
      */
     STARTUP_INCOME,
     /**
-     * The player will be the first to choose his character in the next turn
+     * The player gets the crown at the beginning of his turn
      */
-    CROWN,
+    GET_CROWN,
     /**
      * The player wants to end his turn
      */

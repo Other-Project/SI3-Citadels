@@ -19,6 +19,6 @@ public class King extends Character {
 
     @Override
     public Action startTurnAction() {
-        return Action.CROWN;
+        return Action.GET_CROWN;
     }
 }
