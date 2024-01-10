@@ -22,8 +22,8 @@ public class Game {
      */
     private List<Character> charactersToInteractWith;
 
-    private Map<Action, SimpleEntry<Player, Character>> waitingActions;
-    private Map<Action, Player> evenementialActions;
+    private final Map<Action, SimpleEntry<Player, Character>> waitingActions;
+    private final Map<Action, Player> evenementialActions;
     private final Random random = new Random();
     private final List<District> discard;
     private final GameObserver gameStatus = new GameObserver(this);
@@ -54,9 +54,8 @@ public class Game {
             p.setGameStatus(gameStatus);
         }
         discard = new ArrayList<>();
-        waitingActions = new HashMap<>();
-        evenementialActions = new HashMap<>();
-
+        waitingActions = new EnumMap<>(Action.class);
+        evenementialActions = new EnumMap<>(Action.class);
     }
 
     public List<Player> getPlayerList() {
@@ -253,11 +252,12 @@ public class Game {
                     player.pay(districtToDestroy.getValue().getCost() - 1);
                     LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
                             player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
-                    if (districtToDestroy.getValue().getEvenementialAction().isPresent())
-                        districtToDestroy.getValue().getEvenementialAction().get().forEach(a -> evenementialActions.remove(a));
-                    if (evenementialActions.containsKey(Action.GRAVEYARD) && !evenementialActions.get(Action.GRAVEYARD).equals(player) && evenementialActions.get(Action.GRAVEYARD).wantTakeDestroyedDistrict()) {
-                        player.pay(1);
-                        player.addDistrictToHand(districtToDestroy.getValue());
+                    Optional<List<Action>> actions = districtToDestroy.getValue().getEvenementialAction();
+                    actions.ifPresent(actionList -> actionList.forEach(evenementialActions::remove));
+                    Player recuperationPlayer = evenementialActions.get(Action.GRAVEYARD);
+                    if (evenementialActions.containsKey(Action.GRAVEYARD) && !recuperationPlayer.equals(player) && recuperationPlayer.wantTakeDestroyedDistrict()) {
+                        recuperationPlayer.pay(1);
+                        recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
                     }
                 }
                 default ->
