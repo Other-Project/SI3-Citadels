@@ -410,10 +410,10 @@ public abstract class Player {
     /**
      * Asks the player to choose another player with whom to exchange his hand.
      *
-     * @param playerList List of players he can exchange with
+     * @param players Map of players associated with the number of card they own
      * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
      */
-    public abstract Player playerToExchangeCards(List<Player> playerList);
+    public abstract String choosePlayerToExchangeCards(Map<String, Integer> players);
 
     /**
      * Ask the player to choose cards to exchange with the deck

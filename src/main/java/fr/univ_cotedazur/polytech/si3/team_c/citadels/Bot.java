@@ -200,24 +200,6 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
-     *
-     * @param players List of player with whose he can exchange
-     * @return The player chose for the exchange if there is an exchange
-     */
-    @Override
-    public Player playerToExchangeCards(List<Player> players) {
-        String res = choosePlayerToExchangeCards(getGameStatus().getCardsNumber());
-        assert (res != null);
-        Player pChoose = null;
-        for (Player p : players) {
-            if (p.getName().equals(res)) pChoose = p;
-        }
-        assert (pChoose != null);
-        return pChoose;
-    }
-
-    /**
      * The bot chooses a few cards to exchange with the deck. He chooses the card if its profitability is under 1.
      *
      * @return The List of cards he wants to exchange with the deck

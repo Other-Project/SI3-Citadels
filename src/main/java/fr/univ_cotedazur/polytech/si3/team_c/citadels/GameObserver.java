@@ -70,4 +70,8 @@ public class GameObserver {
     public Map<String, List<District>> getDistrictListToDestroyFrom() {
         return game.getDistrictListToDestroyFrom();
     }
+
+    public List<District> draw(int count) {
+        return game.getDeck().draw(count);
+    }
 }
