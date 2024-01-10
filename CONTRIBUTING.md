@@ -1,4 +1,4 @@
-# Contributing to project
+# Contribute to the project
 
 ### Table of Contents
 
