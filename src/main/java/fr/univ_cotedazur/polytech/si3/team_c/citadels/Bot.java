@@ -59,6 +59,7 @@ public class Bot extends Player {
      * @param district The district whose profitability is to be calculated
      */
     protected double districtProfitability(District district) {
+        if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
         return district.getPoint()
                 + quantityOfColorBuilt(district.getColor()) / 8.0
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
