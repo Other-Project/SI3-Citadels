@@ -65,7 +65,7 @@ public class Bot extends Player {
                 cardProfitability += 2;
                 coinProfitability += 1;
             }
-            case CROWN -> {
+            case GET_CROWN -> {
                 coinProfitability += 0.125;
                 securityProfitability += 2;
                 buildProfitability += 0.125;
