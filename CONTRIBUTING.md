@@ -33,13 +33,17 @@ follow-up reports will need to be created as new issues with a fresh description
 
 1. Always check out the `main` branch and submit pull requests against it.
 
-2. Create a branch of the following form: 'feature/feature_name' and check it out.
+2. Create a branch of the following form: 'feature/feature_name' and check out it.
 
 3. For all the commit you will make in this branch use
    the [GitHub commit convention](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13).
    You must absolutely cite the issue in the commit using `#issue_number`.
 
-4. When you have made all the necessary changes you can now push to the branch you created locally and create a pull
+4. Do not forget to test your code by adding the necessary methods (or classes)
+   in
+   the [test folder](https://github.com/pns-si3-projects/projet2-ps-23-24-citadels-2024-c/tree/main/src/test/java/fr/univ_cotedazur/polytech/si3/team_c/citadels).
+
+5. When you have made all the necessary changes you can now push to the branch you created locally and create a pull
    request,
    by indicating all the information about it and filling the fields.
 
