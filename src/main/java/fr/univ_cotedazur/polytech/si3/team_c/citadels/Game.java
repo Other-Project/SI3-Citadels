@@ -156,7 +156,7 @@ public class Game {
                     player.gainCoins(1);
                 }
                 case GET_CROWN -> {
-                    LOGGER.log(Level.INFO, "{0} get the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+                    LOGGER.log(Level.INFO, "{0} got the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
                     setCrown(playerList.indexOf(player));
                 }
                 default ->
