@@ -133,11 +133,26 @@ class BotTest {
                 return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
             }
         };
+        Bot bot2 = new Bot("bot", 15, List.of(new Temple(), new Church(), new Temple(), new Harbor())) {
+            @Override
+            protected double districtProfitability(District district) {
+                return getHandDistricts().size() - getHandDistricts().indexOf(district); // This bot wants to build the card in the order there are in his hand
+            }
+        };
         bot.setCharacter(new Bishop());
         assertEquals(List.of(new Battlefield()), bot.pickDistrictsToBuild(0)); // Only one district should be built, and it should be the first in his hand
         assertEquals(List.of(new Battlefield()), bot.getBuiltDistricts()); // The district has been correctly built
         assertEquals(List.of(new Castle()), bot.pickDistrictsToBuild(2)); // The player can build 2 districts but only one of his objective can be afforded
         assertEquals(List.of(new Battlefield(), new Castle()), bot.getBuiltDistricts());
+        bot2.setCharacter(new Thief());
+        assertTrue(bot2.buildDistrict(new Temple(), 0));
+        assertEquals(List.of(new Temple()), bot2.getBuiltDistricts());
+        assertTrue(bot2.buildDistrict(new Church(), 0));
+        assertEquals(List.of(new Temple(), new Church()), bot2.getBuiltDistricts());
+        assertTrue(bot2.buildDistrict(new Harbor(), 0));
+        assertFalse(bot2.buildDistrict(new Temple(), 0));
+        assertEquals(List.of(new Temple(), new Church(), new Harbor()), bot2.getBuiltDistricts());
+
     }
 
     @Test
