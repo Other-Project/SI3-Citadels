@@ -65,6 +65,8 @@ class BotTest {
 
     @Test
     void specialIncome() {
+        Game onePlayerGame = new Game();
+        onePlayerGame.addPlayer(player1);
         player1.addDistrictToHand(new WatchTower());
         player1.addDistrictToHand(new Prison());
         player1.setCharacter(new King());
@@ -307,7 +309,7 @@ class BotTest {
                 return Action.NONE;
             }
         };
-        GameObserver gameObserver = new GameObserver(game);
+        GameObserver gameObserver = game.getGameObserver();
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         game.addPlayer(bot3);

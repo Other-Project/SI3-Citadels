@@ -4,8 +4,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Robot player
@@ -13,7 +11,6 @@ import java.util.stream.Collectors;
  * @author Team C
  */
 public class Bot extends Player {
-    private static final Logger LOGGER = Logger.getGlobal();
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
@@ -39,6 +36,8 @@ public class Bot extends Player {
      * @param character The character whose profitability is to be calculated
      */
     protected double characterProfitability(Character character) {
+        if (getGameStatus() == null) return 0; // Used for tests
+
         List<SimpleEntry<District, Double>> districtsByProfitability = getHandDistricts().stream()
                 .map(district -> new SimpleEntry<>(district, districtProfitability(district)))
                 .sorted(Comparator.<SimpleEntry<District, Double>>comparingDouble(SimpleEntry::getValue).reversed()).toList();
@@ -60,7 +59,7 @@ public class Bot extends Player {
         switch (character.startTurnAction()) {
             case STARTUP_INCOME -> {
                 coinProfitability++;
-                cardProfitability+=0.5; // Because if there's already an income there's less need to use the income action
+                cardProfitability += 0.5; // Because if there's already an income there's less need to use the income action
             }
             case BEGIN_DRAW -> {
                 cardProfitability += 2;
@@ -89,12 +88,12 @@ public class Bot extends Player {
                 case EXCHANGE_DECK ->
                         cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count();
                 case EXCHANGE_PLAYER -> {
-                    cardProfitability =
-                            fearProfitability += 0.5;
+                    String playerToExchangeWith = choosePlayerToExchangeCards(getGameStatus().getCardsNumber());
+                    if (playerToExchangeWith == null) break;
+                    cardProfitability += getGameStatus().getCardsNumber().get(playerToExchangeWith) - getHandDistricts().size();
+                    fearProfitability += 0.5;
                 }
-                case DESTROY -> {
-                    fearProfitability++;
-                }
+                case DESTROY -> fearProfitability++;
                 default -> { /* do nothing */ }
             }
         }
