@@ -199,7 +199,7 @@ public class Game {
                 case DISCARD -> {
                     District card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
-                    player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
+                    player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
                     player.gainCoins(1);
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
                 }
@@ -308,7 +308,7 @@ public class Game {
                 isEnd = true;
             }
         }
-        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
+        if (playerList.get(previousCrown).getCharacter().isPresent() && !(playerList.get(previousCrown).getCharacter().get().getAction().isEmpty() && !(playerList.get(previousCrown).getCharacter().get().getAction().get().contains(Action.GET_CROWN)) && previousCrown == getCrown()))
             setCrown((getCrown() + 1) % playerList.size());
         return isEnd;
     }
