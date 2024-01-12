@@ -170,8 +170,10 @@ public class Game {
                     LOGGER.info(player.getName() + " draws");
                     var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
                     LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
-                    player.pickDistrictsFromDeck(drawnCard)
-                            .forEach(district -> LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), district}));
+                    List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
+                    drawnCard.removeAll(districtsToKeep);
+                    LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), districtsToKeep});
+                    discard.addAll(drawnCard); // We add to the discard the districts that the player doesn't want to keep
                     player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
@@ -199,6 +201,7 @@ public class Game {
                 case DISCARD -> {
                     District card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
+                    discard.add(card);
                     player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
                     player.gainCoins(1);
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
@@ -310,6 +313,8 @@ public class Game {
         }
         if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
             setCrown((getCrown() + 1) % playerList.size());
+        deck.addAll(discard); // We add at the bottom of the deck the discarded cards
+        discard.clear(); // Reset of the discard
         return isEnd;
     }
 
