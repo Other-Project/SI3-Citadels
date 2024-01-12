@@ -54,7 +54,7 @@ public enum Action {
      */
     STARTUP_INCOME,
     /**
-     * The player could pay one coin to take the district when ones is destroyed by the Warlord
+     * The player pays one coin to get a district that has been destroyed during the turn
      */
     GRAVEYARD,
     /**

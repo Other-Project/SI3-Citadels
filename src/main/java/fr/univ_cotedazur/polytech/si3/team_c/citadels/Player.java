@@ -348,8 +348,8 @@ public abstract class Player {
      */
     public Set<Action> createActionSet() {
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
-        getBuiltDistricts().forEach(district -> district.getAction().ifPresent(actionSet::addAll)); // Add the special action of each district if it has one
-        character.getAction().ifPresent(actionSet::addAll); // Add the special actions of the character
+        getBuiltDistricts().forEach(district -> actionSet.addAll(district.getAction())); // Add the special action of each district if it has one
+        actionSet.addAll(character.getAction()); // Add the special actions of the character
         return actionSet;
     }
 
@@ -437,5 +437,10 @@ public abstract class Player {
         return getCharacter().orElseThrow().startTurnAction();
     }
 
-    public abstract boolean wantTakeDestroyedDistrict();
+    /**
+     * The player chooses to take or not the card destroyed by the Warlord
+     *
+     * @return true if the player wants to take the card and false else
+     */
+    public abstract boolean wantsToTakeADestroyedDistrict();
 }

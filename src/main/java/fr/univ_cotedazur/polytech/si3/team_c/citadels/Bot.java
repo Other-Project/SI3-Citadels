@@ -265,8 +265,12 @@ public class Bot extends Player {
         We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
     }
 
-    public boolean wantTakeDestroyedDistrict() {
-        if (getCoins() > 1) return true; //TODO interest to take the district destroyed
-        return false;
+    /**
+     * The bot takes the card destroyed by the Warlord if he has more than 1 coin after to pay to take the card
+     *
+     * @return true if the bot wants to take the card and false else
+     */
+    public boolean wantsToTakeADestroyedDistrict() {
+        return getCoins() > 1; //TODO interest to take the district destroyed
     }
 }

@@ -23,7 +23,7 @@ public class Game {
     private List<Character> charactersToInteractWith;
 
     private final Map<Action, SimpleEntry<Player, Character>> waitingActions;
-    private final Map<Action, Player> evenementialActions;
+    private final Map<Action, Player> eventActions;
     private final Random random = new Random();
     private final List<District> discard;
     private final GameObserver gameStatus = new GameObserver(this);
@@ -55,7 +55,7 @@ public class Game {
         }
         discard = new ArrayList<>();
         waitingActions = new EnumMap<>(Action.class);
-        evenementialActions = new EnumMap<>(Action.class);
+        eventActions = new EnumMap<>(Action.class);
     }
 
     public List<Player> getPlayerList() {
@@ -186,8 +186,8 @@ public class Game {
                     disctrictToBuild.forEach(district ->
                     {
                         LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
-                        if (district.getEvenementialAction().isPresent())
-                            district.getEvenementialAction().get().forEach(a -> evenementialActions.put(a, player));
+                        if (!district.getEventAction().isEmpty())
+                            district.getEventAction().forEach(a -> eventActions.put(a, player));
                     });
 
                 }
@@ -252,13 +252,13 @@ public class Game {
                     player.pay(districtToDestroy.getValue().getCost() - 1);
                     LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
                             player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
-                    Optional<List<Action>> actions = districtToDestroy.getValue().getEvenementialAction();
-                    actions.ifPresent(actionList -> actionList.forEach(evenementialActions::remove));
-                    Player recuperationPlayer = evenementialActions.get(Action.GRAVEYARD);
-                    if (evenementialActions.containsKey(Action.GRAVEYARD) && !recuperationPlayer.equals(player) && recuperationPlayer.wantTakeDestroyedDistrict()) {
+                    List<Action> actions = districtToDestroy.getValue().getEventAction();
+                    if (!actions.isEmpty()) actions.forEach(eventActions::remove);
+                    Player recuperationPlayer = eventActions.get(Action.GRAVEYARD);
+                    if (eventActions.containsKey(Action.GRAVEYARD) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict()) {
                         recuperationPlayer.pay(1);
                         recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
-                    }
+                    } else discard.add(districtToDestroy.getValue());
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");

@@ -5,7 +5,6 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.Colors;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 
 import java.util.List;
-import java.util.Optional;
 
 public class Graveyard extends District {
     public Graveyard() {
@@ -13,7 +12,7 @@ public class Graveyard extends District {
     }
 
     @Override
-    public Optional<List<Action>> getEvenementialAction() {
-        return Optional.of(List.of(Action.GRAVEYARD));
+    public List<Action> getEventAction() {
+        return List.of(Action.GRAVEYARD);
     }
 }

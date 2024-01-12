@@ -5,7 +5,6 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Colors;
 
 import java.util.List;
-import java.util.Optional;
 
 public class Merchant extends Character {
     public Merchant() {
@@ -13,8 +12,8 @@ public class Merchant extends Character {
     }
 
     @Override
-    public Optional<List<Action>> getAction() {
-        return Optional.of(List.of(Action.SPECIAL_INCOME));
+    public List<Action> getAction() {
+        return List.of(Action.SPECIAL_INCOME);
     }
 
     @Override
