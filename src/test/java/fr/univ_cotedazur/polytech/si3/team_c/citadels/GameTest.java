@@ -270,7 +270,7 @@ class GameTest {
         gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCardsNumber().get(p.getName())));
         gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCoins().get(p.getName())));
         assertEquals(4, gameObserver.getPlayersNumber());
-        Player p1 = new Bot("P1", 200, game.getDeck().draw(3));
+        Player p1 = new Bot("P1", 200, List.of(new Tavern(), new Castle(), new DragonGate()));
         Player p2 = new Bot("P2", 10, game.getDeck().draw(7));
         Player p3 = new Bot("P3", 1, game.getDeck().draw(8));
         game.addPlayer(p1);
@@ -412,5 +412,51 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
         game.playerTurn(warlordBot);
         assertEquals(1, bishopBot.getBuiltDistricts().size());
+    }
+
+    @Test
+    void endgameDistrictDestructionTest() {
+        Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot merchantBot = new Bot("merchantBot", 50, List.of(new Church(), new Monastery(), new Harbor(), new Castle(),
+                new Temple(), new University(), new WatchTower(), new Tavern(), new Smithy())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+        };
+        GameObserver gameObserver = new GameObserver(game);
+        game.addPlayer(warlordBot);
+        game.addPlayer(merchantBot);
+        game.characterSelectionTurn();
+        for (int i = 1; i < 8; i++) {
+            game.playerTurn(merchantBot);
+            assertTrue(game.getDistrictListToDestroyFrom().containsKey(merchantBot.getName()));
+        }
+        for (int i = 1; i < 3; i++) {
+            game.playerTurn(merchantBot);
+            assertFalse(game.getDistrictListToDestroyFrom().containsKey(merchantBot.getName()));
+        }
+
     }
 }

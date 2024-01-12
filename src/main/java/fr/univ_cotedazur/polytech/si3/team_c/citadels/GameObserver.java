@@ -52,7 +52,8 @@ public class GameObserver {
     public boolean playerCanDestroyOthers(Player player) {
         Map<String, Character> characterList = getCharacters();
         for (Map.Entry<String, List<District>> mapEntry : getBuiltDistrict().entrySet()) {
-            if (!characterList.get(mapEntry.getKey()).canHaveADistrictDestroyed() || mapEntry.getKey().equals(player.getName())) {
+            if (!characterList.get(mapEntry.getKey()).canHaveADistrictDestroyed()
+                    || mapEntry.getKey().equals(player.getName()) || mapEntry.getValue().size() >= 8) {
                 continue;
             }// If a player can't get attacked, he is not put in the map
             mapEntry.setValue(mapEntry.getValue().stream()

@@ -157,6 +157,7 @@ public abstract class Player {
      */
     protected boolean buildDistrict(District district, int turn) {
         if (!handDistricts.contains(district)) return false;
+        if (getBuiltDistricts().contains(district)) return false;
         if (!pay(district.getCost())) return false;
         handDistricts.remove(district);
         builtDistricts.putIfAbsent(turn, new ArrayList<>());
