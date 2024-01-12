@@ -439,7 +439,7 @@ public abstract class Player {
     }
 
     /**
-     * The player chooses to take or not the card destroyed by the Warlord
+     * The player can choose to take the card destroyed by the Warlord
      *
      * @return true if the player wants to take the card and false else
      */

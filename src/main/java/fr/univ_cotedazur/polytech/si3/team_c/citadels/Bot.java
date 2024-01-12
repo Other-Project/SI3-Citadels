@@ -334,7 +334,7 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot takes the card destroyed by the Warlord if he has more than 1 coin after to pay to take the card
+     * The bot takes the card destroyed by the Warlord if he has more than 1 coin after paying the card
      *
      * @return true if the bot wants to take the card and false else
      */
