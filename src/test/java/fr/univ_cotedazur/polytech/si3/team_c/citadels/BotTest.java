@@ -544,4 +544,9 @@ class BotTest {
         bot1.addDistrictToHand(new Manor());
         assertNotEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
     }
+
+    @Test
+    void characterEstimation() {
+        Game scriptedGame = new Game();
+    }
 }

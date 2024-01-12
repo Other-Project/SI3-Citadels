@@ -1,11 +1,12 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A class to have a view of the game from a player's perspective and make decisions based on all available informations
+ * A class to have a view of the game from a player's perspective and make decisions based on all available information
  */
 public class GameObserver {
     private Game game;
@@ -69,5 +70,20 @@ public class GameObserver {
      */
     public Map<String, List<District>> getDistrictListToDestroyFrom() {
         return game.getDistrictListToDestroyFrom();
+    }
+
+    public Map<Colors, Integer> getNumberOfCardsOfColor(String playerName) {
+        Map<Colors, Integer> numberOfCards = new EnumMap<>(Colors.class);
+        for (District district : getBuiltDistrict().get(playerName)) {
+            numberOfCards.putIfAbsent(district.getColor(), 0);
+            numberOfCards.compute(district.getColor(), (key, oldValue) -> oldValue + 1);
+        }
+        return numberOfCards;
+    }
+
+    public List<String> getPlayerNames() {
+        return game.getPlayerList().stream()
+                .map(Player::getName)
+                .toList();
     }
 }

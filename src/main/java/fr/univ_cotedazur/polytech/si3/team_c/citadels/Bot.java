@@ -1,5 +1,8 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Architect;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.Merchant;
+
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
@@ -11,9 +14,32 @@ import java.util.function.Function;
  * @author Team C
  */
 public class Bot extends Player {
+    private HashMap<String, List<Character>> possibleCharacters;
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
+    }
+
+    /**
+     * Initialize the HashMap for the beforePlayers
+     *
+     * @param beforePlayers the player who have played before
+     */
+    public void setPossibleCharacters(List<Character> availableCharacters, List<String> beforePlayers) {
+        possibleCharacters = new HashMap<>();
+        List<Character> beforeCharacters = Game.defaultCharacterList();
+        beforeCharacters.removeAll(availableCharacters);
+        List<Character> afterCharacters = new ArrayList<>(availableCharacters);
+        afterCharacters.remove(getCharacter().orElseThrow());
+        for (String playerName : beforePlayers) {
+            possibleCharacters.put(playerName, beforeCharacters);
+        }
+        List<String> afterPlayers = new ArrayList<>(getGameStatus().getPlayerNames());
+        afterPlayers.removeAll(beforePlayers);
+        afterPlayers.remove(getName());
+        for (String playerName : afterPlayers) {
+            possibleCharacters.put(playerName, afterCharacters);
+        }
     }
 
     @Override
@@ -167,14 +193,75 @@ public class Bot extends Player {
         return Optional.empty();
     }
 
+    /**
+     * @param playerName the player we want to inspect
+     * @return a tuple with the max number of district by a Color
+     */
+    private Map.Entry<Colors, Integer> maxDistrictsAndColorOfPlayer(String playerName) {
+        return getGameStatus().getNumberOfCardsOfColor(playerName).entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(Map.entry(Colors.NONE, 0));
+    }
+
+    /**
+     * @param playerName the player name
+     * @return the estimate character of a player
+     */
+    private Character characterEstimation(String playerName, List<Character> characterList) {
+        //TODO Ajouter le fait que le character ne peut être que dans ceux manquants quand il choisi
+        List<Character> characters = (possibleCharacters.containsKey(playerName)) ? possibleCharacters.get(playerName) : characterList;
+        characters.retainAll(characterList);
+        if (characters.size() == 1) return characters.get(0);
+        GameObserver gameObserver = getGameStatus();
+        int playerCoins = gameObserver.getCoins().get(playerName);
+        Map.Entry<Colors, Integer> maxNumberOfColor = maxDistrictsAndColorOfPlayer(playerName);
+
+        double maxFactor = 0;
+        Character maxCharacter = null;
+        for (Character character : characters) {
+            if (maxNumberOfColor.getValue() > 2 && maxNumberOfColor.getKey() == character.getColor() && 0.3 > maxFactor) {
+                maxCharacter = character;
+                maxFactor = 0.3;
+            }
+            if (playerCoins > 8 && character.equals(new Architect()) && 0.2 > maxFactor) {
+                maxCharacter = character;
+                maxFactor = 0.2;
+            }
+            if (playerCoins < 3 && character.equals(new Merchant()) && 0.1 > maxFactor) {
+                maxCharacter = character;
+                maxFactor = 0.1;
+            }
+        }
+        return (maxCharacter != null) ? maxCharacter : characters.get(0);
+    }
+
+    /**
+     * @return the average of built districts per player
+     */
+    public float builtDistrictsAverage() {
+        return (float) getGameStatus().getBuiltDistrict().values()
+                .stream()
+                .mapToInt(List::size)
+                .average().orElse(0f);
+    }
+
     @Override
     public Character chooseCharacterToRob(List<Character> characterList) {
         return characterList.get(0); //TODO : this implementation is too basic, it must be updated
     }
 
+    /**
+     * @param characterList the list of character the player can kill
+     * @return the character to kell
+     */
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
-        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+        Map.Entry<String, Integer> richestPlayer = getGameStatus().getCoins().entrySet().stream()
+                .max(Map.Entry.comparingByValue()).orElseThrow();
+        Map.Entry<String, Integer> maxBuilder = getGameStatus().getBuiltDistrict().entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), entry.getValue().size())).max(Map.Entry.comparingByValue()).orElseThrow();
+        return characterEstimation((maxBuilder.getValue() - builtDistrictsAverage() > 2) ? maxBuilder.getKey() : richestPlayer.getKey(), characterList);
     }
 
     /**

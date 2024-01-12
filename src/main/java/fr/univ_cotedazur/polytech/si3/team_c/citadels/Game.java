@@ -102,7 +102,7 @@ public class Game {
     /**
      * Reset the list of characters
      */
-    public List<Character> defaultCharacterList() {
+    public static List<Character> defaultCharacterList() {
         return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
     }
@@ -115,9 +115,15 @@ public class Game {
         int p = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             var player = playerList.get((p + i) % playerList.size());
-            var choosenCharacter = player.pickCharacter(characterList);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            characterList.remove(choosenCharacter);
+            List<Player> copy;
+            if ((p + i) % playerList.size() < p) {
+                copy = new ArrayList<>(playerList.subList(p, playerList.size()));
+                copy.addAll(playerList.subList(0, (p + i) % playerList.size()));
+            } else copy = new ArrayList<>(playerList.subList(p, (p + i) % playerList.size()));
+            var chosenCharacter = player.pickCharacter(characterList);
+            player.setPossibleCharacters(characterList, copy.stream().map(Player::getName).toList());
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), chosenCharacter});
+            characterList.remove(chosenCharacter);
         }
     }
 
@@ -342,6 +348,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(2).start();
+        new Game(4).start();
     }
 }

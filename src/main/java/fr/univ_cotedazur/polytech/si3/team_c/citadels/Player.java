@@ -204,7 +204,6 @@ public abstract class Player {
      * @return The character that has been chosen
      */
     public abstract Character pickCharacter(List<Character> availableCharacters);
-
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
      *
@@ -436,4 +435,6 @@ public abstract class Player {
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
     }
+
+    public abstract void setPossibleCharacters(List<Character> availableCharacters, List<String> beforePlayers);
 }
