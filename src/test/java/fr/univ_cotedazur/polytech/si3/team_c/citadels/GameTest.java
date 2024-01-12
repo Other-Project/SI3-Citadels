@@ -461,6 +461,11 @@ class GameTest {
         Player bot2 = new Bot("bot2", 100, List.of(new DragonGate(), new University()));
         Player bot3 = new Bot("bot3", 100, List.of(new Graveyard())) {
             @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Warlord());
+                return new Assassin();
+            }
+            @Override
             public Action nextAction() {
                 if (getActionSet().contains(Action.BUILD)) return Action.BUILD;
                 else return Action.NONE;

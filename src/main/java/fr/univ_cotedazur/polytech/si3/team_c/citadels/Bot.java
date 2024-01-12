@@ -74,7 +74,7 @@ public class Bot extends Player {
             }
             default -> { /* do nothing */ }
         }
-        for (Action action : character.getAction().orElse(Collections.emptyList())) {
+        for (Action action : character.getAction()) {
             switch (action) {
                 case KILL -> {
                     securityProfitability += 0.5;
