@@ -640,6 +640,43 @@ class BotTest {
 
     @Test
     void characterEstimation() {
-        Game scriptedGame = new Game();
+        Bot assassinBot = new Bot("assassin", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                return new Assassin();
+            }
+
+            @Override
+            public List<District> getBuiltDistricts() {
+                return new ArrayList<>(List.of(
+                        new Tavern(),
+                        new Market(),
+                        new TradingPost()
+                ));
+            }
+        };
+        Bot merchantBot = new Bot("merchant", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                return new Merchant();
+            }
+        };
+        Bot magicianBot = new Bot("magician", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                return new Magician();
+            }
+        };
+        Bot thiefBot = new Bot("thief", 0, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                return new Thief();
+            }
+        };
+
+        Game scriptedGame = new Game(List.of(merchantBot, magicianBot, assassinBot, thiefBot)) {
+
+        };
+
     }
 }

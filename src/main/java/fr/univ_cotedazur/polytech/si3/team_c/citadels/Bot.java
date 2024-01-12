@@ -288,17 +288,13 @@ public class Bot extends Player {
         double maxFactor = 0;
         Character maxCharacter = null;
         for (Character character : characters) {
-            if (maxNumberOfColor.getValue() > 2 && maxNumberOfColor.getKey() == character.getColor() && 0.3 > maxFactor) {
+            double curFactor = 0;
+            if (maxNumberOfColor.getValue() > 2 && maxNumberOfColor.getKey() == character.getColor()) curFactor += 0.3;
+            if (playerCoins > 8 && character.equals(new Architect())) curFactor += 0.2;
+            if (playerCoins < 3 && character.equals(new Merchant())) curFactor += 0.1;
+            if (curFactor > maxFactor) {
+                maxFactor = curFactor;
                 maxCharacter = character;
-                maxFactor = 0.3;
-            }
-            if (playerCoins > 8 && character.equals(new Architect()) && 0.2 > maxFactor) {
-                maxCharacter = character;
-                maxFactor = 0.2;
-            }
-            if (playerCoins < 3 && character.equals(new Merchant()) && 0.1 > maxFactor) {
-                maxCharacter = character;
-                maxFactor = 0.1;
             }
         }
         return (maxCharacter != null) ? maxCharacter : characters.get(0);
@@ -316,7 +312,9 @@ public class Bot extends Player {
 
     @Override
     public Character chooseCharacterToRob(List<Character> characterList) {
-        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+        Map.Entry<String, Integer> maxBuilder = getGameStatus().getBuiltDistrict().entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), entry.getValue().size())).max(Map.Entry.comparingByValue()).orElseThrow();
+        return characterEstimation(maxBuilder.getKey(), characterList);
     }
 
     /**
