@@ -445,7 +445,6 @@ class GameTest {
                 return Action.NONE;
             }
         };
-        GameObserver gameObserver = new GameObserver(game);
         game.addPlayer(warlordBot);
         game.addPlayer(merchantBot);
         game.characterSelectionTurn();
@@ -475,6 +474,5 @@ class GameTest {
         game.gameTurn();
         assertEquals(1, merchantBot.getBuiltDistricts().size()); // The bot must draw (as he is more rich than Elon musk)
         assertEquals(62, game.getDeck().size()); // The rejected card should be added to the game deck
-        //
     }
 }
