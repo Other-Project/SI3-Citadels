@@ -15,4 +15,9 @@ public class King extends Character {
     public List<Action> getAction() {
         return List.of(Action.SPECIAL_INCOME);
     }
+
+    @Override
+    public Action startTurnAction() {
+        return Action.GET_CROWN;
+    }
 }

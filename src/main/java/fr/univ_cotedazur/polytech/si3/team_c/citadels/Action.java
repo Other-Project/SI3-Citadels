@@ -58,6 +58,10 @@ public enum Action {
      */
     GRAVEYARD,
     /**
+     * The player gets the crown at the beginning of his turn
+     */
+    GET_CROWN,
+    /**
      * The player wants to end his turn
      */
     NONE
