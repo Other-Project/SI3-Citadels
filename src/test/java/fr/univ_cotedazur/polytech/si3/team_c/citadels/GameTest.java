@@ -182,6 +182,7 @@ class GameTest {
         game.addPlayer(trickedBot1);
         game.addPlayer(trickedBot2);
         game.gameTurn();
+        assertTrue(trickedBot2.sufferAction(SufferedActions.STOLE));
         assertTrue(trickedBot1.getCoins() >= 500);
     }
 
@@ -215,7 +216,7 @@ class GameTest {
         game.addPlayer(assassinBot);
         game.addPlayer(merchantBot);
         game.gameTurn();
-        assertEquals(0, merchantBot.getCoins());
+        assertTrue(merchantBot.sufferAction(SufferedActions.KILL));
         assertTrue(merchantBot.getBuiltDistricts().isEmpty());
         assertEquals(merchantDistricts, merchantBot.getHandDistricts());
     }

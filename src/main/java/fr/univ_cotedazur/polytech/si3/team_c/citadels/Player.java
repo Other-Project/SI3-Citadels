@@ -10,6 +10,7 @@ import java.util.function.Function;
  * @author Team C
  */
 public abstract class Player {
+    private Map<SufferedActions, String> sufferedActions;
     private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
@@ -31,6 +32,7 @@ public abstract class Player {
         handDistricts = new ArrayList<>(districts);
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         builtDistricts = new HashMap<>();
+        sufferedActions = new EnumMap<>(SufferedActions.class);
     }
 
     /**
@@ -204,7 +206,10 @@ public abstract class Player {
      * @param availableCharacters A list of the characters available
      * @return The character that has been chosen
      */
-    public abstract Character pickCharacter(List<Character> availableCharacters);
+    public Character pickCharacter(List<Character> availableCharacters) {
+        sufferedActions = new EnumMap<>(SufferedActions.class);
+        return null;
+    }
 
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
@@ -436,5 +441,29 @@ public abstract class Player {
      */
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
+    }
+
+    /**
+     * @param action     the suffered action
+     * @param playerName the player who commits the action
+     **/
+    public void sufferAction(SufferedActions action, String playerName) {
+        sufferedActions.put(action, playerName);
+    }
+
+    /**
+     * @param action the tested action
+     * @return true if the player suffer the action
+     */
+    public boolean sufferAction(SufferedActions action) {
+        return sufferedActions.containsKey(action);
+    }
+
+    /**
+     * @param action the committed action
+     * @return the committer of the action
+     */
+    public Optional<String> actionCommitter(SufferedActions action) {
+        return sufferedActions.containsKey(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
     }
 }

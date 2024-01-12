@@ -18,6 +18,7 @@ public class Bot extends Player {
 
     @Override
     public Character pickCharacter(List<Character> availableCharacters) {
+        super.pickCharacter(availableCharacters);
         Character best = null;
         double maxProfitability = -1;
         for (Character character : availableCharacters) {
