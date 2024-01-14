@@ -206,13 +206,13 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-                    sufferActionOnCharacter(characterToRob, player.getName(), SufferedActions.STOLE);
+                    performActionOnCharacter(characterToRob, player.getName(), SufferedActions.STOLE);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    sufferActionOnCharacter(characterToKill, player.getName(), SufferedActions.KILL);
+                    performActionOnCharacter(characterToKill, player.getName(), SufferedActions.KILL);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 case EXCHANGE_DECK -> {
@@ -344,14 +344,14 @@ public class Game {
      * Perform an action on a character
      *
      * @param character  the character who will suffer the action
-     * @param playerName the name of the player who commits the action
+     * @param committerName the name of the player who commits the action
      * @param action     the suffered action
      */
-    public void sufferActionOnCharacter(Character character, String playerName, SufferedActions action) {
+    public void performActionOnCharacter(Character character, String committerName, SufferedActions action) {
         Optional<Player> player = playerList.stream()
                 .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
                 .findFirst();
-        player.ifPresent(p -> p.addSufferedAction(action, playerName));
+        player.ifPresent(p -> p.addSufferedAction(action, committerName));
     }
 
     public static void main(String... args) {
