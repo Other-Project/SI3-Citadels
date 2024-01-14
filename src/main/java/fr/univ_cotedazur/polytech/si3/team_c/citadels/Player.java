@@ -422,6 +422,7 @@ public abstract class Player {
 
     /**
      * Remove the cards of the player hand
+     *
      * @param cards List of cards to remove of the hand
      */
     public void removeFromHand(List<District> cards) {
@@ -445,6 +446,7 @@ public abstract class Player {
 
     /**
      * Adds the action committed by a player on the player
+     *
      * @param action the suffered action
      * @param playerName the player who commits the action
      **/
@@ -454,6 +456,7 @@ public abstract class Player {
 
     /**
      * Tests if the player suffers an action
+     *
      * @param action the tested action
      * @return true if the player suffer the action
      */
@@ -462,10 +465,12 @@ public abstract class Player {
     }
 
     /**
+     * Return the committer of the action if the player suffers the action
+     *
      * @param action the committed action
      * @return the committer of the action
      */
     public Optional<String> actionCommitter(SufferedActions action) {
-        return sufferedActions.containsKey(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
+        return sufferAction(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
     }
 }
