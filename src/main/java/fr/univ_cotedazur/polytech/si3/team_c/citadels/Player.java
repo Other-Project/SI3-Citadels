@@ -54,6 +54,16 @@ public abstract class Player implements IPlayer {
         return getName() + " (" + getCoins() + " coins) " + getHandDistricts() + " :" + getBuiltDistricts();
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Player player && Objects.equals(name, player.name);
+    }
+
     /**
      * Tries to pay a certain amount of money
      *

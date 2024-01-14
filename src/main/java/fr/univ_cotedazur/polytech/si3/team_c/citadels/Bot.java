@@ -301,6 +301,7 @@ public class Bot extends Player {
     protected SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
         List<IPlayer> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(players);
         return players.stream()
+                .filter(player -> !player.equals(this))
                 .flatMap(entry -> entry.getDestroyableDistricts().stream().map(v -> new SimpleEntry<>(entry, v)))
                 .filter(entry -> entry.getValue().isDestructible() && (entry.getValue().getCost() - 1 <= getCoins() - 1) || entry.getValue().getCost() == 1)
                 .max(Comparator.<SimpleEntry<IPlayer, District>>comparingInt(entry -> playerToTargetList.indexOf(entry.getKey())).reversed()

@@ -310,7 +310,7 @@ class BotTest {
         bot2.pickCharacter(List.of(new King()));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
-        assertEquals("Bot 2", bot1.playerToExchangeCards(g.getIPlayerList()));
+        assertEquals(bot2, bot1.playerToExchangeCards(g.getIPlayerList()));
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
         bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
         assertNull(bot1.playerToExchangeCards(g.getIPlayerList()));
@@ -412,12 +412,12 @@ class BotTest {
         assertEquals(2, merchantBot.getBuiltDistricts().size());
         assertEquals(3, bishopBot.getBuiltDistricts().size());
         assertEquals(4, warlordBot.getBuiltDistricts().size());
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
-        assertEquals(List.of("bot 3", "bot 2", "bot 1"), warlordBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
-        assertEquals(List.of("bot 4", "bot 3", "bot 1"), merchantBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of(warlordBot, bishopBot, merchantBot), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of(bishopBot, merchantBot, kingBot), warlordBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of(warlordBot, bishopBot, kingBot), merchantBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
         game.playerTurn(bishopBot);
         // As the warlordBot has more purple district built than bishopBot, he should be first in dangerousness level
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of(warlordBot, bishopBot, merchantBot), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
     }
 
     @Test
@@ -498,15 +498,13 @@ class BotTest {
         game.playerTurn(merchantBot);
         game.playerTurn(merchantBot);
         assertEquals(List.of(merchantBot, bishopBot, kingBot), warlordBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
-        SimpleEntry<String, District> res1 = new SimpleEntry<>(merchantBot.getName(), new Harbor());
-        assertEquals(res1, warlordBot.destroyDistrict(game.getIPlayerList()));
+        assertEquals(new SimpleEntry<>(merchantBot, new Harbor()), warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
-        SimpleEntry<String, District> res2 = new SimpleEntry<>(kingBot.getName(), new University());
         var districtToDestroy = warlordBot.destroyDistrict(game.getIPlayerList());
-        assertEquals(res2, districtToDestroy);
+        assertEquals(new SimpleEntry<>(kingBot, new University()), districtToDestroy);
     }
 
     @Test
