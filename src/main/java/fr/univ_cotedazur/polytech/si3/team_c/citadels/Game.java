@@ -345,7 +345,7 @@ public class Game {
      *
      * @param character  the character who will suffer the action
      * @param committerName the name of the player who commits the action
-     * @param action     the suffered action
+     * @param action     the committed action
      */
     public void performActionOnCharacter(Character character, String committerName, SufferedActions action) {
         Optional<Player> player = playerList.stream()
