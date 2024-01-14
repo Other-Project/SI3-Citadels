@@ -444,14 +444,16 @@ public abstract class Player {
     }
 
     /**
-     * @param action     the suffered action
+     * Adds the action committed by a player on the player
+     * @param action the suffered action
      * @param playerName the player who commits the action
      **/
-    public void sufferAction(SufferedActions action, String playerName) {
+    public void addSufferedAction(SufferedActions action, String playerName) {
         sufferedActions.put(action, playerName);
     }
 
     /**
+     * Tests if the player suffers an action
      * @param action the tested action
      * @return true if the player suffer the action
      */

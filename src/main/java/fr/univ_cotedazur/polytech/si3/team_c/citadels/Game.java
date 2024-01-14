@@ -351,7 +351,7 @@ public class Game {
         Optional<Player> player = playerList.stream()
                 .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
                 .findFirst();
-        player.ifPresent(p -> p.sufferAction(action, playerName));
+        player.ifPresent(p -> p.addSufferedAction(action, playerName));
     }
 
     public static void main(String... args) {
