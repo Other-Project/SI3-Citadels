@@ -445,7 +445,6 @@ class GameTest {
                 return Action.NONE;
             }
         };
-        GameObserver gameObserver = new GameObserver(game);
         game.addPlayer(warlordBot);
         game.addPlayer(merchantBot);
         game.characterSelectionTurn();
@@ -458,5 +457,22 @@ class GameTest {
             assertFalse(game.getDistrictListToDestroyFrom().containsKey(merchantBot.getName()));
         }
 
+    }
+
+    @Test
+    void destroyedCardLocationTest() { // Tests if the discarded cards are added to the game deck
+        Bot merchantBot = new Bot("merchantBot", 50, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        game.addPlayer(merchantBot);
+        assertEquals(63, game.getDeck().size()); // The whole deck minus the cards in bots hand
+        game.gameTurn();
+        assertEquals(1, merchantBot.getBuiltDistricts().size()); // The bot must draw (as he is more rich than Elon musk)
+        assertEquals(62, game.getDeck().size()); // The rejected card should be added to the game deck
     }
 }
