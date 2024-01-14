@@ -36,7 +36,7 @@ public class Bot extends Player {
      * @param character The character whose profitability is to be calculated
      */
     protected double characterProfitability(Character character) {
-        if (getGameStatus() == null) return 0; // Used for tests
+        if (getPlayers() == null) return 0;
 
         List<SimpleEntry<District, Double>> districtsByProfitability = getHandDistricts().stream()
                 .map(district -> new SimpleEntry<>(district, districtProfitability(district)))
@@ -46,7 +46,7 @@ public class Bot extends Player {
         double securityNecessity = getBuiltDistricts().size() / 8.0;
         double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / 8.0;
         double cardNecessity = 1.0 / (getHandDistricts().size() + 1); // The need to gain cards
-        double fear = 0.5 + getGameStatus().getBuiltDistrict().entrySet().stream().mapToInt(built -> built.getValue().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
+        double fear = 0.5 + getPlayers().stream().mapToInt(built -> built.getBuiltDistricts().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
 
         double coinProfitability = quantityOfColorBuilt(character.getColor());
         double securityProfitability = 0;
@@ -83,14 +83,14 @@ public class Bot extends Player {
                 case STEAL -> {
                     securityProfitability += 0.25;
                     fearProfitability += 0.5;
-                    coinProfitability += getGameStatus().getCoins().entrySet().stream().filter(entry -> !Objects.equals(entry.getKey(), getName())).mapToInt(Map.Entry::getValue).average().orElse(0);
+                    coinProfitability += getPlayers().stream().filter(entry -> !Objects.equals(entry.getName(), getName())).mapToInt(IPlayer::getCoins).average().orElse(0);
                 }
                 case EXCHANGE_DECK ->
                         cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count();
                 case EXCHANGE_PLAYER -> {
-                    String playerToExchangeWith = choosePlayerToExchangeCards(getGameStatus().getCardsNumber());
+                    IPlayer playerToExchangeWith = playerToExchangeCards(getPlayers());
                     if (playerToExchangeWith == null) break;
-                    cardProfitability += getGameStatus().getCardsNumber().get(playerToExchangeWith) - getHandDistricts().size();
+                    cardProfitability += playerToExchangeWith.getHandSize() - getHandDistricts().size();
                     fearProfitability += 0.5;
                 }
                 case DESTROY -> fearProfitability += 2;
@@ -172,7 +172,6 @@ public class Bot extends Player {
      */
     @Override
     public Action nextAction(Set<Action> remainingActions) {
-        GameObserver gameObserver = getGameStatus();
         var objective = districtObjective();
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
@@ -190,11 +189,11 @@ public class Bot extends Player {
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
         if (remainingActions.contains(Action.KILL))
             return Action.KILL;// Try to kill a character if the player's character is the Assassin
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && choosePlayerToExchangeCards(getGameStatus().getCardsNumber()) != null)
+        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && playerToExchangeCards(getPlayers()) != null)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
-        if (remainingActions.contains(Action.DESTROY) && destroyDistrict(gameObserver.getDistrictListToDestroyFrom()).isPresent())
+        if (remainingActions.contains(Action.DESTROY) && destroyDistrict(getPlayers()) != null)
             return Action.DESTROY;// The player wants to destroy a district
         return Action.NONE;
     }
@@ -251,38 +250,20 @@ public class Bot extends Player {
      * @param players List of player with whose he can exchange
      * @return The player chose for the exchange if there is an exchange
      */
-    public String choosePlayerToExchangeCards(Map<String, Integer> players) {
-        String playerToExchange = null;
+    @Override
+    public IPlayer playerToExchangeCards(List<IPlayer> players) {
+        IPlayer playerToExchange = null;
         int nbCards = 0;
         int handSize = getHandDistricts().size();
-        for (Map.Entry<String, Integer> p : players.entrySet()) {
-            if (p.getKey().equals(this.getName())) continue;
-            int playerHandSize = p.getValue();
+        for (IPlayer p : players) {
+            int playerHandSize = p.getHandSize();
             if (playerHandSize > handSize && playerHandSize > nbCards) {
-                playerToExchange = p.getKey();
+                playerToExchange = p;
                 nbCards = playerHandSize;
             }
 
         }
         return playerToExchange;
-    }
-
-    /**
-     * The bot chooses a player to exchange cards with. He chooses if the other has more cards than him, else, he doesn't do the action
-     *
-     * @param players List of player with whose he can exchange
-     * @return The player chose for the exchange if there is an exchange
-     */
-    @Override
-    public Player playerToExchangeCards(List<Player> players) {
-        String res = choosePlayerToExchangeCards(getGameStatus().getCardsNumber());
-        assert (res != null);
-        Player pChoose = null;
-        for (Player p : players) {
-            if (p.getName().equals(res)) pChoose = p;
-        }
-        assert (pChoose != null);
-        return pChoose;
     }
 
     /**
@@ -302,33 +283,29 @@ public class Bot extends Player {
      * Get a list of the players names sorted by their dangerousness level
      * (number of district built, then amount of purple district built)
      */
-    protected List<String> getMostDangerousPlayersByBuiltDistricts(Map<String, List<District>> districtBuilt) {
-        Comparator<Map.Entry<String, List<District>>> entrySizeComparator = Comparator.comparing(entry -> entry.getValue().size());
-        return districtBuilt.entrySet().stream().sorted(entrySizeComparator
-                        .thenComparingLong(entry -> entry.getValue().stream()
-                                .filter(district -> district.getColor() == Colors.PURPLE).count()).reversed())
-                .map(Map.Entry::getKey).filter(string -> !string.equals(this.getName())).toList();
+    protected List<IPlayer> getMostDangerousPlayersByBuiltDistricts(List<IPlayer> districtBuilt) {
+        return districtBuilt.stream()
+                .filter(player -> !player.equals(this))
+                .sorted(Comparator.comparing((IPlayer player) -> player.getBuiltDistricts().size())
+                        .thenComparingLong((IPlayer player) -> player.getBuiltDistricts().stream()
+                                .filter(district -> district.getColor() == Colors.PURPLE).count()).reversed()).toList();
     }
 
     /**
      * The bot chooses a district to destroy among the districts
      *
-     * @param districts the list from which the district to be destroyed is selected
+     * @param players List of players whose districts can be destroyed
      * @return The district to destroy
      */
     @Override
-    protected Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districts) {
-        GameObserver gameObserver = getGameStatus();
-        if (!gameObserver.playerCanDestroyOthers(this))
-            return Optional.empty();// In case the method is called, but the bot cannot destroy any district
-        List<String> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(districts);
-        Comparator<Map.Entry<String, District>> comparatorStringDistrict = Comparator.comparing(entry -> playerToTargetList.indexOf(entry.getKey()));
-        return districts.entrySet().stream().filter(entry -> (!entry.getKey().equals(getName())))
-                .flatMap(entry -> entry.getValue().stream().map(v -> new SimpleEntry<>(entry.getKey(), v)))
+    protected SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
+        List<IPlayer> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(players);
+        return players.stream()
+                .flatMap(entry -> entry.getDestroyableDistricts().stream().map(v -> new SimpleEntry<>(entry, v)))
                 .filter(entry -> entry.getValue().isDestructible() && (entry.getValue().getCost() - 1 <= getCoins() - 1) || entry.getValue().getCost() == 1)
-                .max(comparatorStringDistrict.reversed()
-                        .thenComparing(entry -> entry.getValue().getColor() == Colors.PURPLE ? 1 : 0)
-                        .thenComparing(entry -> entry.getValue().getPoint()));
+                .max(Comparator.<SimpleEntry<IPlayer, District>>comparingInt(entry -> playerToTargetList.indexOf(entry.getKey())).reversed()
+                        .thenComparingInt(entry -> entry.getValue().getColor() == Colors.PURPLE ? 1 : 0)
+                        .thenComparingInt(entry -> entry.getValue().getPoint())).orElse(null);
         /* We order the district list first on the purple colour, then on the district's points.
         We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
     }

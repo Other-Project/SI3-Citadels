@@ -310,10 +310,10 @@ class BotTest {
         bot2.pickCharacter(List.of(new King()));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
-        assertEquals("Bot 2", bot1.choosePlayerToExchangeCards(bot1.getGameStatus().getCardsNumber()));
+        assertEquals("Bot 2", bot1.playerToExchangeCards(g.getIPlayerList()));
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
         bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
-        assertNull(bot1.choosePlayerToExchangeCards(bot1.getGameStatus().getCardsNumber()));
+        assertNull(bot1.playerToExchangeCards(g.getIPlayerList()));
         bot1.removeAction(Action.EXCHANGE_DECK);
         assertEquals(Action.NONE, bot1.nextAction());
     }
@@ -393,7 +393,6 @@ class BotTest {
                 return best;
             }
         };
-        GameObserver gameObserver = game.getGameObserver();
         game.addPlayer(kingBot);
         game.addPlayer(merchantBot);
         game.addPlayer(bishopBot);
@@ -413,12 +412,12 @@ class BotTest {
         assertEquals(2, merchantBot.getBuiltDistricts().size());
         assertEquals(3, bishopBot.getBuiltDistricts().size());
         assertEquals(4, warlordBot.getBuiltDistricts().size());
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
-        assertEquals(List.of("bot 3", "bot 2", "bot 1"), warlordBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
-        assertEquals(List.of("bot 4", "bot 3", "bot 1"), merchantBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of("bot 3", "bot 2", "bot 1"), warlordBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
+        assertEquals(List.of("bot 4", "bot 3", "bot 1"), merchantBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
         game.playerTurn(bishopBot);
         // As the warlordBot has more purple district built than bishopBot, he should be first in dangerousness level
-        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of("bot 4", "bot 3", "bot 2"), kingBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
     }
 
     @Test
@@ -487,7 +486,6 @@ class BotTest {
         };
         // Here, we force bishopBot and bot3 to take the income, so they can only build the district in their hands
         Game game = new Game();
-        GameObserver gameObserver = new GameObserver(game);
         game.addPlayer(warlordBot);
         game.addPlayer(bishopBot);
         game.addPlayer(merchantBot);
@@ -495,20 +493,19 @@ class BotTest {
         game.characterSelectionTurn();
         game.playerTurn(bishopBot);
         game.playerTurn(bishopBot);
-        assertFalse(gameObserver.playerCanDestroyOthers(warlordBot));
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
         game.playerTurn(merchantBot);
         game.playerTurn(merchantBot);
-        assertEquals(List.of("merchantBot", "bishopBot", "kingBot"), warlordBot.getMostDangerousPlayersByBuiltDistricts(gameObserver.getBuiltDistrict()));
+        assertEquals(List.of(merchantBot, bishopBot, kingBot), warlordBot.getMostDangerousPlayersByBuiltDistricts(game.getIPlayerList()));
         SimpleEntry<String, District> res1 = new SimpleEntry<>(merchantBot.getName(), new Harbor());
-        assertTrue(gameObserver.playerCanDestroyOthers(warlordBot));
-        assertEquals(res1, warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        assertEquals(res1, warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         game.playerTurn(kingBot);
         SimpleEntry<String, District> res2 = new SimpleEntry<>(kingBot.getName(), new University());
-        var districtToDestroy = warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow();
+        var districtToDestroy = warlordBot.destroyDistrict(game.getIPlayerList());
         assertEquals(res2, districtToDestroy);
     }
 
@@ -587,30 +584,25 @@ class BotTest {
             }
         };
         Game game = new Game();
-        GameObserver gameObserver = new GameObserver(game);
         game.addPlayer(merchantBot);
         game.addPlayer(warlordBot);
         game.characterSelectionTurn();
-        assertFalse(gameObserver.playerCanDestroyOthers(warlordBot));
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
-        assertEquals(Optional.empty(), warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()));
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
-        assertEquals(Optional.empty(), warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()));
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
-        assertEquals(new SimpleEntry<>(merchantBot.getName(), new Temple()),
-                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        assertEquals(new SimpleEntry<>(merchantBot, new Temple()), warlordBot.destroyDistrict(game.getIPlayerList()));
         warlordBot.gainCoins(3);
         assertEquals(4, warlordBot.getCoins());
         game.playerTurn(merchantBot);
-        assertEquals(new SimpleEntry<>(merchantBot.getName(), new HauntedCity()),
-                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        assertEquals(new SimpleEntry<>(merchantBot, new HauntedCity()), warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
-        assertEquals(new SimpleEntry<>(merchantBot.getName(), new HauntedCity()),
-                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        assertEquals(new SimpleEntry<>(merchantBot, new HauntedCity()), warlordBot.destroyDistrict(game.getIPlayerList()));
         warlordBot.gainCoins(1);
         assertEquals(5, warlordBot.getCoins());
-        assertEquals(new SimpleEntry<>(merchantBot.getName(), new Observatory()),
-                warlordBot.destroyDistrict(game.getDistrictListToDestroyFrom()).orElseThrow());
+        assertEquals(new SimpleEntry<>(merchantBot, new Observatory()), warlordBot.destroyDistrict(game.getIPlayerList()));
 
     }
 
@@ -636,5 +628,131 @@ class BotTest {
         bot1.gainCoins(1000);
         bot1.addDistrictToHand(new Manor());
         assertNotEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
+    }
+
+    @Test
+    void canDestroyTest() {
+        Game game = new Game();
+        Bot warlordBot = new Bot("warlordBot", 20, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot bot2 = new Bot("bot 2", 10, List.of(new WatchTower())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot bot3 = new Bot("bot 3", 10, List.of(new TheKeep())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new King()) ? new King() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        Bot bishopBot = new Bot("bishopBot", 10, List.of(new Harbor(), new Temple())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Bishop()) ? new Bishop() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(warlordBot);
+        game.addPlayer(bot2);
+        game.addPlayer(bot3);
+        game.addPlayer(bishopBot);
+        game.characterSelectionTurn();
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
+        game.playerTurn(warlordBot);
+        game.playerTurn(bot3); // bot3 builds a non-destroyable district
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
+        game.playerTurn(bishopBot);
+        assertNull(warlordBot.destroyDistrict(game.getIPlayerList())); // bishopBot can't get attacked
+        game.playerTurn(bot2);
+        assertNotNull(warlordBot.destroyDistrict(game.getIPlayerList()));
+        game.addPlayer(bishopBot);
+    }
+
+    @Test
+    void canDestroyTest2() {
+        Bot warlordBot = new Bot("bot 1", 10, Collections.emptyList()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot merchantBot = new Bot("merchantBot", 50, List.of(new Church(), new Monastery(), new Harbor(), new Castle(),
+                new Temple(), new University(), new WatchTower(), new Tavern(), new Smithy())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+        };
+        Game game = new Game();
+        game.addPlayer(warlordBot);
+        game.addPlayer(merchantBot);
+        game.characterSelectionTurn();
+        for (int i = 1; i < 8; i++) {
+            game.playerTurn(merchantBot);
+            assertNotNull(warlordBot.destroyDistrict(game.getIPlayerList()));
+        }
+        for (int i = 1; i < 3; i++) {
+            game.playerTurn(merchantBot);
+            assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
+        }
     }
 }
