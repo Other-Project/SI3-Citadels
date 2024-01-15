@@ -16,6 +16,7 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
+    private final Map<Action, Player> eventActions;
 
     /**
      * The characters the player can interact with
@@ -47,7 +48,6 @@ public class Game {
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
         discard = new ArrayList<>();
-        waitingActions = new EnumMap<>(Action.class);
         eventActions = new EnumMap<>(Action.class);
     }
 
@@ -135,7 +135,6 @@ public class Game {
 
             robber.gainCoins(player.getCoins());
             player.pay(player.getCoins());
-            waitingActions.remove(Action.STEAL);
             // The player who has been robbed give all his coins to the Thief
         }
         if (player.sufferAction(SufferedActions.KILLED)) {
@@ -226,7 +225,6 @@ public class Game {
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
                     performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
-                    waitingActions.put(Action.KILL, new SimpleEntry<>(player, characterToKill));
                 }
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();

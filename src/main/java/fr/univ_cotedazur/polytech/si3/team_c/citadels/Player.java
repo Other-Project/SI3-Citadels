@@ -470,6 +470,7 @@ public abstract class Player implements IPlayer {
      */
     public abstract boolean wantsToTakeADestroyedDistrict();
 
+    /**
      * Adds the action committed by a player on the player
      *
      * @param action the suffered action
