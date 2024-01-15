@@ -211,8 +211,8 @@ public class Game {
                 case DISCARD -> {
                     District card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
+                    player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
                     discard.add(card);
-                    player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
                     player.gainCoins(1);
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
                 }
@@ -309,7 +309,8 @@ public class Game {
                 isEnd = true;
             }
         }
-        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
+        Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
+        if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
             setCrown((getCrown() + 1) % playerList.size());
         deck.addAll(discard); // We add at the bottom of the deck the discarded cards
         discard.clear(); // Reset of the discard
