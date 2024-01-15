@@ -491,7 +491,8 @@ public abstract class Player implements IPlayer {
      */
     public Optional<String> actionCommitter(SufferedActions action) {
         return sufferAction(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
-      
+    }
+
     public List<IPlayer> getPlayers() {
         try {
             return players.call();
