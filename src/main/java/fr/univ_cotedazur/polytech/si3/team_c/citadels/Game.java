@@ -26,11 +26,7 @@ public class Game {
     private Character characterToKill;
     private final Random random = new Random();
     private final List<District> discard;
-    private final GameObserver gameStatus = new GameObserver(this);
 
-    public GameObserver getGameObserver() {
-        return gameStatus;
-    }
     public Game() {
         this(Collections.emptyList());
     }
@@ -41,7 +37,7 @@ public class Game {
         for (int i = 1; i <= numberPlayers - initLength; i++) {
             Bot bot = new Bot("bot" + i, 2, deck.draw(2));
             playerList.add(bot);
-            bot.setGameStatus(gameStatus);
+            bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
         }
     }
 
@@ -51,12 +47,16 @@ public class Game {
         charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
-            p.setGameStatus(gameStatus);
+            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
         discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
+        return new ArrayList<>(playerList);
+    }
+
+    public List<IPlayer> getIPlayerList() {
         return new ArrayList<>(playerList);
     }
 
@@ -68,7 +68,7 @@ public class Game {
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
-        player.setGameStatus(gameStatus);
+        player.setPlayers(() -> new ArrayList<>(playerList.stream().filter(p -> !p.equals(player)).toList()));
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -229,7 +229,7 @@ public class Game {
                     player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
                 }
                 case EXCHANGE_PLAYER -> {
-                    Player playerToExchangeCards = player.playerToExchangeCards(getPlayerList());
+                    Player playerToExchangeCards = (Player) player.playerToExchangeCards(getIPlayerList());
                     List<District> hand1 = player.getHandDistricts();
                     List<District> handExchange = playerToExchangeCards.getHandDistricts();
                     player.removeFromHand(hand1);
@@ -240,13 +240,11 @@ public class Game {
                     player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
                 }
                 case DESTROY -> {
-                    Map<String, List<District>> districtListToDestroyFrom = getDistrictListToDestroyFrom();
-                    SimpleEntry<String, District> districtToDestroy = player.destroyDistrict(districtListToDestroyFrom).orElseThrow();
-                    Player playerToTarget = linkStringToPlayer(districtToDestroy.getKey());
-                    playerToTarget.removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
+                    SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(getIPlayerList());
+                    ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
                     player.pay(districtToDestroy.getValue().getCost() - 1);
                     LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
-                            player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
+                            player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
@@ -254,20 +252,6 @@ public class Game {
             player.removeAction(action);
             LOGGER.info(player::toString);
         }
-    }
-
-    /**
-     * This method create the list of district that can be destroyed by the Warlord
-     */
-    protected Map<String, List<District>> getDistrictListToDestroyFrom() {
-        Map<String, List<District>> districtListToDestroyFrom = getGameObserver().getBuiltDistrict();
-        for (Player playerInList : playerList) {
-            if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed() || end(playerInList))
-                districtListToDestroyFrom.remove(playerInList.getName());// Removes the player who can't get target by the Warlord
-            else districtListToDestroyFrom.replace(playerInList.getName(),
-                    districtListToDestroyFrom.get(playerInList.getName()).stream().filter(District::isDestructible).toList());
-        }
-        return districtListToDestroyFrom;
     }
 
     /**
@@ -286,7 +270,7 @@ public class Game {
     /**
      * The method which checks if the game must end according to the number of districts built for the player
      */
-    public boolean end(Player player) {
+    public boolean end(IPlayer player) {
         return player.getBuiltDistricts().size() >= 8;
     }
 
