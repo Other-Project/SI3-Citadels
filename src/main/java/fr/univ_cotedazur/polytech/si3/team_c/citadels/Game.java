@@ -126,7 +126,7 @@ public class Game {
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.sufferAction(SufferedActions.STOLEN)) {
-            Player robber = linkStringToPlayer(player.actionCommitter(SufferedActions.STOLEN).orElseThrow());
+            Player robber = (Player) player.actionCommitter(SufferedActions.STOLEN).orElseThrow();
             LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
                     new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
@@ -209,13 +209,13 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-                    performActionOnCharacter(characterToRob, player.getName(), SufferedActions.STOLEN);
+                    performActionOnCharacter(characterToRob, player, SufferedActions.STOLEN);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    performActionOnCharacter(characterToKill, player.getName(), SufferedActions.KILLED);
+                    performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 case EXCHANGE_DECK -> {
@@ -252,19 +252,6 @@ public class Game {
             player.removeAction(action);
             LOGGER.info(player::toString);
         }
-    }
-
-    /**
-     * This method links a player to his name
-     *
-     * @param playerName the name of the player
-     * @return the player associated to playerName
-     */
-    private Player linkStringToPlayer(String playerName) {
-        for (Player player : getPlayerList()) {
-            if (playerName.equals(player.getName())) return player;
-        }
-        throw new NoSuchElementException("The player is not in the game");
     }
 
     /**
@@ -333,14 +320,14 @@ public class Game {
      * Perform an action on a character
      *
      * @param character  the character who will suffer the action
-     * @param committerName the name of the player who commits the action
+     * @param committer the player who commits the action
      * @param action     the committed action
      */
-    public void performActionOnCharacter(Character character, String committerName, SufferedActions action) {
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
         Optional<Player> player = playerList.stream()
                 .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
                 .findFirst();
-        player.ifPresent(p -> p.addSufferedAction(action, committerName));
+        player.ifPresent(p -> p.addSufferedAction(action, committer));
     }
 
     public static void main(String... args) {

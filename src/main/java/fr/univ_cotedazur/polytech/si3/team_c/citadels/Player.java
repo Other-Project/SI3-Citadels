@@ -18,7 +18,7 @@ public abstract class Player implements IPlayer {
     private boolean gameEnder = false;
     private int coins;
     private final Map<Integer, List<District>> builtDistricts;
-    private Map<SufferedActions, String> sufferedActions;
+    private Map<SufferedActions, IPlayer> sufferedActions;
     private final ArrayList<District> handDistricts;
     private Character character;
 
@@ -467,10 +467,10 @@ public abstract class Player implements IPlayer {
      * Adds the action committed by a player on the player
      *
      * @param action the suffered action
-     * @param playerName the player who commits the action
+     * @param player the player who commits the action
      **/
-    public void addSufferedAction(SufferedActions action, String playerName) {
-        sufferedActions.put(action, playerName);
+    public void addSufferedAction(SufferedActions action, IPlayer player) {
+        sufferedActions.put(action, player);
     }
 
     /**
@@ -489,7 +489,7 @@ public abstract class Player implements IPlayer {
      * @param action the committed action
      * @return the committer of the action
      */
-    public Optional<String> actionCommitter(SufferedActions action) {
+    public Optional<IPlayer> actionCommitter(SufferedActions action) {
         return sufferAction(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
     }
 
