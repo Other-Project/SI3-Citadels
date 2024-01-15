@@ -460,7 +460,38 @@ class GameTest {
             var destroy = warlordBot.destroyDistrict(game.getIPlayerList());
             assertNotEquals(merchantBot, destroy == null ? null : destroy.getKey());
         }
+    }
 
+    @Test
+    void discardCardTest() {
+        Bot magicianBot = new Bot("MagicianBot", 100, List.of(new Laboratory(), new Church(), new Monastery(), new Harbor(), new Castle(),
+                new Temple())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Magician()) ? new Magician() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Optional<District> districtObjective() {
+                if (getHandDistricts().contains(new Laboratory()))
+                    return Optional.of(getHandDistricts().get(getHandDistricts().indexOf(new Laboratory())));
+                else return Optional.empty();
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                if (remainingActions.contains(Action.BUILD)) return Action.BUILD;
+                else if (remainingActions.contains(Action.DISCARD)) return Action.DISCARD;
+                else return Action.NONE;
+            }
+        };
+        game.addPlayer(magicianBot);
+        game.gameTurn();
+        game.gameTurn();
+        assertEquals(4, magicianBot.getHandDistricts().size());
+        assertEquals(96, magicianBot.getCoins());
     }
 
     @Test
