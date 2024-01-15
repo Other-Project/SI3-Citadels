@@ -254,7 +254,7 @@ public class Game {
                     SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(getIPlayerList());
                     ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
                     player.pay(districtToDestroy.getValue().getCost() - 1);
-                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins()});
+                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
                     List<Action> actions = districtToDestroy.getValue().getEventAction();
                     if (!actions.isEmpty()) actions.forEach(eventActions::remove);
                     Player recuperationPlayer = eventActions.get(Action.GRAVEYARD);
