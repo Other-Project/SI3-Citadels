@@ -21,9 +21,6 @@ public class Game {
      * The characters the player can interact with
      */
     private List<Character> charactersToInteractWith;
-
-    private final Map<Action, SimpleEntry<Player, Character>> waitingActions;
-    private final Map<Action, Player> eventActions;
     private final Random random = new Random();
     private final List<District> discard;
 
@@ -117,9 +114,9 @@ public class Game {
         int p = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             var player = playerList.get((p + i) % playerList.size());
-            var choosenCharacter = player.pickCharacter(characterList);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            characterList.remove(choosenCharacter);
+            var chosenCharacter = player.pickCharacter(characterList);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), chosenCharacter});
+            characterList.remove(chosenCharacter);
         }
     }
 
@@ -130,18 +127,19 @@ public class Game {
         LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
-        if (waitingActions.containsKey(Action.STEAL) && player.getCharacter().orElseThrow().equals(waitingActions.get(Action.STEAL).getValue())) {
-            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), waitingActions.get(Action.STEAL).getValue()});
+        if (player.sufferAction(SufferedActions.STOLEN)) {
+            Player robber = (Player) player.actionCommitter(SufferedActions.STOLEN).orElseThrow();
+            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
-                    new Object[]{waitingActions.get(Action.STEAL).getKey(), player.getCoins(), player.getName(), player.getCoins() + waitingActions.get(Action.STEAL).getKey().getCoins()});
-            waitingActions.get(Action.STEAL).getKey().gainCoins(player.getCoins());
+                    new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
+
+            robber.gainCoins(player.getCoins());
             player.pay(player.getCoins());
             waitingActions.remove(Action.STEAL);
             // The player who has been robbed give all his coins to the Thief
         }
-        if (waitingActions.containsKey(Action.KILL) && player.getCharacter().orElseThrow().equals(waitingActions.get(Action.KILL).getValue())) {
-            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), waitingActions.get(Action.KILL).getValue()});
-            waitingActions.remove(Action.KILL);
+        if (player.sufferAction(SufferedActions.KILLED)) {
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
@@ -220,12 +218,13 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
+                    performActionOnCharacter(characterToRob, player, SufferedActions.STOLEN);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
-                    waitingActions.put(Action.STEAL, new SimpleEntry<>(player, characterToRob));
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
+                    performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                     waitingActions.put(Action.KILL, new SimpleEntry<>(player, characterToKill));
                 }
@@ -269,19 +268,6 @@ public class Game {
             player.removeAction(action);
             LOGGER.info(player::toString);
         }
-    }
-
-    /**
-     * This method links a player to his name
-     *
-     * @param playerName the name of the player
-     * @return the player associated to playerName
-     */
-    private Player linkStringToPlayer(String playerName) {
-        for (Player player : getPlayerList()) {
-            if (playerName.equals(player.getName())) return player;
-        }
-        throw new NoSuchElementException("The player is not in the game");
     }
 
     /**
@@ -347,8 +333,22 @@ public class Game {
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
+    /**
+     * Perform an action on a character
+     *
+     * @param character  the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action     the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        Optional<Player> player = playerList.stream()
+                .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
+                .findFirst();
+        player.ifPresent(p -> p.addSufferedAction(action, committer));
+    }
+
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(2).start();
+        new Game(4).start();
     }
 }
