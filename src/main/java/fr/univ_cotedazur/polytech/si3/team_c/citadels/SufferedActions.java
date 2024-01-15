@@ -2,11 +2,11 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 public enum SufferedActions {
     /**
-     * The player is killed
+     * The player has been killed
      */
-    KILL,
+    KILLED,
     /**
-     * The player is stolen
+     * The player has been stolen
      */
-    STOLE
+    STOLEN
 }

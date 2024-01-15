@@ -125,8 +125,8 @@ public class Game {
         LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
-        if (player.sufferAction(SufferedActions.STOLE)) {
-            Player robber = linkStringToPlayer(player.actionCommitter(SufferedActions.STOLE).orElseThrow());
+        if (player.sufferAction(SufferedActions.STOLEN)) {
+            Player robber = linkStringToPlayer(player.actionCommitter(SufferedActions.STOLEN).orElseThrow());
             LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
                     new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
@@ -135,7 +135,7 @@ public class Game {
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
-        if (player.sufferAction(SufferedActions.KILL)) {
+        if (player.sufferAction(SufferedActions.KILLED)) {
             LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
@@ -209,13 +209,13 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-                    performActionOnCharacter(characterToRob, player.getName(), SufferedActions.STOLE);
+                    performActionOnCharacter(characterToRob, player.getName(), SufferedActions.STOLEN);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    performActionOnCharacter(characterToKill, player.getName(), SufferedActions.KILL);
+                    performActionOnCharacter(characterToKill, player.getName(), SufferedActions.KILLED);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 case EXCHANGE_DECK -> {
