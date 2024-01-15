@@ -18,6 +18,7 @@ public abstract class Player implements IPlayer {
     private boolean gameEnder = false;
     private int coins;
     private final Map<Integer, List<District>> builtDistricts;
+    private Map<SufferedActions, IPlayer> sufferedActions;
     private final ArrayList<District> handDistricts;
     private Character character;
 
@@ -32,6 +33,7 @@ public abstract class Player implements IPlayer {
         handDistricts = new ArrayList<>(districts);
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         builtDistricts = new HashMap<>();
+        sufferedActions = new EnumMap<>(SufferedActions.class);
         players = Collections::emptyList;
     }
 
@@ -146,7 +148,6 @@ public abstract class Player implements IPlayer {
                 getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
     }
 
-
     /**
      * Gets the amount of cards the player have in hand
      */
@@ -232,7 +233,10 @@ public abstract class Player implements IPlayer {
      * @param availableCharacters A list of the characters available
      * @return The character that has been chosen
      */
-    public abstract Character pickCharacter(List<Character> availableCharacters);
+    public Character pickCharacter(List<Character> availableCharacters) {
+        sufferedActions = new EnumMap<>(SufferedActions.class);
+        return null;
+    }
 
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
@@ -457,6 +461,36 @@ public abstract class Player implements IPlayer {
      */
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
+    }
+
+    /**
+     * Adds the action committed by a player on the player
+     *
+     * @param action the suffered action
+     * @param player the player who commits the action
+     **/
+    public void addSufferedAction(SufferedActions action, IPlayer player) {
+        sufferedActions.put(action, player);
+    }
+
+    /**
+     * Tests if the player suffers an action
+     *
+     * @param action the tested action
+     * @return true if the player suffer the action
+     */
+    public boolean sufferAction(SufferedActions action) {
+        return sufferedActions.containsKey(action);
+    }
+
+    /**
+     * Return the committer of the action if the player suffers the action
+     *
+     * @param action the committed action
+     * @return the committer of the action
+     */
+    public Optional<IPlayer> actionCommitter(SufferedActions action) {
+        return sufferAction(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
     }
 
     public List<IPlayer> getPlayers() {
