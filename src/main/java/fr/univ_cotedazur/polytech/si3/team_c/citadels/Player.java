@@ -464,11 +464,11 @@ public abstract class Player implements IPlayer {
     }
 
     /**
-     * The player can choose to take the card destroyed
+     * Does the player want to recover a district that has just been destroyed
      *
      * @param district the destroyed district
-     * @return true if the player wants to take the card and false else
-     */
+     * @return true if the player wants to take the district
+     **/
     public abstract boolean wantsToTakeADestroyedDistrict(District district);
 
     /**

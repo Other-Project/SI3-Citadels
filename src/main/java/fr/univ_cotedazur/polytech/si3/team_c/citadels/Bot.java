@@ -313,13 +313,13 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot takes the card destroyed if he has more than 1 coin after paying the card
+     * Does the player want to recover a district that has just been destroyed
      *
      * @param district the destroyed district
-     * @return true if the bot wants to take the card and false else
+     * @return true if the bot wants to take the card
      */
     public boolean wantsToTakeADestroyedDistrict(District district) {
         double handAverageProfitability = getHandDistricts().stream().map(this::districtProfitability).mapToDouble(Double::doubleValue).average().orElse(0);
-        return district.getColor() == Colors.PURPLE && districtProfitability(district) >= handAverageProfitability && getCoins() > 1;
+        return districtProfitability(district) >= handAverageProfitability && getCoins() > 1; // The bot takes the destroyed district if he has more than 1 coin after paying the district and the district profitability is above average of his hand
     }
 }
