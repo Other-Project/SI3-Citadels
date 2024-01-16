@@ -34,6 +34,7 @@ public enum Action {
             var drawnCard = game.getDeck().draw(player.numberOfDistrictsToDraw());
             List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
             drawnCard.removeAll(districtsToKeep);
+            game.getDeck().addAll(drawnCard); // We add back to the deck the districts that the player doesn't want to keep
             return MessageFormat.format("{0} kept {1}", player.getName(), districtsToKeep);
         }
     },
@@ -54,6 +55,7 @@ public enum Action {
         public String doAction(Game game, Player player) {
             District card = player.cardToDiscard();
             player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
+            game.getDeck().addLast(card);
             player.gainCoins(1);
             return MessageFormat.format("{0} discarded {1} in order to received one coin", player.getName(), card);
         }
@@ -102,6 +104,7 @@ public enum Action {
         public String doAction(Game game, Player player) {
             List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
             assert (!cardsToExchange.isEmpty());
+            game.getDeck().addAll(cardsToExchange);
             player.removeFromHand(cardsToExchange);
             List<District> cards = game.getDeck().draw(cardsToExchange.size());
             cards.forEach(player::addDistrictToHand);
@@ -145,7 +148,7 @@ public enum Action {
         public String doAction(Game game, Player player) {
             var drawnCards = game.getDeck().draw(2);
             drawnCards.forEach(player::addDistrictToHand);
-            return MessageFormat.format("{0} drew 2 extra districts {1} because he was the {1}", player.getName(), player.gainIncome(), player.getCharacter().orElseThrow());
+            return MessageFormat.format("{0} drew 2 extra districts {1} because he was the {2}", player.getName(), player.gainIncome(), player.getCharacter().orElseThrow());
         }
     },
     /**
