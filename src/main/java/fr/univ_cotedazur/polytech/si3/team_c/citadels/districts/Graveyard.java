@@ -13,6 +13,6 @@ public class Graveyard extends District {
 
     @Override
     public List<Action> getEventAction() {
-        return List.of(Action.GRAVEYARD);
+        return List.of(Action.RECOVER_DESTROYED_DISTRICT);
     }
 }

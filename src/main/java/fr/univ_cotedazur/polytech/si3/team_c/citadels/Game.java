@@ -188,8 +188,7 @@ public class Game {
                     disctrictToBuild.forEach(district ->
                     {
                         LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
-                        if (!district.getEventAction().isEmpty())
-                            district.getEventAction().forEach(a -> eventActions.put(a, player));
+                        district.getEventAction().forEach(a -> eventActions.put(a, player));
                     });
 
                 }
@@ -253,9 +252,9 @@ public class Game {
                     player.pay(districtToDestroy.getValue().getCost() - 1);
                     LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
                     List<Action> actions = districtToDestroy.getValue().getEventAction();
-                    if (!actions.isEmpty()) actions.forEach(eventActions::remove);
-                    Player recuperationPlayer = eventActions.get(Action.GRAVEYARD);
-                    if (eventActions.containsKey(Action.GRAVEYARD) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict()) {
+                    actions.forEach(eventActions::remove);
+                    Player recuperationPlayer = eventActions.get(Action.RECOVER_DESTROYED_DISTRICT);
+                    if (eventActions.containsKey(Action.RECOVER_DESTROYED_DISTRICT) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict(districtToDestroy.getValue())) {
                         recuperationPlayer.pay(1);
                         recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
                     } else discard.add(districtToDestroy.getValue());
