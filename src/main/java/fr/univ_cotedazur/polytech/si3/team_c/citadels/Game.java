@@ -23,7 +23,6 @@ public class Game {
      */
     private List<Character> charactersToInteractWith;
     private final Random random = new Random();
-    private final List<District> discard;
 
     public Game() {
         this(Collections.emptyList());
@@ -47,7 +46,6 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
-        discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
@@ -193,8 +191,6 @@ public class Game {
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
         if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
             setCrown((getCrown() + 1) % playerList.size());
-        deck.addAll(discard); // We add at the bottom of the deck the discarded cards
-        discard.clear(); // Reset of the discard
         return isEnd;
     }
 
