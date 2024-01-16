@@ -319,10 +319,7 @@ public class Bot extends Player {
      * @return true if the bot wants to take the card and false else
      */
     public boolean wantsToTakeADestroyedDistrict(District district) {
-        double handAverageProfitability = 0;
-        if (getHandSize() != 0) {
-            handAverageProfitability = getHandDistricts().stream().map(this::districtProfitability).mapToDouble(Double::doubleValue).sum() / getHandSize();
-        }
+        double handAverageProfitability = getHandDistricts().stream().map(this::districtProfitability).mapToDouble(Double::doubleValue).average().orElse(0);
         return district.getColor() == Colors.PURPLE && districtProfitability(district) >= handAverageProfitability && getCoins() > 1;
     }
 }
