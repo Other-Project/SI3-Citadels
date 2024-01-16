@@ -1,8 +1,10 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.AbstractMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public enum Action {
     /**
@@ -10,7 +12,7 @@ public enum Action {
      */
     INCOME("claim his income") {
         @Override
-        public String doAction(Player player) {
+        public String doAction(Game game, Player player) {
             return MessageFormat.format("{0} got {1} coins", player.getName(), player.gainIncome());
         }
     },
@@ -19,9 +21,8 @@ public enum Action {
      */
     SPECIAL_INCOME("claim his special income") {
         @Override
-        public String doAction(Player player) {
-            int claimedCoins = player.gainSpecialIncome();
-            return MessageFormat.format("{0} got {1} coins", player.getName(), Integer.toString(claimedCoins));
+        public String doAction(Game game, Player player) {
+            return MessageFormat.format("{0} got {1} coins", player.getName(), player.gainSpecialIncome());
         }
     },
     /**
@@ -29,11 +30,11 @@ public enum Action {
      */
     DRAW("draw districts", INCOME) {
         @Override
-        public String doAction(Player player) {
-            var drawnCard = player.getGameStatus().draw(player.numberOfDistrictsToDraw());
-            LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
-            player.pickDistrictsFromDeck(drawnCard)
-                    .forEach(district -> LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), district}));
+        public String doAction(Game game, Player player) {
+            var drawnCard = game.getDeck().draw(player.numberOfDistrictsToDraw());
+            List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
+            drawnCard.removeAll(districtsToKeep);
+            return MessageFormat.format("{0} kept {1}", player.getName(), districtsToKeep);
         }
     },
     /**
@@ -41,9 +42,8 @@ public enum Action {
      */
     BUILD("build district(s)") {
         @Override
-        public String doAction(Player player) {
-            player.pickDistrictsToBuild(currentTurn)
-                    .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
+        public String doAction(Game game, Player player) {
+            return MessageFormat.format("{0} built {1}", player.getName(), player.pickDistrictsToBuild(game.getCurrentTurn()));
         }
     },
     /**
@@ -51,9 +51,9 @@ public enum Action {
      */
     DISCARD("discard a card in order to receive a coin") {
         @Override
-        public String doAction(Player player) {
+        public String doAction(Game game, Player player) {
             District card = player.cardToDiscard();
-            player.getHandDistricts().remove(card); // If no card chose the player would not be able to do this action
+            player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
             player.gainCoins(1);
             return MessageFormat.format("{0} discarded {1} in order to received one coin", player.getName(), card);
         }
@@ -63,8 +63,8 @@ public enum Action {
      */
     TAKE_THREE("pay 3 coins in order to draw 3 cards") {
         @Override
-        public String doAction(Player player) {
-            List<District> drawnCards = player.getGameStatus().draw(3);
+        public String doAction(Game game, Player player) {
+            List<District> drawnCards = game.getDeck().draw(3);
             player.pay(3);
             drawnCards.forEach(player::addDistrictToHand);
             return MessageFormat.format("{0} payed 3 coins in order to received: {1}", player.getName(), drawnCards);
@@ -75,10 +75,11 @@ public enum Action {
      */
     STEAL("steal a character") {
         @Override
-        public String doAction(Player player) {
-            characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-            LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
-            robber = player;
+        public String doAction(Game game, Player player) {
+            if (game.getCharactersToInteractWith().isEmpty()) return null; // Useful for tests
+            Character characterToRob = player.chooseCharacterToRob(game.getCharactersToInteractWith());
+            game.performActionOnCharacter(characterToRob, player, SufferedActions.STOLEN);
+            return MessageFormat.format("{0} tries to steal the {1}", player.getName(), characterToRob);
         }
     },
     /**
@@ -86,10 +87,11 @@ public enum Action {
      */
     KILL("kill a character") {
         @Override
-        public String doAction(Player player) {
-            if (charactersToInteractWith.isEmpty()) return;
-            characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-            LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
+        public String doAction(Game game, Player player) {
+            if (game.getCharactersToInteractWith().isEmpty()) return null; // Useful for tests
+            Character characterToKill = player.chooseCharacterToKill(game.getCharactersToInteractWith());
+            game.performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
+            return MessageFormat.format("{0} kills the {1}", player.getName(), characterToKill);
         }
     },
     /**
@@ -97,12 +99,11 @@ public enum Action {
      */
     EXCHANGE_DECK("exchange some of his cards with the deck") {
         @Override
-        public String doAction(Player player) {
+        public String doAction(Game game, Player player) {
             List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
             assert (!cardsToExchange.isEmpty());
-            discard.addAll(cardsToExchange);
             player.removeFromHand(cardsToExchange);
-            List<District> cards = player.getGameStatus().draw(cardsToExchange.size());
+            List<District> cards = game.getDeck().draw(cardsToExchange.size());
             cards.forEach(player::addDistrictToHand);
             return MessageFormat.format("{0} exchanges some cards {1} with the deck, he got {2}", player.getName(), cardsToExchange, cards);
         }
@@ -112,8 +113,8 @@ public enum Action {
      */
     EXCHANGE_PLAYER("exchange his hand with the hand of another player", EXCHANGE_DECK) {
         @Override
-        public String doAction(Player player) {
-            String playerToExchangeCards = player.choosePlayerToExchangeCards(player.getGameStatus().getCardsNumber());
+        public String doAction(Game game, Player player) {
+            Player playerToExchangeCards = (Player) player.playerToExchangeCards(player.getPlayers());
             List<District> hand1 = player.getHandDistricts();
             List<District> handExchange = playerToExchangeCards.getHandDistricts();
             player.removeFromHand(hand1);
@@ -128,28 +129,45 @@ public enum Action {
      */
     DESTROY("destroy a district") {
         @Override
-        public String doAction(Player player) {
-            Map<String, List<District>> districtListToDestroyFrom = player.getGameStatus().getDistrictListToDestroyFrom();
-            AbstractMap.SimpleEntry<String, District> districtToDestroy = player.destroyDistrict(districtListToDestroyFrom).orElseThrow();
-            Player playerToTarget = linkStringToPlayer(districtToDestroy.getKey());
-            playerToTarget.removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
+        public String doAction(Game game, Player player) {
+            AbstractMap.SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(game.getIPlayerList());
+            ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
             player.pay(districtToDestroy.getValue().getCost() - 1);
             return MessageFormat.format("{0} destroys the {1} of {2}\n{0} has now {3} coins",
-                    player.getName(), districtToDestroy.getValue(), playerToTarget.getName(), player.getCoins());
+                    player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins());
         }
     },
     /**
      * The player draws 2 districts at the beginning of his turn
      */
-    BEGIN_DRAW,
+    BEGIN_DRAW("draws") {
+        @Override
+        public String doAction(Game game, Player player) {
+            var drawnCards = game.getDeck().draw(2);
+            drawnCards.forEach(player::addDistrictToHand);
+            return MessageFormat.format("{0} drew 2 extra districts {1} because he was the {1}", player.getName(), player.gainIncome(), player.getCharacter().orElseThrow());
+        }
+    },
     /**
      * The player gets a coin at the game startup
      */
-    STARTUP_INCOME,
+    STARTUP_INCOME {
+        @Override
+        public String doAction(Game game, Player player) {
+            player.gainCoins(1);
+            return MessageFormat.format("{0} earned a coin because he was the {1}", player.getName(), player.getCharacter().orElseThrow());
+        }
+    },
     /**
      * The player gets the crown at the beginning of his turn
      */
-    GET_CROWN,
+    GET_CROWN {
+        @Override
+        public String doAction(Game game, Player player) {
+            game.setCrown(player);
+            return MessageFormat.format("{0} got the crown because he was the {1}", player.getName(), player.getCharacter().orElseThrow());
+        }
+    },
     /**
      * The player wants to end his turn
      */
@@ -169,7 +187,7 @@ public enum Action {
         for (Action incompatibleAction : incompatibleActions) incompatibleAction.incompatibleActions.add(this);
     }
 
-    public String doAction(Player player) {
+    public String doAction(Game game, Player player) {
         return null;
     }
 

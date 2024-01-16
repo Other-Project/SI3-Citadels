@@ -134,7 +134,7 @@ class BotTest {
 
 
         game.addPlayer(feared);
-        game.setCrown(0);
+        game.setCrown(player1);
         characters = new ArrayList<>(AllCharacters);
         assertEquals(new Thief(), player1.pickCharacter(characters)); // The bot should choose the thief as the other player has a lot of money
 

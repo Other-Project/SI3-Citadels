@@ -15,6 +15,7 @@ public class Game {
     private Deck deck;
 
     private int crown;
+
     private int currentTurn = 0;
 
     /**
@@ -78,8 +79,20 @@ public class Game {
         return crown;
     }
 
-    public void setCrown(int player) {
+    public void setCrown(Player player) {
+        setCrown(playerList.indexOf(player));
+    }
+
+    private void setCrown(int player) {
         crown = player;
+    }
+
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public List<Character> getCharactersToInteractWith() {
+        return new ArrayList<>(charactersToInteractWith);
     }
 
 
@@ -140,32 +153,13 @@ public class Game {
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
-        if (startOfTurnAction != Action.NONE) {
-            switch (startOfTurnAction) {
-                case BEGIN_DRAW -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " draws 2 extra districts");
-                    var drawnCards = deck.draw(2);
-                    for (District district : drawnCards) {
-                        player.addDistrictToHand(district);
-                        LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
-                    }
-                }
-                case STARTUP_INCOME -> {
-                    LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
-                    player.gainCoins(1);
-                }
-                case GET_CROWN -> {
-                    LOGGER.log(Level.INFO, "{0} got the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
-                    setCrown(playerList.indexOf(player));
-                }
-                default ->
-                        throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
-            }
-        }
+        if (startOfTurnAction != Action.NONE)
+            startOfTurnAction.doAction(this, player);
+
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
-            action.doAction(player);
+            action.doAction(this, player);
             player.removeAction(action);
             LOGGER.info(player::toString);
         }
@@ -237,9 +231,9 @@ public class Game {
     /**
      * Perform an action on a character
      *
-     * @param character  the character who will suffer the action
+     * @param character the character who will suffer the action
      * @param committer the player who commits the action
-     * @param action     the committed action
+     * @param action    the committed action
      */
     public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
         Optional<Player> player = playerList.stream()

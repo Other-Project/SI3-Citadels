@@ -106,7 +106,7 @@ class GameTest {
 
         availableCharacters.remove(bot1.pickCharacter(availableCharacters));
         bot2.pickCharacter(availableCharacters);
-        game.setCrown(0);
+        game.setCrown(bot1);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
