@@ -23,7 +23,6 @@ public class Game {
      */
     private List<Character> charactersToInteractWith;
     private final Random random = new Random();
-    private final List<District> discard;
 
     public Game() {
         this(Collections.emptyList());
@@ -47,7 +46,6 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
-        discard = new ArrayList<>();
         eventActions = new EnumMap<>(Action.class);
     }
 
@@ -174,7 +172,7 @@ public class Game {
                     List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
                     drawnCard.removeAll(districtsToKeep);
                     LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), districtsToKeep});
-                    discard.addAll(drawnCard); // We add to the discard the districts that the player doesn't want to keep
+                    deck.addAll(drawnCard); // We add back to the deck the districts that the player doesn't want to keep
                     player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
                 }
                 case INCOME -> {
@@ -208,7 +206,7 @@ public class Game {
                     District card = player.cardToDiscard();
                     LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
                     player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
-                    discard.add(card);
+                    deck.addLast(card);
                     player.gainCoins(1);
                     LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
                 }
@@ -228,7 +226,7 @@ public class Game {
                 case EXCHANGE_DECK -> {
                     List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
                     assert (!cardsToExchange.isEmpty());
-                    discard.addAll(cardsToExchange);
+                    deck.addAll(cardsToExchange);
                     player.removeFromHand(cardsToExchange);
                     List<District> cards = deck.draw(cardsToExchange.size());
                     cards.forEach(player::addDistrictToHand);
@@ -295,8 +293,6 @@ public class Game {
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
         if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
             setCrown((getCrown() + 1) % playerList.size());
-        deck.addAll(discard); // We add at the bottom of the deck the discarded cards
-        discard.clear(); // Reset of the discard
         return isEnd;
     }
 
