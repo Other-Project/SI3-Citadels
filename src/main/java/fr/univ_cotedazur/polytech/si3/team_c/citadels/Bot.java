@@ -313,8 +313,9 @@ public class Bot extends Player {
     }
 
     /**
-     * The bot takes the card destroyed by the Warlord if he has more than 1 coin after paying the card
+     * The bot takes the card destroyed if he has more than 1 coin after paying the card
      *
+     * @param district the destroyed district
      * @return true if the bot wants to take the card and false else
      */
     public boolean wantsToTakeADestroyedDistrict(District district) {

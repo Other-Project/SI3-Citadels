@@ -464,9 +464,9 @@ public abstract class Player implements IPlayer {
     }
 
     /**
-     * The player can choose to take the card destroyed by the Warlord
+     * The player can choose to take the card destroyed
      *
-     * @param district
+     * @param district the destroyed district
      * @return true if the player wants to take the card and false else
      */
     public abstract boolean wantsToTakeADestroyedDistrict(District district);

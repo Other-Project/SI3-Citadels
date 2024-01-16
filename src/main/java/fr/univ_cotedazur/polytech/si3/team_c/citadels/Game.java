@@ -257,7 +257,7 @@ public class Game {
                     if (eventActions.containsKey(Action.RECOVER_DESTROYED_DISTRICT) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict(districtToDestroy.getValue())) {
                         recuperationPlayer.pay(1);
                         recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
-                    } else discard.add(districtToDestroy.getValue());
+                    } else deck.add(districtToDestroy.getValue());
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
