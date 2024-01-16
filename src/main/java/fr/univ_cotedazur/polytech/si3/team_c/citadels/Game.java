@@ -21,16 +21,9 @@ public class Game {
      * The characters the player can interact with
      */
     private List<Character> charactersToInteractWith;
-    private Player robber;
-    private Character characterToRob;
-    private Character characterToKill;
     private final Random random = new Random();
     private final List<District> discard;
-    private final GameObserver gameStatus = new GameObserver(this);
 
-    public GameObserver getGameObserver() {
-        return gameStatus;
-    }
     public Game() {
         this(Collections.emptyList());
     }
@@ -41,7 +34,7 @@ public class Game {
         for (int i = 1; i <= numberPlayers - initLength; i++) {
             Bot bot = new Bot("bot" + i, 2, deck.draw(2));
             playerList.add(bot);
-            bot.setGameStatus(gameStatus);
+            bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
         }
     }
 
@@ -51,12 +44,16 @@ public class Game {
         charactersToInteractWith = new ArrayList<>();
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
-            p.setGameStatus(gameStatus);
+            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
         discard = new ArrayList<>();
     }
 
     public List<Player> getPlayerList() {
+        return new ArrayList<>(playerList);
+    }
+
+    public List<IPlayer> getIPlayerList() {
         return new ArrayList<>(playerList);
     }
 
@@ -68,7 +65,7 @@ public class Game {
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
-        player.setGameStatus(gameStatus);
+        player.setPlayers(() -> new ArrayList<>(playerList.stream().filter(p -> !p.equals(player)).toList()));
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -115,9 +112,9 @@ public class Game {
         int p = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             var player = playerList.get((p + i) % playerList.size());
-            var choosenCharacter = player.pickCharacter(characterList);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            characterList.remove(choosenCharacter);
+            var chosenCharacter = player.pickCharacter(characterList);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), chosenCharacter});
+            characterList.remove(chosenCharacter);
         }
     }
 
@@ -128,17 +125,18 @@ public class Game {
         LOGGER.info(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
-        if (player.getCharacter().orElseThrow() instanceof King) setCrown(playerList.indexOf(player));
-        if (player.getCharacter().orElseThrow().equals(characterToRob)) {
-            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), characterToRob});
+        if (player.sufferAction(SufferedActions.STOLEN)) {
+            Player robber = (Player) player.actionCommitter(SufferedActions.STOLEN).orElseThrow();
+            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
                     new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
+
             robber.gainCoins(player.getCoins());
             player.pay(player.getCoins());
             // The player who has been robbed give all his coins to the Thief
         }
-        if (player.getCharacter().orElseThrow().equals(characterToKill)) {
-            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), characterToKill});
+        if (player.sufferAction(SufferedActions.KILLED)) {
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
@@ -156,6 +154,10 @@ public class Game {
                     LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
                     player.gainCoins(1);
                 }
+                case GET_CROWN -> {
+                    LOGGER.log(Level.INFO, "{0} got the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+                    setCrown(playerList.indexOf(player));
+                }
                 default ->
                         throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
             }
@@ -170,36 +172,9 @@ public class Game {
     }
 
     /**
-     * This method create the list of district that can be destroyed by the Warlord
-     */
-    protected Map<String, List<District>> getDistrictListToDestroyFrom() {
-        Map<String, List<District>> districtListToDestroyFrom = getGameObserver().getBuiltDistrict();
-        for (Player playerInList : playerList) {
-            if (!playerInList.getCharacter().orElseThrow().canHaveADistrictDestroyed())
-                districtListToDestroyFrom.remove(playerInList.getName());// Removes the player who can't get target by the Warlord
-            else districtListToDestroyFrom.replace(playerInList.getName(),
-                    districtListToDestroyFrom.get(playerInList.getName()).stream().filter(District::isDestructible).toList());
-        }
-        return districtListToDestroyFrom;
-    }
-
-    /**
-     * This method links a player to his name
-     *
-     * @param playerName the name of the player
-     * @return the player associated to playerName
-     */
-    private Player linkStringToPlayer(String playerName) {
-        for (Player player : getPlayerList()) {
-            if (playerName.equals(player.getName())) return player;
-        }
-        throw new NoSuchElementException("The player is not in the game");
-    }
-
-    /**
      * The method which checks if the game must end according to the number of districts built for the player
      */
-    public boolean end(Player player) {
+    public boolean end(IPlayer player) {
         return player.getBuiltDistricts().size() >= 8;
     }
 
@@ -208,9 +183,6 @@ public class Game {
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
-        characterToRob = null;
-        robber = null;
-        characterToKill = null;
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
@@ -224,8 +196,11 @@ public class Game {
                 isEnd = true;
             }
         }
-        if (!(playerList.get(previousCrown).getCharacter().orElseThrow() instanceof King) && previousCrown == getCrown())
+        Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
+        if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
             setCrown((getCrown() + 1) % playerList.size());
+        deck.addAll(discard); // We add at the bottom of the deck the discarded cards
+        discard.clear(); // Reset of the discard
         return isEnd;
     }
 
@@ -259,8 +234,22 @@ public class Game {
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
+    /**
+     * Perform an action on a character
+     *
+     * @param character  the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action     the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        Optional<Player> player = playerList.stream()
+                .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
+                .findFirst();
+        player.ifPresent(p -> p.addSufferedAction(action, committer));
+    }
+
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(2).start();
+        new Game(4).start();
     }
 }

@@ -182,6 +182,7 @@ class GameTest {
         game.addPlayer(trickedBot1);
         game.addPlayer(trickedBot2);
         game.gameTurn();
+        assertTrue(trickedBot2.sufferAction(SufferedActions.STOLEN));
         assertTrue(trickedBot1.getCoins() >= 500);
     }
 
@@ -215,7 +216,7 @@ class GameTest {
         game.addPlayer(assassinBot);
         game.addPlayer(merchantBot);
         game.gameTurn();
-        assertEquals(0, merchantBot.getCoins());
+        assertTrue(merchantBot.sufferAction(SufferedActions.KILLED));
         assertTrue(merchantBot.getBuiltDistricts().isEmpty());
         assertEquals(merchantDistricts, merchantBot.getHandDistricts());
     }
@@ -264,33 +265,36 @@ class GameTest {
     @Test
     void gameObserverTest() {
         Game gameWithNumber = new Game(4);
-        GameObserver gameObserver = gameWithNumber.getGameObserver();
-        gameObserver.getCardsNumber().forEach((s, integer) -> assertEquals(2, (int) integer));
-        gameObserver.getCoins().forEach((s, integer) -> assertEquals(2, (int) integer));
-        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCardsNumber().get(p.getName())));
-        gameWithNumber.getPlayerList().forEach(p -> assertEquals(2, (int) p.getGameStatus().getCoins().get(p.getName())));
-        assertEquals(4, gameObserver.getPlayersNumber());
-        Player p1 = new Bot("P1", 200, game.getDeck().draw(3));
+        assertEquals(4, gameWithNumber.getIPlayerList().size());
+        gameWithNumber.getPlayerList().forEach(p -> assertEquals(3, p.getPlayers().size()));
+        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(2, player.getHandSize()));
+        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(2, player.getCoins()));
+        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(2, p2.getHandSize())));
+        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(2, p2.getCoins())));
+
+
+        Player p1 = new Bot("P1", 200, List.of(new Tavern(), new Castle(), new DragonGate()));
         Player p2 = new Bot("P2", 10, game.getDeck().draw(7));
         Player p3 = new Bot("P3", 1, game.getDeck().draw(8));
         game.addPlayer(p1);
         game.addPlayer(p2);
         game.addPlayer(p3);
-        gameObserver = game.getGameObserver();
-        assertEquals(3, gameObserver.getPlayersNumber());
-        assertEquals(200, gameObserver.getCoins().get("P1"));
-        assertEquals(10, gameObserver.getCoins().get("P2"));
-        assertEquals(1, gameObserver.getCoins().get("P3"));
-        assertEquals(3, gameObserver.getCardsNumber().get("P1"));
-        assertEquals(7, gameObserver.getCardsNumber().get("P2"));
-        assertEquals(8, gameObserver.getCardsNumber().get("P3"));
+        assertEquals(3, game.getIPlayerList().size());
+        game.getPlayerList().forEach(p -> assertEquals(2, p.getPlayers().size()));
+        assertEquals(200, game.getIPlayerList().get(0).getCoins());
+        assertEquals(10, game.getIPlayerList().get(1).getCoins());
+        assertEquals(1, game.getIPlayerList().get(2).getCoins());
+        assertEquals(3, game.getIPlayerList().get(0).getHandSize());
+        assertEquals(7, game.getIPlayerList().get(1).getHandSize());
+        assertEquals(8, game.getIPlayerList().get(2).getHandSize());
         List<District> districtsBuilt = new ArrayList<>();
         districtsBuilt.add(p1.getHandDistricts().get(0));
         p1.buildDistrict(p1.getHandDistricts().get(0), 0);
         districtsBuilt.add(p1.getHandDistricts().get(0));
         p1.buildDistrict(p1.getHandDistricts().get(0), 0);
-        assertEquals(1, gameObserver.getCardsNumber().get("P1"));
-        assertEquals(districtsBuilt, gameObserver.getBuiltDistrict().get("P1"));
+        assertEquals(1, game.getIPlayerList().get(0).getHandSize());
+        assertEquals(districtsBuilt, game.getIPlayerList().get(0).getBuiltDistricts());
+        game.getPlayerList().stream().skip(1).forEach(p -> assertEquals(districtsBuilt, p.getPlayers().get(0).getBuiltDistricts()));
     }
 
     @Test
@@ -412,5 +416,99 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
         game.playerTurn(warlordBot);
         assertEquals(1, bishopBot.getBuiltDistricts().size());
+    }
+
+    @Test
+    void endgameDistrictDestructionTest() {
+        Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        Bot merchantBot = new Bot("merchantBot", 50, List.of(new Church(), new Monastery(), new Harbor(), new Castle(),
+                new Temple(), new University(), new WatchTower(), new Tavern(), new Smithy())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                var objective = districtObjective();
+                if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
+                    return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
+                if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
+                    return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
+                if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) > 0)
+                    return Action.SPECIAL_INCOME;// Pick coins according to the built districts if the ability of the chosen character allows it
+                return Action.NONE;
+            }
+        };
+        game.addPlayer(warlordBot);
+        game.addPlayer(merchantBot);
+        game.characterSelectionTurn();
+        for (int i = 1; i < 8; i++) {
+            game.playerTurn(merchantBot);
+            assertEquals(merchantBot, warlordBot.destroyDistrict(game.getIPlayerList()).getKey());
+        }
+        for (int i = 1; i < 3; i++) {
+            game.playerTurn(merchantBot);
+            var destroy = warlordBot.destroyDistrict(game.getIPlayerList());
+            assertNotEquals(merchantBot, destroy == null ? null : destroy.getKey());
+        }
+    }
+
+    @Test
+    void discardCardTest() {
+        Bot magicianBot = new Bot("MagicianBot", 100, List.of(new Laboratory(), new Church(), new Monastery(), new Harbor(), new Castle(),
+                new Temple())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Magician()) ? new Magician() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+
+            @Override
+            public Optional<District> districtObjective() {
+                if (getHandDistricts().contains(new Laboratory()))
+                    return Optional.of(getHandDistricts().get(getHandDistricts().indexOf(new Laboratory())));
+                else return Optional.empty();
+            }
+
+            @Override
+            public Action nextAction(Set<Action> remainingActions) {
+                if (remainingActions.contains(Action.BUILD)) return Action.BUILD;
+                else if (remainingActions.contains(Action.DISCARD)) return Action.DISCARD;
+                else return Action.NONE;
+            }
+        };
+        game.addPlayer(magicianBot);
+        game.gameTurn();
+        game.gameTurn();
+        assertEquals(4, magicianBot.getHandDistricts().size());
+        assertEquals(96, magicianBot.getCoins());
+    }
+
+    @Test
+    void destroyedCardLocationTest() { // Tests if the discarded cards are added to the game deck
+        Bot merchantBot = new Bot("merchantBot", 50, game.getDeck().draw(2)) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+                setCharacter(best);
+                return best;
+            }
+        };
+        game.addPlayer(merchantBot);
+        assertEquals(63, game.getDeck().size()); // The whole deck minus the cards in bots hand
+        game.gameTurn();
+        assertEquals(1, merchantBot.getBuiltDistricts().size()); // The bot must draw (as he is more rich than Elon musk)
+        assertEquals(62, game.getDeck().size()); // The rejected card should be added to the game deck
     }
 }
