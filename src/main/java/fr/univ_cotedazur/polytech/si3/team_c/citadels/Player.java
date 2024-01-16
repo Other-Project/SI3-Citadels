@@ -2,6 +2,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 /**
@@ -9,7 +10,7 @@ import java.util.function.Function;
  *
  * @author Team C
  */
-public abstract class Player {
+public abstract class Player implements IPlayer {
     private static final int INCOME = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_DRAW = 2;
     private static final int NUMBER_OF_DISTRICTS_TO_KEEP = 1;
@@ -17,12 +18,13 @@ public abstract class Player {
     private boolean gameEnder = false;
     private int coins;
     private final Map<Integer, List<District>> builtDistricts;
+    private Map<SufferedActions, IPlayer> sufferedActions;
     private final ArrayList<District> handDistricts;
     private Character character;
 
     private Set<Action> actionSet;
 
-    private GameObserver gameStatus;
+    private Callable<List<IPlayer>> players;
 
 
     protected Player(String name, int coins, List<District> districts) {
@@ -31,6 +33,8 @@ public abstract class Player {
         handDistricts = new ArrayList<>(districts);
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
         builtDistricts = new HashMap<>();
+        sufferedActions = new EnumMap<>(SufferedActions.class);
+        players = Collections::emptyList;
     }
 
     /**
@@ -50,6 +54,16 @@ public abstract class Player {
     @Override
     public String toString() {
         return getName() + " (" + getCoins() + " coins) " + getHandDistricts() + " :" + getBuiltDistricts();
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Player player && Objects.equals(name, player.name);
     }
 
     /**
@@ -127,6 +141,21 @@ public abstract class Player {
     }
 
     /**
+     * Gets all the destroyable districts that the player built
+     */
+    public List<District> getDestroyableDistricts() {
+        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < 8 ?
+                getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
+    }
+
+    /**
+     * Gets the amount of cards the player have in hand
+     */
+    public int getHandSize() {
+        return handDistricts.size();
+    }
+
+    /**
      * Gets all the districts in the hand of the player (but not built for now)
      */
     public List<District> getHandDistricts() {
@@ -168,10 +197,10 @@ public abstract class Player {
     /**
      * The player wants to destroy a district
      *
-     * @param districtList the list from which the district to be destroyed is selected
+     * @param players List of players whose districts can be destroyed
      * @return the district to be destroyed
      */
-    protected abstract Optional<SimpleEntry<String, District>> destroyDistrict(Map<String, List<District>> districtList);
+    protected abstract SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players);
 
     /**
      * The player removes a district from his built district
@@ -204,7 +233,11 @@ public abstract class Player {
      * @param availableCharacters A list of the characters available
      * @return The character that has been chosen
      */
-    public abstract Character pickCharacter(List<Character> availableCharacters);
+    public Character pickCharacter(List<Character> availableCharacters) {
+        sufferedActions = new EnumMap<>(SufferedActions.class);
+        return null;
+    }
+
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
      *
@@ -405,7 +438,7 @@ public abstract class Player {
      * @param playerList List of players he can exchange with
      * @return The player chosen for the exchange (Or empty if he doesn't want to make an exchange)
      */
-    public abstract Player playerToExchangeCards(List<Player> playerList);
+    public abstract IPlayer playerToExchangeCards(List<IPlayer> playerList);
 
     /**
      * Ask the player to choose cards to exchange with the deck
@@ -416,18 +449,11 @@ public abstract class Player {
 
     /**
      * Remove the cards of the player hand
+     *
      * @param cards List of cards to remove of the hand
      */
     public void removeFromHand(List<District> cards) {
         handDistricts.removeAll(cards);
-    }
-
-    public void setGameStatus(GameObserver gameObserver) {
-        gameStatus = gameObserver;
-    }
-
-    public GameObserver getGameStatus() {
-        return gameStatus;
     }
 
     /**
@@ -435,6 +461,48 @@ public abstract class Player {
      */
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
+    }
+
+    /**
+     * Adds the action committed by a player on the player
+     *
+     * @param action the suffered action
+     * @param player the player who commits the action
+     **/
+    public void addSufferedAction(SufferedActions action, IPlayer player) {
+        sufferedActions.put(action, player);
+    }
+
+    /**
+     * Tests if the player suffers an action
+     *
+     * @param action the tested action
+     * @return true if the player suffer the action
+     */
+    public boolean sufferAction(SufferedActions action) {
+        return sufferedActions.containsKey(action);
+    }
+
+    /**
+     * Return the committer of the action if the player suffers the action
+     *
+     * @param action the committed action
+     * @return the committer of the action
+     */
+    public Optional<IPlayer> actionCommitter(SufferedActions action) {
+        return sufferAction(action) ? Optional.of(sufferedActions.get(action)) : Optional.empty();
+    }
+
+    public List<IPlayer> getPlayers() {
+        try {
+            return players.call();
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public void setPlayers(Callable<List<IPlayer>> players) {
+        this.players = players;
     }
 
     public abstract void setPossibleCharacters(List<Character> availableCharacters, List<String> beforePlayers);
