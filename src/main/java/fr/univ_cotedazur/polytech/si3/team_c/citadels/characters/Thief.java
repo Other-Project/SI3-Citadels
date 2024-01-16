@@ -4,7 +4,6 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.Action;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
 
 import java.util.List;
-import java.util.Optional;
 
 public class Thief extends Character {
     public Thief() {
@@ -12,7 +11,7 @@ public class Thief extends Character {
     }
 
     @Override
-    public Optional<List<Action>> getAction() {
-        return Optional.of(List.of(Action.STEAL));
+    public List<Action> getAction() {
+        return List.of(Action.STEAL);
     }
 }

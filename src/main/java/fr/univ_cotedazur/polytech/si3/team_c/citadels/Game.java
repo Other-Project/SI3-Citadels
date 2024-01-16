@@ -16,6 +16,7 @@ public class Game {
 
     private int crown;
     private int currentTurn = 0;
+    private final Map<Action, Player> eventActions;
 
     /**
      * The characters the player can interact with
@@ -45,6 +46,7 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
+        eventActions = new EnumMap<>(Action.class);
     }
 
     public List<Player> getPlayerList() {
@@ -180,8 +182,13 @@ public class Game {
                 }
                 case BUILD -> {
                     LOGGER.info(player.getName() + " chooses to build a district");
-                    player.pickDistrictsToBuild(currentTurn)
-                            .forEach(district -> LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district}));
+                    List<District> disctrictToBuild = player.pickDistrictsToBuild(currentTurn);
+                    disctrictToBuild.forEach(district ->
+                    {
+                        LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
+                        district.getEventAction().forEach(a -> eventActions.put(a, player));
+                    });
+
                 }
                 case SPECIAL_INCOME -> {
                     LOGGER.info(player.getName() + " claims his special income");
@@ -241,8 +248,14 @@ public class Game {
                     SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(getIPlayerList());
                     ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
                     player.pay(districtToDestroy.getValue().getCost() - 1);
-                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{
-                            player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
+                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
+                    List<Action> actions = districtToDestroy.getValue().getEventAction();
+                    actions.forEach(eventActions::remove);
+                    Player recuperationPlayer = eventActions.get(Action.RECOVER_DESTROYED_DISTRICT);
+                    if (eventActions.containsKey(Action.RECOVER_DESTROYED_DISTRICT) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict(districtToDestroy.getValue())) {
+                        recuperationPlayer.pay(1);
+                        recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
+                    } else deck.add(districtToDestroy.getValue());
                 }
                 default ->
                         throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
