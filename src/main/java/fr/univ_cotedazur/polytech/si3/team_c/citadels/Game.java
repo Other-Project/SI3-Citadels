@@ -99,7 +99,7 @@ public class Game {
     /**
      * Reset the list of characters
      */
-    public List<Character> defaultCharacterList() {
+    public static List<Character> defaultCharacterList() {
         return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
     }
@@ -112,9 +112,14 @@ public class Game {
         int p = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             var player = playerList.get((p + i) % playerList.size());
-            var chosenCharacter = player.pickCharacter(characterList);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), chosenCharacter});
-            characterList.remove(chosenCharacter);
+            List<IPlayer> beforePlayers;
+            if ((p + i) % playerList.size() < p) {
+                beforePlayers = new ArrayList<>(playerList.subList(p, playerList.size()));
+                beforePlayers.addAll(playerList.subList(0, (p + i) % playerList.size()));
+            } else beforePlayers = new ArrayList<>(playerList.subList(p, (p + i) % playerList.size()));
+            var choosenCharacter = player.pickCharacter(characterList, beforePlayers);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            characterList.remove(choosenCharacter);
         }
     }
 

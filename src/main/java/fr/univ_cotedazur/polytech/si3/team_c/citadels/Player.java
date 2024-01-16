@@ -238,6 +238,8 @@ public abstract class Player implements IPlayer {
         return null;
     }
 
+    public abstract Character pickCharacter(List<Character> availableCharacters, List<IPlayer> beforePlayers);
+
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
      *
@@ -504,6 +506,4 @@ public abstract class Player implements IPlayer {
     public void setPlayers(Callable<List<IPlayer>> players) {
         this.players = players;
     }
-
-    public abstract void setPossibleCharacters(List<Character> availableCharacters, List<String> beforePlayers);
 }
