@@ -247,7 +247,7 @@ class GameTest {
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
-                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
+                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction()));
                 return getActionSet();
             }
         };
@@ -418,7 +418,79 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
     }
 
+    void warlordGraveyardTest() {
+        Player bot1 = new Bot("bot1", 100, List.of(new Graveyard())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+
+            @Override
+            public Action nextAction() {
+                if (getActionSet().contains(Action.DESTROY)) return Action.DESTROY;
+                else return Action.NONE;
+            }
+        };
+
+        Player bot2 = new Bot("bot2", 10, game.getDeck().draw(2));
+        List<District> cardsBot2 = bot2.getHandDistricts();
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        bot1.buildDistrict(bot1.getHandDistricts().get(0), 0);
+        bot2.buildDistrict(bot2.getHandDistricts().get(0), 0);
+        game.characterSelectionTurn();
+        bot1.createActionSet();
+        assertTrue(bot1.getActionSet().contains(Action.DESTROY));
+        game.playerTurn(bot1);
+        assertTrue(bot1.getHandDistricts().stream().noneMatch(cardsBot2::contains));
+    }
+
     @Test
+    void notWarlordGraveyardTest() {
+        Player bot1 = new Bot("bot1", 100, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+
+            @Override
+            public Action nextAction() {
+                if (getActionSet().contains(Action.DESTROY)) return Action.DESTROY;
+                else return Action.NONE;
+            }
+        };
+
+        Player bot2 = new Bot("bot2", 100, List.of(new DragonGate(), new University()));
+        Player bot3 = new Bot("bot3", 100, List.of(new Graveyard())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Warlord());
+                return new Assassin();
+            }
+            @Override
+            public Action nextAction() {
+                if (getActionSet().contains(Action.BUILD)) return Action.BUILD;
+                else return Action.NONE;
+            }
+        };
+
+        List<District> cardsBot2 = bot2.getHandDistricts();
+        game.addPlayer(bot1);
+        game.addPlayer(bot2);
+        game.addPlayer(bot3);
+        bot2.buildDistrict(bot2.getHandDistricts().get(0), 0);
+        bot2.buildDistrict(bot2.getHandDistricts().get(0), 0);
+        game.characterSelectionTurn();
+        bot1.createActionSet();
+        assertTrue(bot1.getActionSet().contains(Action.DESTROY));
+        game.playerTurn(bot3);
+        game.playerTurn(bot1);
+        assertTrue(bot3.getHandDistricts().stream().anyMatch(cardsBot2::contains));
+        assertEquals(94, bot3.getCoins());
+    }
+  
     void endgameDistrictDestructionTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override

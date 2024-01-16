@@ -1,8 +1,8 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public abstract class Card {
     private final String name;
@@ -33,8 +33,12 @@ public abstract class Card {
      *
      * @return Empty if the district does not provide additional actions for the player.
      */
-    public Optional<List<Action>> getAction() {
-        return Optional.empty();
+    public List<Action> getAction() {
+        return Collections.emptyList();
+    }
+
+    public List<Action> getEventAction() {
+        return Collections.emptyList();
     }
 
     @Override

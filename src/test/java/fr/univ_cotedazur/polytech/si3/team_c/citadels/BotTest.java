@@ -297,7 +297,7 @@ class BotTest {
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
-                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction().orElseThrow()));
+                setActionSet(new HashSet<>(getCharacter().orElseThrow().getAction()));
                 return getActionSet();
             }
 

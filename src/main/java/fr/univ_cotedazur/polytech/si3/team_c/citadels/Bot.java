@@ -75,7 +75,7 @@ public class Bot extends Player {
             }
             default -> { /* do nothing */ }
         }
-        for (Action action : character.getAction().orElse(Collections.emptyList())) {
+        for (Action action : character.getAction()) {
             switch (action) {
                 case KILL -> {
                     securityProfitability += 0.5;
@@ -310,5 +310,16 @@ public class Bot extends Player {
                         .thenComparingInt(entry -> entry.getValue().getPoint())).orElse(null);
         /* We order the district list first on the purple colour, then on the district's points.
         We remove the district that the bot can't destroy, and we remove a district if its destruction costs all the bots coins */
+    }
+
+    /**
+     * Does the player want to recover a district that has just been destroyed
+     *
+     * @param district the destroyed district
+     * @return true if the bot wants to take the card
+     */
+    public boolean wantsToTakeADestroyedDistrict(District district) {
+        double handAverageProfitability = getHandDistricts().stream().map(this::districtProfitability).mapToDouble(Double::doubleValue).average().orElse(0);
+        return districtProfitability(district) >= handAverageProfitability && getCoins() > 1; // The bot takes the destroyed district if he has more than 1 coin after paying the district and the district profitability is above average of his hand
     }
 }

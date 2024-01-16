@@ -162,6 +162,10 @@ public enum Action {
         }
     },
     /**
+     * The player pays one coin to get a district that has been destroyed during the turn
+     */
+    RECOVER_DESTROYED_DISTRICT,
+    /**
      * The player gets the crown at the beginning of his turn
      */
     GET_CROWN {

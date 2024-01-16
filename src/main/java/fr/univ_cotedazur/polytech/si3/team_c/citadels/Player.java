@@ -381,8 +381,8 @@ public abstract class Player implements IPlayer {
      */
     public Set<Action> createActionSet() {
         actionSet = new HashSet<>(List.of(Action.INCOME, Action.DRAW, Action.BUILD));
-        getBuiltDistricts().forEach(district -> district.getAction().ifPresent(actionSet::addAll)); // Add the special action of each district if it has one
-        character.getAction().ifPresent(actionSet::addAll); // Add the special actions of the character
+        getBuiltDistricts().forEach(district -> actionSet.addAll(district.getAction())); // Add the special action of each district if it has one
+        actionSet.addAll(character.getAction()); // Add the special actions of the character
         return actionSet;
     }
 
@@ -470,6 +470,14 @@ public abstract class Player implements IPlayer {
     public Action playStartOfTurnAction() {
         return getCharacter().orElseThrow().startTurnAction();
     }
+
+    /**
+     * Does the player want to recover a district that has just been destroyed
+     *
+     * @param district the destroyed district
+     * @return true if the player wants to take the district
+     **/
+    public abstract boolean wantsToTakeADestroyedDistrict(District district);
 
     /**
      * Adds the action committed by a player on the player

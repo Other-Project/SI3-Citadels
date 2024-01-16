@@ -4,7 +4,6 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.Action;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
 
 import java.util.List;
-import java.util.Optional;
 
 public class Assassin extends Character {
     public Assassin() {
@@ -12,7 +11,7 @@ public class Assassin extends Character {
     }
 
     @Override
-    public Optional<List<Action>> getAction() {
-        return Optional.of(List.of(Action.KILL));
+    public List<Action> getAction() {
+        return List.of(Action.KILL);
     }
 }

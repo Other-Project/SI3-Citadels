@@ -15,8 +15,8 @@ public class Game {
     private Deck deck;
 
     private int crown;
-
     private int currentTurn = 0;
+    private final Map<Action, Player> eventActions;
 
     /**
      * The characters the player can interact with
@@ -46,6 +46,7 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
+        eventActions = new EnumMap<>(Action.class);
     }
 
     public List<Player> getPlayerList() {
