@@ -322,6 +322,7 @@ class GameTest {
 
     @Test
     void testArchitectBuilding() {
+
         Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
@@ -330,6 +331,7 @@ class GameTest {
                 return best;
             }
         };
+        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(trickedBot);
         game.characterSelectionTurn();
         game.playerTurn(trickedBot);
@@ -368,6 +370,7 @@ class GameTest {
 
         };
         // game1 test
+        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(merchantBot);
         game.characterSelectionTurn();
@@ -409,6 +412,7 @@ class GameTest {
                 return Action.NONE;
             }
         };
+        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(bishopBot);
         game.characterSelectionTurn();
@@ -418,6 +422,7 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
     }
 
+    @Test
     void warlordGraveyardTest() {
         Player bot1 = new Bot("bot1", 100, List.of(new Graveyard())) {
             @Override
@@ -490,7 +495,8 @@ class GameTest {
         assertTrue(bot3.getHandDistricts().stream().anyMatch(cardsBot2::contains));
         assertEquals(94, bot3.getCoins());
     }
-  
+
+    @Test
     void endgameDistrictDestructionTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override

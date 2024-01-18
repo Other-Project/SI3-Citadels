@@ -9,6 +9,10 @@ import java.util.List;
 
 public class Deck extends ArrayDeque<District> {
 
+    public Deck(List<District> cards) {
+        if (!cards.isEmpty()) addAll(cards);
+    }
+
     /**
      * Constructor of the class to create the Deck with all the district cards
      */

@@ -74,6 +74,10 @@ public class Game {
         this.deck = new Deck();
     }
 
+    protected void setParametredDeck(List<District> cards) {
+        this.deck = new Deck(cards);
+    }
+
     public int getCrown() {
         return crown;
     }
