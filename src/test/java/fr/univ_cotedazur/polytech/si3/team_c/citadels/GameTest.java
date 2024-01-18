@@ -106,7 +106,7 @@ class GameTest {
 
         availableCharacters.remove(bot1.pickCharacter(availableCharacters));
         bot2.pickCharacter(availableCharacters);
-        game.setCrown(0);
+        game.setCrown(bot1);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
@@ -418,6 +418,7 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
     }
 
+    @Test
     void warlordGraveyardTest() {
         Player bot1 = new Bot("bot1", 100, List.of(new Graveyard())) {
             @Override
@@ -490,7 +491,8 @@ class GameTest {
         assertTrue(bot3.getHandDistricts().stream().anyMatch(cardsBot2::contains));
         assertEquals(94, bot3.getCoins());
     }
-  
+
+    @Test
     void endgameDistrictDestructionTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override

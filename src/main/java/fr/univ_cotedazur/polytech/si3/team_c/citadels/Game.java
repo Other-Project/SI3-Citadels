@@ -78,8 +78,35 @@ public class Game {
         return crown;
     }
 
-    public void setCrown(int player) {
+    public void setCrown(Player player) {
+        setCrown(playerList.indexOf(player));
+    }
+
+    private void setCrown(int player) {
         crown = player;
+    }
+
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public List<Character> getCharactersToInteractWith() {
+        return new ArrayList<>(charactersToInteractWith);
+    }
+
+    public void registerPlayerForEventAction(Player player, Action eventAction) {
+        eventActions.put(eventAction, player);
+    }
+
+    public void unregisterPlayerForEventAction(Player player, Action eventAction) {
+        if (eventActions.get(eventAction) == player) eventActions.remove(eventAction);
+    }
+
+    public <T> void callEventAction(Action eventAction, Player caller, T param) {
+        if (!eventActions.containsKey(eventAction)) return;
+        String text = eventAction.doEventAction(this, caller, eventActions.get(eventAction), param);
+        if (text != null)
+            LOGGER.info(text);
     }
 
 
@@ -140,128 +167,14 @@ public class Game {
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
-        if (startOfTurnAction != Action.NONE) {
-            switch (startOfTurnAction) {
-                case BEGIN_DRAW -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " draws 2 extra districts");
-                    var drawnCards = deck.draw(2);
-                    for (District district : drawnCards) {
-                        player.addDistrictToHand(district);
-                        LOGGER.log(Level.INFO, () -> player.getName() + " drew " + district);
-                    }
-                }
-                case STARTUP_INCOME -> {
-                    LOGGER.log(Level.INFO, "{0} earned a coin because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
-                    player.gainCoins(1);
-                }
-                case GET_CROWN -> {
-                    LOGGER.log(Level.INFO, "{0} got the crown because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
-                    setCrown(playerList.indexOf(player));
-                }
-                default ->
-                        throw new UnsupportedOperationException("The start-of-turn action " + startOfTurnAction + " has not yet been implemented");
-            }
-        }
+        if (startOfTurnAction != Action.NONE)
+            startOfTurnAction.doAction(this, player);
+
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
-            switch (action) {
-                case DRAW -> {
-                    LOGGER.info(player.getName() + " draws");
-                    var drawnCard = deck.draw(player.numberOfDistrictsToDraw());
-                    LOGGER.log(Level.INFO, "{0} drew {1}", new Object[]{player.getName(), drawnCard});
-                    List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
-                    drawnCard.removeAll(districtsToKeep);
-                    LOGGER.log(Level.INFO, "{0} kept {1}", new Object[]{player.getName(), districtsToKeep});
-                    deck.addAll(drawnCard); // We add back to the deck the districts that the player doesn't want to keep
-                    player.removeAction(Action.INCOME); // The player cannot gain any coins if he draws
-                }
-                case INCOME -> {
-                    LOGGER.info(player.getName() + " claims his income");
-                    LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), player.gainIncome()});
-                    player.removeAction(Action.DRAW); // The player cannot draw cards if he gets the income
-                }
-                case BUILD -> {
-                    LOGGER.info(player.getName() + " chooses to build a district");
-                    List<District> disctrictToBuild = player.pickDistrictsToBuild(currentTurn);
-                    disctrictToBuild.forEach(district ->
-                    {
-                        LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
-                        district.getEventAction().forEach(a -> eventActions.put(a, player));
-                    });
-
-                }
-                case SPECIAL_INCOME -> {
-                    LOGGER.info(player.getName() + " claims his special income");
-                    int claimedCoins = player.gainSpecialIncome();
-                    LOGGER.log(Level.INFO, "{0} got {1} coins", new Object[]{player.getName(), Integer.toString(claimedCoins)});
-                }
-                case TAKE_THREE -> {
-                    LOGGER.log(Level.INFO, () -> player.getName() + " pays 3 coins and draw 3 cards");
-                    List<District> drawnCards = deck.draw(3);
-                    player.pay(3);
-                    drawnCards.forEach(player::addDistrictToHand);
-                    LOGGER.log(Level.INFO, "{0} payed 3 coins in order to received: {1}", new Object[]{player.getName(), drawnCards});
-                }
-                case DISCARD -> {
-                    District card = player.cardToDiscard();
-                    LOGGER.log(Level.INFO, () -> player.getName() + " discards one card and receives one coin");
-                    player.removeFromHand(List.of(card)); // If no card chose the player would not be able to do this action
-                    deck.addLast(card);
-                    player.gainCoins(1);
-                    LOGGER.log(Level.INFO, "{0} discarded {1} in order to received one coin", new Object[]{player.getName(), card});
-                }
-                case STEAL -> {
-                    if (charactersToInteractWith.isEmpty()) return;
-                    LOGGER.info(player.getName() + " wants to steal a character");
-                    Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-                    performActionOnCharacter(characterToRob, player, SufferedActions.STOLEN);
-                    LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
-                }
-                case KILL -> {
-                    if (charactersToInteractWith.isEmpty()) return;
-                    Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
-                    LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
-                }
-                case EXCHANGE_DECK -> {
-                    List<District> cardsToExchange = player.chooseCardsToExchangeWithDeck();
-                    assert (!cardsToExchange.isEmpty());
-                    deck.addAll(cardsToExchange);
-                    player.removeFromHand(cardsToExchange);
-                    List<District> cards = deck.draw(cardsToExchange.size());
-                    cards.forEach(player::addDistrictToHand);
-                    LOGGER.log(Level.INFO, "{0} exchanges some cards {1} with the deck, he got {2}", new Object[]{player.getName(), cardsToExchange, cards});
-                    player.removeAction(Action.EXCHANGE_PLAYER);// The player cannot exchange with another player if he exchanged some cards with the deck
-                }
-                case EXCHANGE_PLAYER -> {
-                    Player playerToExchangeCards = (Player) player.playerToExchangeCards(getIPlayerList());
-                    List<District> hand1 = player.getHandDistricts();
-                    List<District> handExchange = playerToExchangeCards.getHandDistricts();
-                    player.removeFromHand(hand1);
-                    playerToExchangeCards.removeFromHand(handExchange);
-                    hand1.forEach(playerToExchangeCards::addDistrictToHand);
-                    handExchange.forEach(player::addDistrictToHand);
-                    LOGGER.log(Level.INFO, "{0} exchanges his cards {1} with {2}, he got {3}", new Object[]{player.getName(), hand1, playerToExchangeCards, handExchange});
-                    player.removeAction(Action.EXCHANGE_DECK);// The player cannot exchange with the deck if he exchanged cards with another player
-                }
-                case DESTROY -> {
-                    SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(getIPlayerList());
-                    ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
-                    player.pay(districtToDestroy.getValue().getCost() - 1);
-                    LOGGER.log(Level.INFO, "{0} destroys the {1} of {2}\n{0} has now {3} coins", new Object[]{player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins()});
-                    List<Action> actions = districtToDestroy.getValue().getEventAction();
-                    actions.forEach(eventActions::remove);
-                    Player recuperationPlayer = eventActions.get(Action.RECOVER_DESTROYED_DISTRICT);
-                    if (eventActions.containsKey(Action.RECOVER_DESTROYED_DISTRICT) && !recuperationPlayer.equals(player) && recuperationPlayer.wantsToTakeADestroyedDistrict(districtToDestroy.getValue())) {
-                        recuperationPlayer.pay(1);
-                        recuperationPlayer.addDistrictToHand(districtToDestroy.getValue());
-                    } else deck.add(districtToDestroy.getValue());
-                }
-                default ->
-                        throw new UnsupportedOperationException("The action " + action + " has not yet been implemented");
-            }
+            LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
+            LOGGER.info(action.doAction(this, player));
             player.removeAction(action);
-            LOGGER.info(player::toString);
         }
     }
 
@@ -329,9 +242,9 @@ public class Game {
     /**
      * Perform an action on a character
      *
-     * @param character  the character who will suffer the action
+     * @param character the character who will suffer the action
      * @param committer the player who commits the action
-     * @param action     the committed action
+     * @param action    the committed action
      */
     public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
         Optional<Player> player = playerList.stream()
