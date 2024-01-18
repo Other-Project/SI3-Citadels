@@ -44,7 +44,9 @@ public enum Action {
     BUILD("build district(s)") {
         @Override
         public String doAction(Game game, Player player) {
-            return MessageFormat.format("{0} built {1}", player.getName(), player.pickDistrictsToBuild(game.getCurrentTurn()));
+            List<District> districtToBuild = player.pickDistrictsToBuild(game.getCurrentTurn());
+            districtToBuild.forEach(district -> district.getEventAction().forEach(a -> game.registerPlayerForEventAction(player, a)));
+            return MessageFormat.format("{0} built {1}", player.getName(), districtToBuild);
         }
     },
     /**
@@ -124,7 +126,7 @@ public enum Action {
             playerToExchangeCards.removeFromHand(handExchange);
             hand1.forEach(playerToExchangeCards::addDistrictToHand);
             handExchange.forEach(player::addDistrictToHand);
-            return MessageFormat.format("{0} exchanges his cards {1} with {2}, he got {3}", player.getName(), hand1, playerToExchangeCards, handExchange);
+            return MessageFormat.format("{0} exchanges his cards {1} with {2}, he got {3}", player.getName(), hand1, playerToExchangeCards.getName(), handExchange);
         }
     },
     /**
@@ -136,6 +138,11 @@ public enum Action {
             AbstractMap.SimpleEntry<IPlayer, District> districtToDestroy = player.destroyDistrict(game.getIPlayerList());
             ((Player) districtToDestroy.getKey()).removeDistrictFromDistrictBuilt(districtToDestroy.getValue());
             player.pay(districtToDestroy.getValue().getCost() - 1);
+
+            List<Action> actions = districtToDestroy.getValue().getEventAction();
+            actions.forEach(action -> game.unregisterPlayerForEventAction(player, action));
+            game.callEventAction(Action.RECOVER_DESTROYED_DISTRICT, player, districtToDestroy.getValue());
+
             return MessageFormat.format("{0} destroys the {1} of {2}\n{0} has now {3} coins",
                     player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins());
         }
@@ -164,7 +171,19 @@ public enum Action {
     /**
      * The player pays one coin to get a district that has been destroyed during the turn
      */
-    RECOVER_DESTROYED_DISTRICT,
+    RECOVER_DESTROYED_DISTRICT {
+        @Override
+        public <T> String doEventAction(Game game, Player caller, Player eventPlayer, T param) {
+            if (!(param instanceof District districtToDestroy)) return null;
+            if (!eventPlayer.equals(caller)
+                    && eventPlayer.wantsToTakeADestroyedDistrict(districtToDestroy)) {
+                eventPlayer.pay(1);
+                eventPlayer.addDistrictToHand(districtToDestroy);
+                return MessageFormat.format("{0} payed one coin to recover {1}", eventPlayer.getName(), districtToDestroy);
+            } else game.getDeck().add(districtToDestroy);
+            return null;
+        }
+    },
     /**
      * The player gets the crown at the beginning of his turn
      */
@@ -195,6 +214,10 @@ public enum Action {
     }
 
     public String doAction(Game game, Player player) {
+        return null;
+    }
+
+    public <T> String doEventAction(Game game, Player caller, Player eventPlayer, T param) {
         return null;
     }
 

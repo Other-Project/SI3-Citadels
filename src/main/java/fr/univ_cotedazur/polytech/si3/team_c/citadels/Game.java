@@ -94,6 +94,21 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
+    public void registerPlayerForEventAction(Player player, Action eventAction) {
+        eventActions.put(eventAction, player);
+    }
+
+    public void unregisterPlayerForEventAction(Player player, Action eventAction) {
+        if (eventActions.get(eventAction) == player) eventActions.remove(eventAction);
+    }
+
+    public <T> void callEventAction(Action eventAction, Player caller, T param) {
+        if (!eventActions.containsKey(eventAction)) return;
+        String text = eventAction.doEventAction(this, caller, eventActions.get(eventAction), param);
+        if (text != null)
+            LOGGER.info(text);
+    }
+
 
     public void start() {
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
@@ -158,9 +173,8 @@ public class Game {
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
-            action.doAction(this, player);
+            LOGGER.info(action.doAction(this, player));
             player.removeAction(action);
-            LOGGER.info(player::toString);
         }
     }
 
