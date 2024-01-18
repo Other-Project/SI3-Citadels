@@ -583,4 +583,32 @@ class GameTest {
         assertEquals(1, merchantBot.getBuiltDistricts().size()); // The bot must draw (as he is more rich than Elon musk)
         assertEquals(62, game.getDeck().size()); // The rejected card should be added to the game deck
     }
+
+    @Test
+    void takeThreeTest() {
+        Player smithy = new Bot("smithy", 100, List.of(new Smithy())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new King());
+                return new King();
+            }
+
+            @Override
+            public Action nextAction() {
+                if (getActionSet().contains(Action.TAKE_THREE)) return Action.TAKE_THREE;
+                else return Action.NONE;
+            }
+        };
+
+        game.addPlayer(smithy);
+        smithy.buildDistrict(smithy.getHandDistricts().get(0), 0);
+        game.characterSelectionTurn();
+        smithy.createActionSet();
+        assertTrue(smithy.getActionSet().contains(Action.TAKE_THREE));
+        game.playerTurn(smithy);
+        assertEquals(3, smithy.getHandDistricts().size());
+        assertEquals(92, smithy.getCoins());
+        smithy.pay(92);
+        game.playerTurn(smithy);
+    }
 }
