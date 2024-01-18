@@ -173,8 +173,10 @@ public class Game {
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
             LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
-            LOGGER.info(action.doAction(this, player));
+            String text = action.doAction(this, player);
+            LOGGER.info(text);
             player.removeAction(action);
+            LOGGER.info(player::toString);
         }
     }
 
