@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
+    private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
 
     private Deck deck;
@@ -42,6 +43,7 @@ public class Game {
         deck = new Deck();
         playerList = new ArrayList<>(players);
         charactersToInteractWith = new ArrayList<>();
+        characterPlayerMap = new HashMap<>();
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
@@ -82,7 +84,6 @@ public class Game {
         crown = player;
     }
 
-
     public void start() {
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
@@ -117,8 +118,10 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(p, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, (p + i) % playerList.size()));
             } else beforePlayers = new ArrayList<>(playerList.subList(p, (p + i) % playerList.size()));
-            var choosenCharacter = player.pickCharacter(characterList, beforePlayers);
+            var choosenCharacter = player.pickCharacter(characterList);
+            characterPlayerMap.put(choosenCharacter, player);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            player.setPossibleCharacters(characterList, beforePlayers);
             characterList.remove(choosenCharacter);
         }
     }
@@ -187,8 +190,8 @@ public class Game {
                 }
                 case BUILD -> {
                     LOGGER.info(player.getName() + " chooses to build a district");
-                    List<District> disctrictToBuild = player.pickDistrictsToBuild(currentTurn);
-                    disctrictToBuild.forEach(district ->
+                    List<District> districtToBuild = player.pickDistrictsToBuild(currentTurn);
+                    districtToBuild.forEach(district ->
                     {
                         LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
                         district.getEventAction().forEach(a -> eventActions.put(a, player));
@@ -219,13 +222,15 @@ public class Game {
                     if (charactersToInteractWith.isEmpty()) return;
                     LOGGER.info(player.getName() + " wants to steal a character");
                     Character characterToRob = player.chooseCharacterToRob(charactersToInteractWith);
-                    performActionOnCharacter(characterToRob, player, SufferedActions.STOLEN);
+                    if (characterPlayerMap.containsKey(characterToRob))
+                        characterPlayerMap.get(characterToRob).addSufferedAction(SufferedActions.STOLEN, player);
                     LOGGER.log(Level.INFO, "{0} tries to steal the {1}", new Object[]{player.getName(), characterToRob});
                 }
                 case KILL -> {
                     if (charactersToInteractWith.isEmpty()) return;
                     Character characterToKill = player.chooseCharacterToKill(charactersToInteractWith);
-                    performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
+                    if (characterPlayerMap.containsKey(characterToKill))
+                        characterPlayerMap.get(characterToKill).addSufferedAction(SufferedActions.KILLED, player);
                     LOGGER.log(Level.INFO, "{0} kills the {1}", new Object[]{player.getName(), characterToKill});
                 }
                 case EXCHANGE_DECK -> {
@@ -285,15 +290,18 @@ public class Game {
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
-        List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
         boolean isEnd = false;
-        for (Player player : playOrder) {
-            player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
-            playerTurn(player);
-            if (end(player)) {
-                if (!isEnd) player.endsGame();
-                isEnd = true;
+        for (Character character : defaultCharacterList()) {
+            if (characterPlayerMap.containsKey(character)) {
+                Player player = characterPlayerMap.get(character);
+                LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
+                playerTurn(player);
+                if (end(player)) {
+                    if (!isEnd) player.endsGame();
+                    isEnd = true;
+                }
             }
+            charactersToInteractWith.remove(character);
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
         if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
@@ -329,20 +337,6 @@ public class Game {
             result.append("There is an equality between players : ")
                     .append(winners.getKey().stream().map(Player::getName).collect(Collectors.joining(", ")));
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
-    }
-
-    /**
-     * Perform an action on a character
-     *
-     * @param character  the character who will suffer the action
-     * @param committer the player who commits the action
-     * @param action     the committed action
-     */
-    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        Optional<Player> player = playerList.stream()
-                .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
-                .findFirst();
-        player.ifPresent(p -> p.addSufferedAction(action, committer));
     }
 
     public static void main(String... args) {

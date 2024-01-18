@@ -238,8 +238,6 @@ public abstract class Player implements IPlayer {
         return null;
     }
 
-    public abstract Character pickCharacter(List<Character> availableCharacters, List<IPlayer> beforePlayers);
-
     /**
      * Ask the player which action should be done (will be asked until there's no more actions to do)
      *
@@ -472,6 +470,8 @@ public abstract class Player implements IPlayer {
      * @return true if the player wants to take the district
      **/
     public abstract boolean wantsToTakeADestroyedDistrict(District district);
+
+    public abstract void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers);
 
     /**
      * Adds the action committed by a player on the player

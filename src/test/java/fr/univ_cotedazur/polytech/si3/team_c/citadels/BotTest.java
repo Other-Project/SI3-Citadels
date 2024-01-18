@@ -753,4 +753,168 @@ class BotTest {
             assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         }
     }
+
+    @Test
+    void estimateCharacter() {
+        Bot assassin = new Bot("Assassin", 100, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Assassin());
+                return new Assassin();
+            }
+        };
+
+        Bot merchant = new Bot("Merchant", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Merchant());
+                return new Merchant();
+            }
+        };
+
+        Bot architect = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+        };
+
+        Bot warlord = new Bot("Warlord", 1, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+        };
+
+        Bot king = new Bot("King", 0, List.of(new Manor(), new Palace(), new Castle())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new King());
+                return new King();
+            }
+        };
+
+        Game scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
+        scriptedGame.gameTurn();
+        assertTrue(merchant.sufferAction(SufferedActions.KILLED));
+    }
+
+    @Test
+    void builtDistrictsEstimation() {
+        Bot assassin = new Bot("Assassin", 100, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Assassin());
+                return new Assassin();
+            }
+        };
+
+        Bot merchant = new Bot("Merchant", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Merchant());
+                return new Merchant();
+            }
+        };
+
+        Bot architect = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+        };
+
+        Bot warlord = new Bot("Warlord", 1, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+        };
+
+        Bot king = new Bot("King", 0, List.of(new Manor(), new Palace(), new Castle())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new King());
+                return new King();
+            }
+        };
+
+        king.gainCoins(200);
+        for (District district : king.getHandDistricts()) {
+            king.buildDistrict(district, 0);
+        }
+
+        Game scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
+        scriptedGame.gameTurn();
+        assertTrue(king.sufferAction(SufferedActions.KILLED));
+    }
+
+    @Test
+    void architectDetection() {
+        Bot assassin = new Bot("Assassin", 100, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Assassin());
+                return new Assassin();
+            }
+        };
+
+        Bot merchant = new Bot("Merchant", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Merchant());
+                return new Merchant();
+            }
+        };
+
+        Bot architect = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+        };
+
+        Bot warlord = new Bot("Warlord", 1, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+        };
+
+        Bot king = new Bot("King", 0, List.of(new Manor(), new Palace(), new Castle())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new King());
+                return new King();
+            }
+        };
+
+
+        architect.gainCoins(6);
+        Game scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
+        scriptedGame.gameTurn();
+        assertTrue(architect.sufferAction(SufferedActions.KILLED));
+        assertFalse(merchant.sufferAction(SufferedActions.KILLED));
+    }
 }
