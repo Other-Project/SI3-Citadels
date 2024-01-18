@@ -331,7 +331,7 @@ class GameTest {
                 return best;
             }
         };
-        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(trickedBot);
         game.characterSelectionTurn();
         game.playerTurn(trickedBot);
@@ -370,7 +370,7 @@ class GameTest {
 
         };
         // game1 test
-        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(merchantBot);
         game.characterSelectionTurn();
@@ -412,7 +412,7 @@ class GameTest {
                 return Action.NONE;
             }
         };
-        game.setParametredDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(bishopBot);
         game.characterSelectionTurn();

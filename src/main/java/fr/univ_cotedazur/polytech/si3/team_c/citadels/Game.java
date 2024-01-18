@@ -74,7 +74,7 @@ public class Game {
         this.deck = new Deck();
     }
 
-    protected void setParametredDeck(List<District> cards) {
+    protected void setParametrisedDeck(List<District> cards) {
         this.deck = new Deck(cards);
     }
 
