@@ -254,4 +254,16 @@ public class Game {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
         new Game(4).start();
     }
+
+    /**
+     * Perform an action on a character
+     *
+     * @param character the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action    the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        if (characterPlayerMap.containsKey(character))
+            characterPlayerMap.get(character).addSufferedAction(action, committer);
+    }
 }
