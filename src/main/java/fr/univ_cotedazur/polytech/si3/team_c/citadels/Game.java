@@ -182,8 +182,8 @@ public class Game {
                 }
                 case BUILD -> {
                     LOGGER.info(player.getName() + " chooses to build a district");
-                    List<District> disctrictToBuild = player.pickDistrictsToBuild(currentTurn);
-                    disctrictToBuild.forEach(district ->
+                    List<District> districtToBuild = player.pickDistrictsToBuild(currentTurn);
+                    districtToBuild.forEach(district ->
                     {
                         LOGGER.log(Level.INFO, "{0} built {1}", new Object[]{player.getName(), district});
                         district.getEventAction().forEach(a -> eventActions.put(a, player));
