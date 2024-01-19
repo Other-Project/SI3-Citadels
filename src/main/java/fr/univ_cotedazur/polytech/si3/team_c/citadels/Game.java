@@ -76,6 +76,10 @@ public class Game {
         this.deck = new Deck();
     }
 
+    protected void setParametrisedDeck(List<District> cards) {
+        this.deck = new Deck(cards);
+    }
+
     public int getCrown() {
         return crown;
     }
@@ -186,6 +190,7 @@ public class Game {
             LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
             LOGGER.info(action.doAction(this, player));
             player.removeAction(action);
+            LOGGER.info(player::toString);
         }
     }
 

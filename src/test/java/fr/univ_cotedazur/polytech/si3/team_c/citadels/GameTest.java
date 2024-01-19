@@ -299,7 +299,8 @@ class GameTest {
 
     @Test
     void testArchitectDrawing() {
-        Bot trickedBot = new Bot("bot1", 0, Collections.emptyList()) {
+        game.setParametrisedDeck(List.of(new Laboratory(), new Battlefield(), new Temple(), new Castle(), new Market(), new Tavern(), new Manor()));
+        Bot trickedBot = new Bot("botTricked", 0, Collections.emptyList()) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
                 Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
@@ -322,6 +323,8 @@ class GameTest {
 
     @Test
     void testArchitectBuilding() {
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
+
         Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
@@ -368,6 +371,7 @@ class GameTest {
 
         };
         // game1 test
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(merchantBot);
         game.characterSelectionTurn();
@@ -409,6 +413,7 @@ class GameTest {
                 return Action.NONE;
             }
         };
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(warlordBot);
         game.addPlayer(bishopBot);
         game.characterSelectionTurn();
@@ -429,7 +434,8 @@ class GameTest {
 
             @Override
             public Action nextAction() {
-                if (getActionSet().contains(Action.DESTROY)) return Action.DESTROY;
+                if (getActionSet().contains(Action.DESTROY) && this.destroyDistrict(getPlayers()) != null)
+                    return Action.DESTROY;
                 else return Action.NONE;
             }
         };
@@ -584,5 +590,33 @@ class GameTest {
         game.gameTurn();
         assertEquals(1, merchantBot.getBuiltDistricts().size()); // The bot must draw (as he is more rich than Elon musk)
         assertEquals(62, game.getDeck().size()); // The rejected card should be added to the game deck
+    }
+
+    @Test
+    void takeThreeTest() {
+        Player smithy = new Bot("smithy", 100, List.of(new Smithy())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new King());
+                return new King();
+            }
+
+            @Override
+            public Action nextAction() {
+                if (getActionSet().contains(Action.TAKE_THREE)) return Action.TAKE_THREE;
+                else return Action.NONE;
+            }
+        };
+
+        game.addPlayer(smithy);
+        smithy.buildDistrict(smithy.getHandDistricts().get(0), 0);
+        game.characterSelectionTurn();
+        smithy.createActionSet();
+        assertTrue(smithy.getActionSet().contains(Action.TAKE_THREE));
+        game.playerTurn(smithy);
+        assertEquals(3, smithy.getHandDistricts().size());
+        assertEquals(92, smithy.getCoins());
+        smithy.pay(92);
+        game.playerTurn(smithy);
     }
 }

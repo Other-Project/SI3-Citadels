@@ -9,10 +9,20 @@ import java.util.List;
 
 public class Deck extends ArrayDeque<District> {
 
+    public Deck() {
+        this(getAllDistrict());
+    }
+
+    public Deck(List<District> cards) {
+        cards = new ArrayList<>(cards);
+        Collections.shuffle(cards);
+        addAll(cards);
+    }
+
     /**
      * Constructor of the class to create the Deck with all the district cards
      */
-    public Deck() {
+    private static List<District> getAllDistrict() {
         List<District> deck = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             if (i < 2) {
@@ -49,8 +59,7 @@ public class Deck extends ArrayDeque<District> {
         deck.add(new Graveyard());
         deck.add(new Library());
         deck.add(new DragonGate());
-        Collections.shuffle(deck);
-        addAll(deck); // the deck is now a queue
+        return deck;
     }
 
     /**
