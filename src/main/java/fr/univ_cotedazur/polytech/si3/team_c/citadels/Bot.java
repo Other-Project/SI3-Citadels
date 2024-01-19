@@ -22,8 +22,8 @@ public class Bot extends Player {
     /**
      * Add the possible characters for players
      *
-     * @param players the players
-     * @param characters the character available for the players
+     * @param players the players to be added
+     * @param characters the available characters for the players
      */
     private void addPossibleCharacters(List<IPlayer> players, List<Character> characters) {
         for (IPlayer player : players) {
@@ -330,8 +330,8 @@ public class Bot extends Player {
      * Gives the character probability for the player
      *
      * @param player      the analyzed player
-     * @param character   the character
-     * @param maxColor    of which we want the probability
+     * @param character   the character of which we want the probability
+     * @param maxColor    the most constructed color and its number of occurrences
      * @param playerCoins the player coins
      * @return the probability that this player has to have this character
      */
@@ -343,11 +343,11 @@ public class Bot extends Player {
         if (character.numberOfDistrictToBuild() > 1)
             probability += Math.min((playerCoins / 6.0), 1) * 0.2;
         // if the player has a small hand size and the current character can obtain more districts
-        if (character.startTurnAction().equals(Action.BEGIN_DRAW))
-            probability += (player.getHandSize() > 0) ? Math.min((1 / player.getHandSize()), 1) * 0.2 : 0;
+        if (character.startTurnAction().equals(Action.BEGIN_DRAW) && player.getHandSize() > 0)
+            probability += Math.min((1 / player.getHandSize()), 1) * 0.2;
         // if the player has a little number of coins and the current character gives more coins
-        if (character.startTurnAction().equals(Action.STARTUP_INCOME))
-            probability += (playerCoins > 0) ? Math.min((2 / playerCoins), 1) * 0.15 : 0;
+        if (character.startTurnAction().equals(Action.STARTUP_INCOME) && playerCoins > 0)
+            probability += Math.min((2 / playerCoins), 1) * 0.15;
         return probability;
     }
 
