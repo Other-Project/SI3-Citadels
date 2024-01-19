@@ -299,7 +299,8 @@ class GameTest {
 
     @Test
     void testArchitectDrawing() {
-        Bot trickedBot = new Bot("bot1", 0, Collections.emptyList()) {
+        game.setParametrisedDeck(List.of(new Laboratory(), new Battlefield(), new Temple(), new Castle(), new Market(), new Tavern(), new Manor()));
+        Bot trickedBot = new Bot("botTricked", 0, Collections.emptyList()) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
                 Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
@@ -322,6 +323,7 @@ class GameTest {
 
     @Test
     void testArchitectBuilding() {
+        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
 
         Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
             @Override
@@ -331,7 +333,6 @@ class GameTest {
                 return best;
             }
         };
-        game.setParametrisedDeck(List.of(new Smithy(), new Laboratory(), new Castle(), new Church(), new Tavern(), new Battlefield()));
         game.addPlayer(trickedBot);
         game.characterSelectionTurn();
         game.playerTurn(trickedBot);
@@ -433,7 +434,8 @@ class GameTest {
 
             @Override
             public Action nextAction() {
-                if (getActionSet().contains(Action.DESTROY)) return Action.DESTROY;
+                if (getActionSet().contains(Action.DESTROY) && this.destroyDistrict(getPlayers()) != null)
+                    return Action.DESTROY;
                 else return Action.NONE;
             }
         };
