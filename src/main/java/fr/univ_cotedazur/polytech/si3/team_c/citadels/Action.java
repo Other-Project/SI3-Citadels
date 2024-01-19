@@ -33,8 +33,13 @@ public enum Action {
         public String doAction(Game game, Player player) {
             var drawnCard = game.getDeck().draw(player.numberOfDistrictsToDraw());
             List<District> districtsToKeep = player.pickDistrictsFromDeck(drawnCard);
-            drawnCard.removeAll(districtsToKeep);
-            game.getDeck().addAll(drawnCard); // We add back to the deck the districts that the player doesn't want to keep
+            game.getDeck().addAll(drawnCard.stream().filter(
+                    district -> {
+                        for (District card : districtsToKeep) {
+                            if (card == district) return true;
+                        }
+                        return false;
+                    }).toList()); // We add back to the deck the districts that the player doesn't want to keep
             return MessageFormat.format("{0} kept {1}", player.getName(), districtsToKeep);
         }
     },
@@ -155,7 +160,7 @@ public enum Action {
         public String doAction(Game game, Player player) {
             var drawnCards = game.getDeck().draw(2);
             drawnCards.forEach(player::addDistrictToHand);
-            return MessageFormat.format("{0} drew 2 extra districts {1} because he was the {2}", player.getName(), player.gainIncome(), player.getCharacter().orElseThrow());
+            return MessageFormat.format("{0} drew 2 extra districts {1} because he was the {2}", player.getName(), drawnCards, player.getCharacter().orElseThrow());
         }
     },
     /**
