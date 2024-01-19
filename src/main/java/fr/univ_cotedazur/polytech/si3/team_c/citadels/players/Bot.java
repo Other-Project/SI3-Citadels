@@ -2,10 +2,13 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
+
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 /**
  * Robot player
@@ -112,7 +115,7 @@ public class Bot extends Player {
     /**
      * Add the possible characters for players
      *
-     * @param players the players to be added
+     * @param players    the players to be added
      * @param characters the available characters for the players
      */
     private void addPossibleCharacters(List<IPlayer> players, List<Character> characters) {
@@ -125,7 +128,7 @@ public class Bot extends Player {
      * Initialize the HashMap with possible characters for each player
      *
      * @param availableCharacters the available characters
-     * @param beforePlayers the player who have chosen before
+     * @param beforePlayers       the player who have chosen before
      */
     public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers) {
         possibleCharacters = new HashMap<>();
@@ -384,7 +387,7 @@ public class Bot extends Player {
     /**
      * Estimates the character of a player
      *
-     * @param player the player we want to inspect
+     * @param player              the player we want to inspect
      * @param availableCharacters the characters that can be chosen
      * @return the estimated character of a player
      */

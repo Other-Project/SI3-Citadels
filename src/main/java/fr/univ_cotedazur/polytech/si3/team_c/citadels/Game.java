@@ -1,7 +1,8 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -123,11 +124,7 @@ public class Game {
 
 
     public void start() {
-        for (Player p : playerList) {
-            p.pickDistrictsFromDeck(deck.draw(2), 2);
-            p.gainCoins(2);
-            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
-        }
+        playerInitialization();
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
@@ -138,6 +135,14 @@ public class Game {
         }
         LOGGER.log(Level.INFO, this::winnersDisplay);
         LOGGER.log(Level.INFO, "Game ends");
+    }
+
+    public void playerInitialization() {
+        for (Player p : playerList) {
+            p.pickDistrictsFromDeck(deck.draw(2), 2);
+            p.gainCoins(2);
+            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
+        }
     }
 
     /**

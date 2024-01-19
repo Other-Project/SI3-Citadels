@@ -1,12 +1,9 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.Action;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.Game;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +75,8 @@ class BotTest {
             }
         };
 
-        scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
+        scriptedGame = new Game(king, architect, merchant, assassin, warlord);
+        scriptedGame.playerInitialization();
     }
 
     @Test
@@ -831,7 +829,7 @@ class BotTest {
             }
         };
 
-        Game gameWithoutMerchant = new Game(List.of(architectWithNotBuildDistricts, warlord, assassin));
+        Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin);
         gameWithoutMerchant.gameTurn();
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
