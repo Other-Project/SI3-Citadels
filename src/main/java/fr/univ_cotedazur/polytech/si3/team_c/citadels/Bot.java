@@ -320,7 +320,7 @@ public class Bot extends Player {
             if (playerCoins >= 6 && character.numberOfDistrictToBuild() > 1)
                 curFactor += 0.2;
             // if the player has a small hand size and the current character can obtain more districts
-            if (player.getHandSize() <= 1 && character.getAction().contains(Action.BEGIN_DRAW))
+            if (player.getHandSize() < 2 && character.startTurnAction().equals(Action.BEGIN_DRAW))
                 curFactor += 0.2;
             // if the player has a little number of coins and the current character gives more coins
             if (playerCoins < 3 && character.startTurnAction().equals(Action.STARTUP_INCOME))

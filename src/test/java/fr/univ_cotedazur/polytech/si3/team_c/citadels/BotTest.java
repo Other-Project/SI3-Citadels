@@ -66,6 +66,11 @@ class BotTest {
                 setCharacter(new King());
                 return new King();
             }
+
+            @Override
+            public int getHandSize() {
+                return 3;
+            }
         };
 
         scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
@@ -824,5 +829,26 @@ class BotTest {
         architect.gainCoins(6);
         scriptedGame.gameTurn();
         assertTrue(architect.sufferAction(SufferedActions.KILLED));
+
+        setUp();
+
+        // Not a lot of hand districts => probably Architect
+        Bot architectWithNotBuildDistricts = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+
+            @Override
+            public int getHandSize() {
+                return 0;
+            }
+        };
+
+        Game gameWithoutMerchant = new Game(List.of(architectWithNotBuildDistricts, warlord, assassin));
+        gameWithoutMerchant.gameTurn();
+        assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
 }
