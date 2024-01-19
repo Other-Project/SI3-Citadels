@@ -42,7 +42,15 @@ public class Game {
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
-            Bot bot = new Bot("bot" + i, 2, deck.draw(2));
+            Bot bot;
+            switch (random.nextInt(2)) {
+                case 1:
+                    bot = new DiscreetBot("discreetBot" + i, 2, deck.draw(2));
+                    break;
+                default:
+                    bot = new Bot("bot" + i, 2, deck.draw(2));
+                    break;
+            }
             playerList.add(bot);
             bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
         }
@@ -263,6 +271,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(2, new DiscreetBot("discreetBot", 0, Collections.emptyList()), new Bot("bot", 0, Collections.emptyList())).start();
+        new Game(4).start();
     }
 }
