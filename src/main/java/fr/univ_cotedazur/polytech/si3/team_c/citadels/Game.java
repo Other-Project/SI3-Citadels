@@ -1,6 +1,9 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -25,28 +28,24 @@ public class Game {
     private final Random random = new Random();
 
     public Game() {
-        this(Collections.emptyList());
+        this(0);
+    }
+
+    public Game(Player... players) {
+        this(players.length, players);
     }
 
     public Game(int numberPlayers, Player... players) {
-        this(List.of(players));
+        deck = new Deck();
+        playerList = new ArrayList<>(List.of(players));
+        charactersToInteractWith = new ArrayList<>();
+        eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
             Bot bot = new Bot("bot" + i, 2, deck.draw(2));
             playerList.add(bot);
             bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
         }
-    }
-
-    public Game(List<Player> players) {
-        deck = new Deck();
-        playerList = new ArrayList<>(players);
-        charactersToInteractWith = new ArrayList<>();
-        for (Player p : playerList) {
-            p.pickDistrictsFromDeck(deck.draw(2), 2);
-            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
-        }
-        eventActions = new EnumMap<>(Action.class);
     }
 
     public List<Player> getPlayerList() {
@@ -84,6 +83,10 @@ public class Game {
 
 
     public void start() {
+        for (Player p : playerList) {
+            p.pickDistrictsFromDeck(deck.draw(2), 2);
+            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
+        }
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.INFO, "Game starts");
         setCrown(random.nextInt(playerList.size()));
@@ -342,6 +345,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(4).start();
+        new Game(2, new DiscreetBot("discreetBot", 0, Collections.emptyList()), new Bot("bot", 0, Collections.emptyList())).start();
     }
 }

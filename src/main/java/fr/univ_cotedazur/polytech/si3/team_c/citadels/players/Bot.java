@@ -1,4 +1,7 @@
-package fr.univ_cotedazur.polytech.si3.team_c.citadels;
+package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
+
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -114,7 +117,7 @@ public class Bot extends Player {
      * @param playerProperty   Getter of the property on the player side
      * @return The difference between the two
      */
-    private double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
+    protected double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
         return districtProperty.apply(district)
                 .map(aDouble -> (aDouble.doubleValue() - playerProperty.getAsDouble()))
                 .orElse(0.0);
@@ -299,7 +302,7 @@ public class Bot extends Player {
      * @return The district to destroy
      */
     @Override
-    protected SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
+    public SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
         List<IPlayer> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(players);
         return players.stream()
                 .filter(player -> !player.equals(this))

@@ -1,4 +1,7 @@
-package fr.univ_cotedazur.polytech.si3.team_c.citadels;
+package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
+
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -105,14 +108,14 @@ public abstract class Player implements IPlayer {
      *
      * @return The card that the player chose to discard
      */
-    protected abstract District cardToDiscard();
+    public abstract District cardToDiscard();
 
     /**
      * Add some coins to the player "wallet"
      *
      * @param quantity Quantity of coins to add
      */
-    protected void gainCoins(int quantity) {
+    public void gainCoins(int quantity) {
         coins += quantity;
     }
 
@@ -184,7 +187,7 @@ public abstract class Player implements IPlayer {
      * @param district The district to build
      * @return True if the district have been successfully built
      */
-    protected boolean buildDistrict(District district, int turn) {
+    public boolean buildDistrict(District district, int turn) {
         if (!handDistricts.contains(district)) return false;
         if (getBuiltDistricts().contains(district)) return false;
         if (!pay(district.getCost())) return false;
@@ -200,14 +203,14 @@ public abstract class Player implements IPlayer {
      * @param players List of players whose districts can be destroyed
      * @return the district to be destroyed
      */
-    protected abstract SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players);
+    public abstract SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players);
 
     /**
      * The player removes a district from his built district
      *
      * @param district the district to remove
      */
-    protected void removeDistrictFromDistrictBuilt(District district) {
+    public void removeDistrictFromDistrictBuilt(District district) {
         for (Map.Entry<Integer, List<District>> mapEntry : builtDistricts.entrySet()) {
             if (mapEntry.getValue().contains(district)) {
                 List<District> newDistrictList = mapEntry.getValue();
@@ -223,7 +226,7 @@ public abstract class Player implements IPlayer {
      *
      * @param district The district to add
      */
-    protected void addDistrictToHand(District district) {
+    public void addDistrictToHand(District district) {
         handDistricts.add(district);
     }
 
@@ -271,7 +274,7 @@ public abstract class Player implements IPlayer {
      * @param amountToChoose The amount of districts to choose
      * @return The chosen districts
      */
-    protected abstract List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose);
+    public abstract List<District> pickDistrictsFromDeck(List<District> drawnCards, int amountToChoose);
 
     /**
      * Asks the player to choose district(s) from his hand to be build

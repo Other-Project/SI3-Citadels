@@ -2,6 +2,8 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -139,7 +141,7 @@ class GameTest {
         for (int i = 0; i < secondBotDistricts.size(); i++) secondBot.buildDistrict(secondBotDistricts.get(i), i);
 
         secondBot.endsGame();
-        Game scriptedGame = new Game(List.of(firstBot, secondBot));
+        Game scriptedGame = new Game(firstBot, secondBot);
         assertEquals(new SimpleEntry<>(List.of(firstBot, secondBot), 26), scriptedGame.getWinners());
         assertEquals("There is an equality between players : bot1, bot2 with 26 points !", scriptedGame.winnersDisplay());
 
@@ -149,7 +151,7 @@ class GameTest {
         Bot thirdBot = new Bot("bot3", 1500, List.of(new Tavern(), new Library(), new Harbor()));
         for (int i = 0; i < secondBotDistricts.size(); i++) thirdBot.buildDistrict(secondBotDistricts.get(i), i);
 
-        Game secondScriptedGame = new Game(List.of(firstBot, thirdBot));
+        Game secondScriptedGame = new Game(firstBot, thirdBot);
 
         assertEquals(new SimpleEntry<>(List.of(firstBot), 26), secondScriptedGame.getWinners());
         assertEquals("The player bot1 won with 26 points !", secondScriptedGame.winnersDisplay());
@@ -418,6 +420,7 @@ class GameTest {
         assertEquals(1, bishopBot.getBuiltDistricts().size());
     }
 
+    @Test
     void warlordGraveyardTest() {
         Player bot1 = new Bot("bot1", 100, List.of(new Graveyard())) {
             @Override
@@ -490,7 +493,8 @@ class GameTest {
         assertTrue(bot3.getHandDistricts().stream().anyMatch(cardsBot2::contains));
         assertEquals(94, bot3.getCoins());
     }
-  
+
+    @Test
     void endgameDistrictDestructionTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override
