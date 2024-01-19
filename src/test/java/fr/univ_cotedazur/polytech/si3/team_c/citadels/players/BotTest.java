@@ -33,7 +33,7 @@ class BotTest {
         assertTrue(player1.pay(2));
         assertFalse(player1.pay(-1));
         assertEquals(0, player1.getCoins());
-        Assertions.assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
+        assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.INCOME))); // The player has no money and should therefore get some gold
     }
 
     @Test
@@ -283,19 +283,16 @@ class BotTest {
         assertTrue(player1.removeAction(Action.SPECIAL_INCOME));
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW, Action.INCOME)), player1.getActionSet());
         assertTrue(player1.removeAction(Action.INCOME));
-        assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW)), player1.getActionSet());
+        assertEquals(new HashSet<>(List.of(Action.BUILD)), player1.getActionSet());
         assertTrue(player1.removeAction(Action.BUILD));
-        assertEquals(new HashSet<>(List.of(Action.DRAW)), player1.getActionSet());
-        assertTrue(player1.removeAction(Action.DRAW));
         assertEquals(new HashSet<>(), player1.getActionSet());
-        assertFalse(player1.removeAction(Action.DRAW));
+        assertFalse(player1.removeAction(Action.BUILD));
         assertEquals(new HashSet<>(), player1.getActionSet());
     }
 
 
     @Test
     void MagicianTest() {
-
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
