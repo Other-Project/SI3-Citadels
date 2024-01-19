@@ -9,22 +9,20 @@ import java.util.List;
 
 public class Deck extends ArrayDeque<District> {
 
-    public Deck(List<District> cards) {
-        if (!cards.isEmpty()) {
-            cards = new ArrayList<>(cards);
-            Collections.shuffle(cards);
-            addAll(cards);
-        } else addAll(getAllDistrict());
+    public Deck() {
+        this(getAllDistrict());
     }
 
-    public Deck() {
-        this(List.of());
+    public Deck(List<District> cards) {
+        cards = new ArrayList<>(cards);
+        Collections.shuffle(cards);
+        addAll(cards);
     }
 
     /**
      * Constructor of the class to create the Deck with all the district cards
      */
-    private List<District> getAllDistrict() {
+    private static List<District> getAllDistrict() {
         List<District> deck = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             if (i < 2) {
@@ -61,7 +59,6 @@ public class Deck extends ArrayDeque<District> {
         deck.add(new Graveyard());
         deck.add(new Library());
         deck.add(new DragonGate());
-        Collections.shuffle(deck);
         return deck;
     }
 
