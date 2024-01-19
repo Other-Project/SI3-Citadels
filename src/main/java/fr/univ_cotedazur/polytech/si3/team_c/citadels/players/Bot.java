@@ -108,13 +108,14 @@ public class Bot extends Player {
     public Character pickCharacter(List<Character> availableCharacters) {
         super.pickCharacter(availableCharacters);
         Character best = null;
-        double maxProfitability = -1;
+        double maxProfitability = -100;
         for (Character character : availableCharacters) {
             var profitability = characterProfitability(character);
             if (profitability <= maxProfitability) continue;
             best = character;
             maxProfitability = profitability;
         }
+        assert best != null;
         setCharacter(best);
         return best;
     }
