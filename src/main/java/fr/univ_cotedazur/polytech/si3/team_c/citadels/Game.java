@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
+    private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
 
     private Deck deck;
@@ -42,6 +43,7 @@ public class Game {
         deck = new Deck();
         playerList = new ArrayList<>(players);
         charactersToInteractWith = new ArrayList<>();
+        characterPlayerMap = new HashMap<>();
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
@@ -128,9 +130,9 @@ public class Game {
     }
 
     /**
-     * Reset the list of characters
+     * Gets the default list of characters
      */
-    public List<Character> defaultCharacterList() {
+    public static List<Character> defaultCharacterList() {
         return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
     }
@@ -140,12 +142,21 @@ public class Game {
      */
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
-        int p = getCrown();
+        int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
-            var player = playerList.get((p + i) % playerList.size());
-            var chosenCharacter = player.pickCharacter(characterList);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), chosenCharacter});
-            characterList.remove(chosenCharacter);
+            int playerIndex = (crownIndex + i) % playerList.size();
+            var player = playerList.get(playerIndex);
+            // Stores players who have already chosen their character
+            List<IPlayer> beforePlayers;
+            if (playerIndex < crownIndex) {
+                beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
+                beforePlayers.addAll(playerList.subList(0, playerIndex));
+            } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
+            var choosenCharacter = player.pickCharacter(characterList);
+            characterPlayerMap.put(choosenCharacter, player);
+            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            player.setPossibleCharacters(characterList, beforePlayers);
+            characterList.remove(choosenCharacter);
         }
     }
 
@@ -198,14 +209,16 @@ public class Game {
         charactersToInteractWith = defaultCharacterList();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
-        List<Player> playOrder = playerList.stream().sorted(Comparator.comparing(player -> player.getCharacter().orElseThrow())).toList();
         boolean isEnd = false;
-        for (Player player : playOrder) {
-            player.getCharacter().ifPresent(c -> LOGGER.log(Level.INFO, "It is now {0}''s turn", c));
-            playerTurn(player);
-            if (end(player)) {
-                if (!isEnd) player.endsGame();
-                isEnd = true;
+        for (Character character : defaultCharacterList()) {
+            if (characterPlayerMap.containsKey(character)) {
+                Player player = characterPlayerMap.get(character);
+                LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
+                playerTurn(player);
+                if (end(player)) {
+                    if (!isEnd) player.endsGame();
+                    isEnd = true;
+                }
             }
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
@@ -244,6 +257,11 @@ public class Game {
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
+    public static void main(String... args) {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
+        new Game(4).start();
+    }
+
     /**
      * Perform an action on a character
      *
@@ -252,14 +270,7 @@ public class Game {
      * @param action    the committed action
      */
     public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        Optional<Player> player = playerList.stream()
-                .filter(playerCharacter -> playerCharacter.getCharacter().orElseThrow().equals(character))
-                .findFirst();
-        player.ifPresent(p -> p.addSufferedAction(action, committer));
-    }
-
-    public static void main(String... args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(4).start();
+        if (characterPlayerMap.containsKey(character))
+            characterPlayerMap.get(character).addSufferedAction(action, committer);
     }
 }

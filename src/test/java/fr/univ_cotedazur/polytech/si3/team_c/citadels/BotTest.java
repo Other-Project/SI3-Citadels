@@ -14,11 +14,66 @@ class BotTest {
 
     Player player1, player2;
     Bot bot1, bot2;
+    Bot merchant, assassin, architect,
+            warlord, king;
+
+    Game scriptedGame;
 
     @BeforeEach
     void setUp() {
         player1 = bot1 = new Bot("Bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()));
         player2 = bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
+        assassin = new Bot("Assassin", 100, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Assassin());
+                return new Assassin();
+            }
+        };
+
+        merchant = new Bot("Merchant", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Merchant());
+                return new Merchant();
+            }
+        };
+
+        architect = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+        };
+
+        warlord = new Bot("Warlord", 1, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+        };
+
+        king = new Bot("King", 0, List.of(new Manor(), new Palace(), new Castle())) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new King());
+                return new King();
+            }
+
+            @Override
+            public int getHandSize() {
+                return 3;
+            }
+        };
+
+        scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
     }
 
     @Test
@@ -750,5 +805,53 @@ class BotTest {
             game.playerTurn(merchantBot);
             assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         }
+    }
+
+    @Test
+    void merchantProbability() {
+        // Not a lot of coins => probably Merchant
+        scriptedGame.gameTurn();
+        assertTrue(merchant.sufferAction(SufferedActions.KILLED));
+    }
+
+    @Test
+    void colorsProbability() {
+        // 3 districts of the character color
+        king.gainCoins(200);
+        for (District district : king.getHandDistricts()) {
+            king.buildDistrict(district, 0);
+        }
+        scriptedGame.gameTurn();
+        assertTrue(king.sufferAction(SufferedActions.KILLED));
+    }
+
+    @Test
+    void architectProbability() {
+        // A lot of coins => probably Architect
+        architect.gainCoins(6);
+        scriptedGame.gameTurn();
+        assertTrue(architect.sufferAction(SufferedActions.KILLED));
+    }
+
+    @Test
+    void handDistrictArchitectProbability() {
+        // Not a lot of hand districts => probably Architect
+        Bot architectWithNotBuildDistricts = new Bot("Architect", 2, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Architect());
+                return new Architect();
+            }
+
+            @Override
+            public int getHandSize() {
+                return 0;
+            }
+        };
+
+        Game gameWithoutMerchant = new Game(List.of(architectWithNotBuildDistricts, warlord, assassin));
+        gameWithoutMerchant.gameTurn();
+        assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
 }

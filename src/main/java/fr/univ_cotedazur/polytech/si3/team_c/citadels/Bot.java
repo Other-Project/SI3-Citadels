@@ -1,9 +1,10 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
-
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 /**
  * Robot player
@@ -11,9 +12,50 @@ import java.util.function.Function;
  * @author Team C
  */
 public class Bot extends Player {
+    private HashMap<IPlayer, List<Character>> possibleCharacters;
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
+    }
+
+
+    /**
+     * Add the possible characters for players
+     *
+     * @param players the players to be added
+     * @param characters the available characters for the players
+     */
+    private void addPossibleCharacters(List<IPlayer> players, List<Character> characters) {
+        for (IPlayer player : players) {
+            possibleCharacters.put(player, characters);
+        }
+    }
+
+    /**
+     * Initialize the HashMap with possible characters for each player
+     *
+     * @param availableCharacters the available characters
+     * @param beforePlayers the player who have chosen before
+     */
+    public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers) {
+        possibleCharacters = new HashMap<>();
+
+        // Obtaining the chosen characters before the bot
+        List<Character> beforeCharacters = new ArrayList<>(Game.defaultCharacterList());
+        beforeCharacters.removeAll(availableCharacters);
+
+        // Obtaining characters that was available to the bot without its choice
+        List<Character> afterCharacters = new ArrayList<>(availableCharacters);
+        afterCharacters.remove(getCharacter().orElseThrow());
+
+        // Obtaining the players who will choose after the bot
+        List<IPlayer> afterPlayers = new ArrayList<>(getPlayers());
+        afterPlayers.removeAll(beforePlayers);
+        afterPlayers.remove(this);
+
+        // Addition of all the obtained data in possibleCharacters
+        addPossibleCharacters(beforePlayers, beforeCharacters);
+        addPossibleCharacters(afterPlayers, afterCharacters);
     }
 
     @Override
@@ -235,14 +277,127 @@ public class Bot extends Player {
         return Optional.empty();
     }
 
-    @Override
-    public Character chooseCharacterToRob(List<Character> characterList) {
-        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+    /**
+     * Gives the most constructed color with its number of occurrences
+     *
+     * @param player the player we want to inspect
+     * @return a tuple with the most constructed color and its number of occurrences
+     */
+    private Map.Entry<Colors, Long> mostConstructedColor(IPlayer player) {
+        return player.getBuiltDistricts().stream()
+                .collect(Collectors.groupingBy(District::getColor, Collectors.counting()))
+                .entrySet().stream().max(Comparator.comparingLong(Map.Entry::getValue)).orElse(null);
     }
 
+    /**
+     * Estimates the character of a player
+     *
+     * @param player the player we want to inspect
+     * @param availableCharacters the characters that can be chosen
+     * @return the estimated character of a player
+     */
+    private Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
+        List<Character> characters = possibleCharacters.getOrDefault(player, availableCharacters);
+        characters.retainAll(availableCharacters);
+        if (characters.size() == 1) return characters.get(0);
+        Character maxCharacter = moreProbableCharacterForPlayer(characters, player);
+        return (maxCharacter != null) ? maxCharacter : availableCharacters.get(0);
+    }
+
+    /**
+     * Returns the more probable character by factors
+     *
+     * @param possiblesCharacters the possibles character for the player
+     * @param player              the player to be estimated
+     * @return the estimated character
+     */
+    private Character moreProbableCharacterForPlayer(List<Character> possiblesCharacters, IPlayer player) {
+        Map.Entry<Colors, Long> maxColor = mostConstructedColor(player);
+        int playerCoins = player.getCoins();
+        double maxFactor = 0;
+        Character maxCharacter = null;
+        for (Character character : possiblesCharacters) {
+            double characterProbability = characterProbabilityForPlayer(player, character, maxColor, playerCoins);
+            if (characterProbability > maxFactor) {
+                maxFactor = characterProbability;
+                maxCharacter = character;
+            }
+        }
+        return maxCharacter;
+    }
+
+    /**
+     * Gives the character probability for the player
+     *
+     * @param player      the analyzed player
+     * @param character   the character of which we want the probability
+     * @param maxColor    the most constructed color and its number of occurrences
+     * @param playerCoins the player coins
+     * @return the probability that this player has to have this character
+     */
+    private double characterProbabilityForPlayer(IPlayer player, Character character, Map.Entry<Colors, Long> maxColor, int playerCoins) {
+        double probability = 1.0 / possibleCharacters.size();
+        if (maxColor != null && maxColor.getKey() == character.getColor())
+            probability += Math.min((maxColor.getValue() / 2), 1) * 0.3;
+        // if the player has a lot of coins and the current character can build more districts
+        if (character.numberOfDistrictToBuild() > 1)
+            probability += Math.min((playerCoins / 6.0), 1) * 0.2;
+        // if the player has a small hand size and the current character can obtain more districts
+        if (character.startTurnAction().equals(Action.BEGIN_DRAW) && player.getHandSize() > 0)
+            probability += Math.min((1 / player.getHandSize()), 1) * 0.2;
+        // if the player has a little number of coins and the current character gives more coins
+        if (character.startTurnAction().equals(Action.STARTUP_INCOME) && playerCoins > 0)
+            probability += Math.min((2 / playerCoins), 1) * 0.15;
+        return probability;
+    }
+
+    /**
+     * @return the average of built districts per player
+     */
+    private double builtDistrictsAverage() {
+        return getPlayers().stream()
+                .map(IPlayer::getBuiltDistricts)
+                .mapToInt(List::size)
+                .average().orElse(0f);
+    }
+
+    /**
+     * @param attributeExtractor the attribute extractor
+     * @return the player with the max attribute and the number associated
+     */
+    private SimpleEntry<IPlayer, Integer> playerWithMaxAttribute(ToIntFunction<IPlayer> attributeExtractor) {
+        return getPlayers().stream()
+                .max(Comparator.comparingInt(attributeExtractor))
+                .map(player -> new SimpleEntry<>(player, attributeExtractor.applyAsInt(player)))
+                .orElseThrow();
+    }
+
+    /**
+     * @param characterList the list of character the player can rob
+     * @return the character to rob
+     */
+    @Override
+    public Character chooseCharacterToRob(List<Character> characterList) {
+        return characterEstimation(playerWithMaxAttribute(IPlayer::getCoins).getKey(), characterList);
+    }
+
+    /**
+     * @param characterList the list of character the player can kill
+     * @return the character to kill
+     */
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
-        return characterList.get(0); //TODO : this implementation is too basic, it must be updated
+        SimpleEntry<IPlayer, Integer> maxBuilder = playerWithMaxAttribute(player -> player.getBuiltDistricts().size());
+        SimpleEntry<IPlayer, Integer> richestPlayer = playerWithMaxAttribute(IPlayer::getCoins);
+        IPlayer bestPlayerToChoose;
+        int maxBuilderSize = possibleCharacters.get(maxBuilder.getKey()).size();
+        int richestPlayerSize = possibleCharacters.get(richestPlayer.getKey()).size();
+
+        if (maxBuilderSize == richestPlayerSize)
+            bestPlayerToChoose = (maxBuilder.getValue() - builtDistrictsAverage() > 2) ? maxBuilder.getKey() : richestPlayer.getKey();
+        else
+            bestPlayerToChoose = (maxBuilderSize > richestPlayerSize) ? richestPlayer.getKey() : maxBuilder.getKey();
+        return characterEstimation(bestPlayerToChoose, characterList);
     }
 
     /**
@@ -321,5 +476,15 @@ public class Bot extends Player {
     public boolean wantsToTakeADestroyedDistrict(District district) {
         double handAverageProfitability = getHandDistricts().stream().map(this::districtProfitability).mapToDouble(Double::doubleValue).average().orElse(0);
         return districtProfitability(district) >= handAverageProfitability && getCoins() > 1; // The bot takes the destroyed district if he has more than 1 coin after paying the district and the district profitability is above average of his hand
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
