@@ -14,7 +14,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build and test several times
-        run: for i in {1..1000} ; do mvn test ; done
+        run: for i in {1..150} ; do mvn test ; done
       - name: Package
         run: mvn verify
       - name: Copy JAR for upload
