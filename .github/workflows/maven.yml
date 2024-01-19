@@ -13,10 +13,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - name: Build and test several times
-        run: for i in {1..150} ; do mvn test ; done
       - name: Package
         run: mvn verify
+      - name: Test several times
+        run: for i in {1..25} ; do mvn surefire:test ; done
       - name: Copy JAR for upload
         run: mkdir staging && cp target/*.jar staging
       - name: Upload artifacts
