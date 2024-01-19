@@ -13,6 +13,10 @@ public class DiscreetBot extends Bot {
         stealFear = -10;
     } // The discreet player behaviour is passive : he doesn't attack other players
 
+    public DiscreetBot(String name) {
+        super(name);
+    }
+
     public DiscreetBot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
     }

@@ -45,10 +45,10 @@ public class Game {
             Bot bot;
             switch (random.nextInt(2)) {
                 case 1:
-                    bot = new DiscreetBot("discreetBot" + i, 2, deck.draw(2));
+                    bot = new DiscreetBot("discreetBot" + i);
                     break;
                 default:
-                    bot = new Bot("bot" + i, 2, deck.draw(2));
+                    bot = new Bot("bot" + i);
                     break;
             }
             playerList.add(bot);
@@ -124,6 +124,7 @@ public class Game {
     public void start() {
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
+            p.gainCoins(2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
         }
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");

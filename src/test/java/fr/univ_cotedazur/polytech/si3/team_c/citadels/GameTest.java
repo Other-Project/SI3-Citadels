@@ -269,10 +269,10 @@ class GameTest {
         Game gameWithNumber = new Game(4);
         assertEquals(4, gameWithNumber.getIPlayerList().size());
         gameWithNumber.getPlayerList().forEach(p -> assertEquals(3, p.getPlayers().size()));
-        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(2, player.getHandSize()));
-        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(2, player.getCoins()));
-        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(2, p2.getHandSize())));
-        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(2, p2.getCoins())));
+        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(0, player.getHandSize()));
+        gameWithNumber.getIPlayerList().forEach(player -> assertEquals(0, player.getCoins()));
+        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(0, p2.getHandSize())));
+        gameWithNumber.getPlayerList().forEach(p -> p.getPlayers().forEach(p2 -> assertEquals(0, p2.getCoins())));
 
 
         Player p1 = new Bot("P1", 200, List.of(new Tavern(), new Castle(), new DragonGate()));

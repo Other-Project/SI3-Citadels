@@ -100,6 +100,10 @@ public class Bot extends Player {
      */
     static double numberOfDistrictToBuildMultiplier = 1;
 
+    public Bot(String name) {
+        super(name, 0, Collections.emptyList());
+    }
+
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
     }
