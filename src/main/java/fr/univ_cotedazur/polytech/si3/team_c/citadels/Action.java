@@ -29,7 +29,6 @@ public enum Action {
      * The player draws districts and chooses to keep a certain amount of them
      */
     DRAW("draw districts", INCOME) {
-
         @Override
         public String doAction(Game game, Player player) {
             var drawnCard = game.getDeck().draw(player.numberOfDistrictsToDraw());
