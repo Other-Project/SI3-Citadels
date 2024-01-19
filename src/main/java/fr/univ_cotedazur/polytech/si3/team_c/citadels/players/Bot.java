@@ -441,8 +441,8 @@ public class Bot extends Player {
         if (character.startTurnAction().equals(Action.BEGIN_DRAW) && player.getHandSize() > 0)
             probability += Math.min((1 / player.getHandSize()), 1) * 0.2;
         // if the player has a little number of coins and the current character gives more coins
-        if (character.startTurnAction().equals(Action.STARTUP_INCOME) && playerCoins > 0)
-            probability += Math.min((2 / playerCoins), 1) * 0.15;
+        if (character.startTurnAction().equals(Action.STARTUP_INCOME))
+            probability += (playerCoins > 0) ? Math.min((2 / playerCoins), 1) * 0.15 : 0.15;
         return probability;
     }
 

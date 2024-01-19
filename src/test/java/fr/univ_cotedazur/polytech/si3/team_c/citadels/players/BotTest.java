@@ -76,7 +76,9 @@ class BotTest {
         };
 
         scriptedGame = new Game(king, architect, merchant, assassin, warlord);
-        scriptedGame.playerInitialization();
+        for (Player p : scriptedGame.getPlayerList()) {
+            p.setPlayers(() -> new ArrayList<>(scriptedGame.getPlayerList().stream().filter(player -> !player.equals(p)).toList()));
+        }
     }
 
     @Test
