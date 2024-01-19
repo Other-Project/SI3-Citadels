@@ -808,13 +808,14 @@ class BotTest {
     }
 
     @Test
-    void estimateCharacter() {
+    void merchantProbability() {
         // Not a lot of coins => probably Merchant
         scriptedGame.gameTurn();
         assertTrue(merchant.sufferAction(SufferedActions.KILLED));
+    }
 
-        setUp();
-
+    @Test
+    void colorsProbability() {
         // 3 districts of the character color
         king.gainCoins(200);
         for (District district : king.getHandDistricts()) {
@@ -822,16 +823,18 @@ class BotTest {
         }
         scriptedGame.gameTurn();
         assertTrue(king.sufferAction(SufferedActions.KILLED));
+    }
 
-        setUp();
-
+    @Test
+    void architectProbability() {
         // A lot of coins => probably Architect
         architect.gainCoins(6);
         scriptedGame.gameTurn();
         assertTrue(architect.sufferAction(SufferedActions.KILLED));
+    }
 
-        setUp();
-
+    @Test
+    void handDistrictArchitectProbability() {
         // Not a lot of hand districts => probably Architect
         Bot architectWithNotBuildDistricts = new Bot("Architect", 2, List.of()) {
             @Override

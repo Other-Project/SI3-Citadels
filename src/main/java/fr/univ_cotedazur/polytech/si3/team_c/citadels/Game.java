@@ -126,7 +126,7 @@ public class Game {
     }
 
     /**
-     * Reset the list of characters
+     * Gets the default list of characters
      */
     public static List<Character> defaultCharacterList() {
         return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
@@ -138,14 +138,16 @@ public class Game {
      */
     public void characterSelectionTurn() {
         List<Character> characterList = defaultCharacterList();
-        int p = getCrown();
+        int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
-            var player = playerList.get((p + i) % playerList.size());
+            int playerIndex = (crownIndex + i) % playerList.size();
+            var player = playerList.get(playerIndex);
+            // Stores players who have already chosen their character
             List<IPlayer> beforePlayers;
-            if ((p + i) % playerList.size() < p) {
-                beforePlayers = new ArrayList<>(playerList.subList(p, playerList.size()));
-                beforePlayers.addAll(playerList.subList(0, (p + i) % playerList.size()));
-            } else beforePlayers = new ArrayList<>(playerList.subList(p, (p + i) % playerList.size()));
+            if (playerIndex < crownIndex) {
+                beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
+                beforePlayers.addAll(playerList.subList(0, playerIndex));
+            } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
             var choosenCharacter = player.pickCharacter(characterList);
             characterPlayerMap.put(choosenCharacter, player);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});

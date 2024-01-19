@@ -32,23 +32,28 @@ public class Bot extends Player {
     }
 
     /**
-     * Initialize the HashMap for possible character for a player
+     * Initialize the HashMap with possible characters for each player
      *
      * @param availableCharacters the available characters
-     * @param beforePlayers the player who have played before
+     * @param beforePlayers the player who have chosen before
      */
     public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers) {
         possibleCharacters = new HashMap<>();
+
+        // Obtaining the chosen characters before the bot
         List<Character> beforeCharacters = new ArrayList<>(Game.defaultCharacterList());
         beforeCharacters.removeAll(availableCharacters);
 
+        // Obtaining characters that was available to the bot without its choice
         List<Character> afterCharacters = new ArrayList<>(availableCharacters);
         afterCharacters.remove(getCharacter().orElseThrow());
 
+        // Obtaining the players who will choose after the bot
         List<IPlayer> afterPlayers = new ArrayList<>(getPlayers());
         afterPlayers.removeAll(beforePlayers);
         afterPlayers.remove(this);
 
+        // Addition of all the obtained data in possibleCharacters
         addPossibleCharacters(beforePlayers, beforeCharacters);
         addPossibleCharacters(afterPlayers, afterCharacters);
     }
@@ -273,29 +278,29 @@ public class Bot extends Player {
     }
 
     /**
-     * Gives more present color with is number
+     * Gives the most constructed color with its number of occurrences
      *
      * @param player the player we want to inspect
-     * @return a tuple with the max number of district by a Color
+     * @return a tuple with the most constructed color and its number of occurrences
      */
-    private Map.Entry<Colors, Long> maxDistrictsAndColorOfPlayer(IPlayer player) {
+    private Map.Entry<Colors, Long> mostConstructedColor(IPlayer player) {
         return player.getBuiltDistricts().stream()
                 .collect(Collectors.groupingBy(District::getColor, Collectors.counting()))
                 .entrySet().stream().max(Comparator.comparingLong(Map.Entry::getValue)).orElse(null);
     }
 
-
     /**
      * Estimates the character of a player
      *
-     * @param player the player
+     * @param player the player we want to inspect
+     * @param availableCharacters the characters that can be chosen
      * @return the estimated character of a player
      */
     private Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
         List<Character> characters = possibleCharacters.getOrDefault(player, availableCharacters);
         characters.retainAll(availableCharacters);
         if (characters.size() == 1) return characters.get(0);
-        Character maxCharacter = moreProbableCharacterByFactors(characters, player);
+        Character maxCharacter = moreProbableCharacterForPlayer(characters, player);
         return (maxCharacter != null) ? maxCharacter : availableCharacters.get(0);
     }
 
@@ -306,31 +311,44 @@ public class Bot extends Player {
      * @param player              the player to be estimated
      * @return the estimated character
      */
-    private Character moreProbableCharacterByFactors(List<Character> possiblesCharacters, IPlayer player) {
-        Map.Entry<Colors, Long> maxColor = maxDistrictsAndColorOfPlayer(player);
+    private Character moreProbableCharacterForPlayer(List<Character> possiblesCharacters, IPlayer player) {
+        Map.Entry<Colors, Long> maxColor = mostConstructedColor(player);
         int playerCoins = player.getCoins();
         double maxFactor = 0;
         Character maxCharacter = null;
         for (Character character : possiblesCharacters) {
-            double curFactor = 0;
-            // if the max color corresponds to the character has a significant value
-            if (maxColor != null && maxColor.getKey() == character.getColor() && maxColor.getValue() > 2)
-                curFactor += 0.3;
-            // if the player has a lot of coins and the current character can build more districts
-            if (playerCoins >= 6 && character.numberOfDistrictToBuild() > 1)
-                curFactor += 0.2;
-            // if the player has a small hand size and the current character can obtain more districts
-            if (player.getHandSize() < 2 && character.startTurnAction().equals(Action.BEGIN_DRAW))
-                curFactor += 0.2;
-            // if the player has a little number of coins and the current character gives more coins
-            if (playerCoins < 3 && character.startTurnAction().equals(Action.STARTUP_INCOME))
-                curFactor += 0.15;
-            if (curFactor > maxFactor) {
-                maxFactor = curFactor;
+            double characterProbability = characterProbabilityForPlayer(player, character, maxColor, playerCoins);
+            if (characterProbability > maxFactor) {
+                maxFactor = characterProbability;
                 maxCharacter = character;
             }
         }
         return maxCharacter;
+    }
+
+    /**
+     * Gives the character probability for the player
+     *
+     * @param player      the analyzed player
+     * @param character   the character
+     * @param maxColor    of which we want the probability
+     * @param playerCoins the player coins
+     * @return the probability that this player has to have this character
+     */
+    private double characterProbabilityForPlayer(IPlayer player, Character character, Map.Entry<Colors, Long> maxColor, int playerCoins) {
+        double probability = 1.0 / possibleCharacters.size();
+        if (maxColor != null && maxColor.getKey() == character.getColor())
+            probability += Math.min((maxColor.getValue() / 2), 1) * 0.3;
+        // if the player has a lot of coins and the current character can build more districts
+        if (character.numberOfDistrictToBuild() > 1)
+            probability += Math.min((playerCoins / 6.0), 1) * 0.2;
+        // if the player has a small hand size and the current character can obtain more districts
+        if (character.startTurnAction().equals(Action.BEGIN_DRAW))
+            probability += (player.getHandSize() > 0) ? Math.min((1 / player.getHandSize()), 1) * 0.2 : 0;
+        // if the player has a little number of coins and the current character gives more coins
+        if (character.startTurnAction().equals(Action.STARTUP_INCOME))
+            probability += Math.min((2 / playerCoins), 1) * 0.15;
+        return probability;
     }
 
     /**
