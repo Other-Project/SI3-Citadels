@@ -32,7 +32,7 @@ class GameTest {
     void defaultCharacterList() {
         List<Character> characterList = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
-        assertEquals(characterList, game.defaultCharacterList());
+        assertEquals(characterList, Game.defaultCharacterList());
     }
 
     @Test
