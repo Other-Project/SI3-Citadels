@@ -5,13 +5,31 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 import java.util.List;
 
 public class DiscreetBot extends Bot {
-    static {
-        crownFear = -10;
-        destroyFear = -10;
-        exchangePlayerFear = -10;
-        killFear = -10;
-        stealFear = -10;
-    } // The discreet player behaviour is passive : he doesn't attack other players
+    // The discreet player behaviour is passive : he doesn't attack other players
+    @Override
+    protected double crownFear() {
+        return -10;
+    }
+
+    @Override
+    protected double destroyFear() {
+        return -10;
+    }
+
+    @Override
+    protected double exchangePlayerFear() {
+        return -10;
+    }
+
+    @Override
+    protected double killFear() {
+        return -10;
+    }
+
+    @Override
+    protected double stealFear() {
+        return -10;
+    }
 
     public DiscreetBot(String name) {
         super(name);

@@ -185,7 +185,7 @@ class BotTest {
             player1.gainCoins(district.getCost());
             assertTrue(player1.buildDistrict(district, 0));
         }
-        assertEquals(new Bishop(), player1.pickCharacter(characters)); // The bot should choose the merchant as he gains 2 more coins and some security (from the warlord)
+        assertEquals(new Bishop(), player1.pickCharacter(characters)); // The bot should choose the bishop as he gains 2 more coins and some security (from the warlord)
         for (District district : someBlueDistricts) player1.removeDistrictFromDistrictBuilt(district);
 
 
