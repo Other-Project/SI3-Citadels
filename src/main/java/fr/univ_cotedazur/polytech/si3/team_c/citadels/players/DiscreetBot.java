@@ -51,11 +51,15 @@ public class DiscreetBot extends Bot {
     @Override
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
-        // Lorentz function that prioritize mid-cost districts
-        return 9.52 / (Math.pow((district.getCost() - 3.77), 2) + Math.pow((3.14 / 2), 2))
-                + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
+
+        double defaultProfitability = districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 + bonusProfitability(district);
+        if (differenceOfDistrictsWithFirst() >= 3) {
+            return 1.0 / (district.getCost() << 2) + defaultProfitability;
+        }
+        // Lorentz function that prioritize mid-cost districts
+        return 9.52 / (Math.pow((district.getCost() - 3.77), 2) + Math.pow((3.14 / 2), 2)) + defaultProfitability;
     }
 
     /**
