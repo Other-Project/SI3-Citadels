@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
+    public static final int DISTRICT_NUMBER_TO_END = 8;
     private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
 
@@ -218,7 +219,7 @@ public class Game {
      * The method which checks if the game must end according to the number of districts built for the player
      */
     public boolean end(IPlayer player) {
-        return player.getBuiltDistricts().size() >= 8;
+        return player.getBuiltDistricts().size() >= DISTRICT_NUMBER_TO_END;
     }
 
     /**
@@ -227,6 +228,7 @@ public class Game {
     public boolean gameTurn() {
         int previousCrown = getCrown();
         charactersToInteractWith = defaultCharacterList();
+        characterPlayerMap.clear();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
@@ -239,7 +241,7 @@ public class Game {
                     if (!isEnd) player.endsGame();
                     isEnd = true;
                 }
-            }
+            } else charactersToInteractWith.remove(character);
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
         if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))

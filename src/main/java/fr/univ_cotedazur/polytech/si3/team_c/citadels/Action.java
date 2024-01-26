@@ -102,6 +102,7 @@ public enum Action {
             if (game.getCharactersToInteractWith().isEmpty()) return null; // Useful for tests
             Character characterToKill = player.chooseCharacterToKill(game.getCharactersToInteractWith());
             game.performActionOnCharacter(characterToKill, player, SufferedActions.KILLED);
+            game.getCharactersToInteractWith().remove(characterToKill);
             return MessageFormat.format("{0} kills the {1}", player.getName(), characterToKill);
         }
     },
