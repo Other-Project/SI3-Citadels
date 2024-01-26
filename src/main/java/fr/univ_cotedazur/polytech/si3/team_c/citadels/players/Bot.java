@@ -1,4 +1,8 @@
-package fr.univ_cotedazur.polytech.si3.team_c.citadels;
+package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
+
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
+
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
@@ -12,7 +16,138 @@ import java.util.stream.Collectors;
  * @author Team C
  */
 public class Bot extends Player {
+    /**
+     * Level of security felt by the bot if his districts can't be destroyed
+     */
+    protected double nonDestructibleSecurity() {
+        return 1;
+    }
+    /**
+     * Level of security felt by the bot if he gets the crown
+     */
+    protected double crownSecurity() {
+        return 2;
+    } // Because the interest of the crown is to feel secured
+    /**
+     * Level of earnings in case there's a startup income
+     */
+    protected double startupIncomeCoin() {
+        return 1;
+    }  // There's an income, so the bot could get more coins
+
+    /**
+     * Level of the need to draw cards if there's a startup income
+     */
+    protected double startupIncomeCard() {
+        return 0.5;
+    } // Because if there's already an income there's less need to use the income action
+    /**
+     * Level of card gained if the bot could draw extra cards
+     */
+    protected double beginDrawCard() {
+        return 2;
+    }
+    /**
+     * Level of earnings if the bot could draw extra cards
+     */
+    protected double beginDrawCoin() {
+        return 1;
+    }
+    /**
+     * Level of earnings if the bot has the crown
+     */
+    protected double crownCoin() {
+        return 0.125;
+    }
+    /**
+     * Level of potential builds if the bot has the crown
+     */
+    protected double crownBuild() {
+        return 0.125;
+    }
+    /**
+     * Level of card gained if the bot has the crown
+     */
+    protected double crownCard() {
+        return 0.125;
+    }
+    /**
+     * Level of the need to attack other players if the bot has the crown
+     */
+    protected double crownFear() {
+        return 0.125;
+    } // If the bot takes the crown, he is pretty neutral
+    /**
+     * Level of security the bot feels if he could kill another player
+     */
+    protected double killSecurity() {
+        return 0.75;
+    }
+    /**
+     * Level of the need to target other players the bot feels if he could kill another player
+     */
+    protected double killFear() {
+        return 1;
+    }
+    /**
+     * Level of security the bot feels if he could steal another player
+     */
+    protected double stealSecurity() {
+        return 0.25;
+    }
+    /**
+     * Level of the need to target other players the bot feels if he could steal another player
+     */
+    protected double stealFear() {
+        return 0.5;
+    }
+    /**
+     * Level of potential earnings of the bot if he could steal another player
+     */
+    protected double stealCoin() {
+        return 1;
+    }
+    /**
+     * Level of card gained if the player could exchange cards with the deck
+     */
+    protected double exchangeDeckCard() {
+        return 1;
+    }
+    /**
+     * Level of card gained if the bot could exchange cards with another player
+     */
+    protected double exchangePlayerCard() {
+        return 1;
+    }
+    /**
+     * Level of the need to target another player if the bot could exchange cards with another player
+     */
+    protected double exchangePlayerFear() {
+        return 0.5;
+    }
+    /**
+     * Level of the need to attack another player if the bot could destroy another player's district
+     */
+    protected double destroyFear() {
+        return 2;
+    }
+    /**
+     * Impact level of the number of district of the same color
+     */
+    protected double coloredDistrictMultiplier() {
+        return 1;
+    }
+    /**
+     * Impact level of the number of district left to build
+     */
+    protected double numberOfDistrictToBuildMultiplier() {
+        return 1;
+    }
     private HashMap<IPlayer, List<Character>> possibleCharacters;
+
+    public Bot(String name) {
+        super(name, 0, Collections.emptyList());
+    }
 
     public Bot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
@@ -22,7 +157,7 @@ public class Bot extends Player {
     /**
      * Add the possible characters for players
      *
-     * @param players the players to be added
+     * @param players    the players to be added
      * @param characters the available characters for the players
      */
     private void addPossibleCharacters(List<IPlayer> players, List<Character> characters) {
@@ -35,7 +170,7 @@ public class Bot extends Player {
      * Initialize the HashMap with possible characters for each player
      *
      * @param availableCharacters the available characters
-     * @param beforePlayers the player who have chosen before
+     * @param beforePlayers       the player who have chosen before
      */
     public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers) {
         possibleCharacters = new HashMap<>();
@@ -62,13 +197,14 @@ public class Bot extends Player {
     public Character pickCharacter(List<Character> availableCharacters) {
         super.pickCharacter(availableCharacters);
         Character best = null;
-        double maxProfitability = -1;
+        double maxProfitability = -100;
         for (Character character : availableCharacters) {
             var profitability = characterProfitability(character);
             if (profitability <= maxProfitability) continue;
             best = character;
             maxProfitability = profitability;
         }
+        assert best != null;
         setCharacter(best);
         return best;
     }
@@ -91,52 +227,53 @@ public class Bot extends Player {
         double cardNecessity = 1.0 / (getHandDistricts().size() + 1); // The need to gain cards
         double fear = 0.5 + getPlayers().stream().mapToInt(built -> built.getBuiltDistricts().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
 
-        double coinProfitability = quantityOfColorBuilt(character.getColor());
+        double coinProfitability = quantityOfColorBuilt(character.getColor()) * coloredDistrictMultiplier();
         double securityProfitability = 0;
-        double buildProfitability = 0;
+        double buildProfitability = character.numberOfDistrictToBuild() * numberOfDistrictToBuildMultiplier();
         double cardProfitability = 0;
         double fearProfitability = 0;
 
-        if (!character.canHaveADistrictDestroyed()) securityProfitability += 1;
-        buildProfitability += character.numberOfDistrictToBuild();
+        if (!character.canHaveADistrictDestroyed()) securityProfitability += nonDestructibleSecurity();
         switch (character.startTurnAction()) {
             case STARTUP_INCOME -> {
-                coinProfitability++;
-                cardProfitability += 0.5; // Because if there's already an income there's less need to use the income action
+                coinProfitability += startupIncomeCoin();
+                cardProfitability += startupIncomeCard();
             }
             case BEGIN_DRAW -> {
-                cardProfitability += 2;
-                coinProfitability += 1;
+                cardProfitability += beginDrawCard();
+                coinProfitability += beginDrawCoin();
             }
             case GET_CROWN -> {
-                coinProfitability += 0.125;
-                securityProfitability += 2;
-                buildProfitability += 0.125;
-                cardProfitability += 0.125;
-                fearProfitability += 0.125;
+                coinProfitability += crownCoin();
+                securityProfitability += crownSecurity();
+                buildProfitability += crownBuild();
+                cardProfitability += crownCard();
+                fearProfitability += crownFear();
             }
             default -> { /* do nothing */ }
         }
         for (Action action : character.getAction()) {
             switch (action) {
                 case KILL -> {
-                    securityProfitability += 0.5;
-                    fearProfitability += 1;
+                    securityProfitability += killSecurity();
+                    fearProfitability += killFear();
                 }
                 case STEAL -> {
-                    securityProfitability += 0.25;
-                    fearProfitability += 0.5;
-                    coinProfitability += getPlayers().stream().filter(entry -> !Objects.equals(entry.getName(), getName())).mapToInt(IPlayer::getCoins).average().orElse(0);
+                    securityProfitability += stealSecurity();
+                    fearProfitability += stealFear();
+                    coinProfitability += getPlayers().stream()
+                            .filter(entry -> !Objects.equals(entry.getName(), getName())).mapToInt(IPlayer::getCoins).average().orElse(0)
+                            * stealCoin();
                 }
                 case EXCHANGE_DECK ->
-                        cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count();
+                        cardProfitability += districtsByProfitability.stream().filter(entry -> entry.getValue() < 1).count() * exchangeDeckCard();
                 case EXCHANGE_PLAYER -> {
                     IPlayer playerToExchangeWith = playerToExchangeCards(getPlayers());
                     if (playerToExchangeWith == null) break;
-                    cardProfitability += playerToExchangeWith.getHandSize() - getHandDistricts().size();
-                    fearProfitability += 0.5;
+                    cardProfitability += playerToExchangeWith.getHandSize() - getHandDistricts().size() * exchangePlayerCard();
+                    fearProfitability += exchangePlayerFear();
                 }
-                case DESTROY -> fearProfitability += 2;
+                case DESTROY -> fearProfitability += destroyFear();
                 default -> { /* do nothing */ }
             }
         }
@@ -156,7 +293,7 @@ public class Bot extends Player {
      * @param playerProperty   Getter of the property on the player side
      * @return The difference between the two
      */
-    private double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
+    protected double districtPropertyGain(District district, Function<District, Optional<? extends Number>> districtProperty, DoubleSupplier playerProperty) {
         return districtProperty.apply(district)
                 .map(aDouble -> (aDouble.doubleValue() - playerProperty.getAsDouble()))
                 .orElse(0.0);
@@ -292,7 +429,7 @@ public class Bot extends Player {
     /**
      * Estimates the character of a player
      *
-     * @param player the player we want to inspect
+     * @param player              the player we want to inspect
      * @param availableCharacters the characters that can be chosen
      * @return the estimated character of a player
      */
@@ -346,8 +483,8 @@ public class Bot extends Player {
         if (character.startTurnAction().equals(Action.BEGIN_DRAW) && player.getHandSize() > 0)
             probability += Math.min((1 / player.getHandSize()), 1) * 0.2;
         // if the player has a little number of coins and the current character gives more coins
-        if (character.startTurnAction().equals(Action.STARTUP_INCOME) && playerCoins > 0)
-            probability += Math.min((2 / playerCoins), 1) * 0.15;
+        if (character.startTurnAction().equals(Action.STARTUP_INCOME))
+            probability += (playerCoins > 0) ? Math.min((2 / playerCoins), 1) * 0.15 : 0.15;
         return probability;
     }
 
@@ -454,7 +591,7 @@ public class Bot extends Player {
      * @return The district to destroy
      */
     @Override
-    protected SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
+    public SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
         List<IPlayer> playerToTargetList = getMostDangerousPlayersByBuiltDistricts(players);
         return players.stream()
                 .filter(player -> !player.equals(this))

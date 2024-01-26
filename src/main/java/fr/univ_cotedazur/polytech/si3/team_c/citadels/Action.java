@@ -1,5 +1,7 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
+
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.HashSet;

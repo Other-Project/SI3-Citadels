@@ -1,5 +1,7 @@
-package fr.univ_cotedazur.polytech.si3.team_c.citadels;
+package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +75,10 @@ class BotTest {
             }
         };
 
-        scriptedGame = new Game(List.of(king, architect, merchant, assassin, warlord));
+        scriptedGame = new Game(king, architect, merchant, assassin, warlord);
+        for (Player p : scriptedGame.getPlayerList()) {
+            p.setPlayers(() -> new ArrayList<>(scriptedGame.getPlayerList().stream().filter(player -> !player.equals(p)).toList()));
+        }
     }
 
     @Test
@@ -120,8 +125,6 @@ class BotTest {
 
     @Test
     void specialIncome() {
-        Game onePlayerGame = new Game();
-        onePlayerGame.addPlayer(player1);
         player1.addDistrictToHand(new WatchTower());
         player1.addDistrictToHand(new Prison());
         player1.setCharacter(new King());
@@ -171,8 +174,6 @@ class BotTest {
         List<Character> AllCharacters = List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord());
         Player feared = new Bot("feared", 100, List.of(new Graveyard(), new Church(), new Castle(), new Smithy(), new Cathedral(), new DragonGate(), new Monastery()));
-        Game game = new Game();
-        game.addPlayer(player1);
 
         List<Character> characters = new ArrayList<>(AllCharacters);
         assertEquals(new Architect(), player1.pickCharacter(characters)); // The bot should choose the architect as he gains 2 more coins
@@ -184,12 +185,11 @@ class BotTest {
             player1.gainCoins(district.getCost());
             assertTrue(player1.buildDistrict(district, 0));
         }
-        assertEquals(new Bishop(), player1.pickCharacter(characters)); // The bot should choose the merchant as he gains 2 more coins and some security (from the warlord)
+        assertEquals(new Bishop(), player1.pickCharacter(characters)); // The bot should choose the bishop as he gains 2 more coins and some security (from the warlord)
         for (District district : someBlueDistricts) player1.removeDistrictFromDistrictBuilt(district);
 
 
-        game.addPlayer(feared);
-        game.setCrown(player1);
+        player1.setPlayers(() -> List.of(feared));
         characters = new ArrayList<>(AllCharacters);
         assertEquals(new Thief(), player1.pickCharacter(characters)); // The bot should choose the thief as the other player has a lot of money
 
@@ -348,7 +348,6 @@ class BotTest {
 
     @Test
     void MagicianTest() {
-        Game g = new Game();
         Bot bot1 = new Bot("bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate())) {
             @Override
             public Set<Action> createActionSet() { //Override of the createActionSet in Player Method to manipulate the actionTest of the player and test the playerTurn method of Game
@@ -357,23 +356,22 @@ class BotTest {
             }
 
         };
-        g.addPlayer(bot1);
-        g.addPlayer(bot2);
+        bot1.setPlayers(() -> List.of(bot2));
+        bot2.setPlayers(() -> List.of(bot1));
         bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
         bot2.pickCharacter(List.of(new King()));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
-        assertEquals(bot2, bot1.playerToExchangeCards(g.getIPlayerList()));
+        assertEquals(bot2, bot1.playerToExchangeCards(bot1.getPlayers()));
         assertEquals(Action.EXCHANGE_PLAYER, bot1.nextAction());
         bot2.removeFromHand(List.of(new DragonGate(), new Docks(), new Laboratory()));
-        assertNull(bot1.playerToExchangeCards(g.getIPlayerList()));
+        assertNull(bot1.playerToExchangeCards(bot1.getPlayers()));
         bot1.removeAction(Action.EXCHANGE_DECK);
         assertEquals(Action.NONE, bot1.nextAction());
     }
 
     @Test
     void getMostDangerousPlayersByBuiltDistrictsTest() {
-        Game game = new Game();
         Bot kingBot = new Bot("bot 1", 10, List.of(new Temple())) {
             @Override
             public Action nextAction(Set<Action> remainingActions) {
@@ -446,10 +444,7 @@ class BotTest {
                 return best;
             }
         };
-        game.addPlayer(kingBot);
-        game.addPlayer(merchantBot);
-        game.addPlayer(bishopBot);
-        game.addPlayer(warlordBot);
+        Game game = new Game(kingBot, merchantBot, bishopBot, warlordBot);
         game.characterSelectionTurn();
         game.playerTurn(kingBot);
         game.playerTurn(merchantBot);
@@ -538,11 +533,7 @@ class BotTest {
             }
         };
         // Here, we force bishopBot and bot3 to take the income, so they can only build the district in their hands
-        Game game = new Game();
-        game.addPlayer(warlordBot);
-        game.addPlayer(bishopBot);
-        game.addPlayer(merchantBot);
-        game.addPlayer(kingBot);
+        Game game = new Game(warlordBot, bishopBot, merchantBot, kingBot);
         game.characterSelectionTurn();
         game.playerTurn(bishopBot);
         game.playerTurn(bishopBot);
@@ -582,8 +573,7 @@ class BotTest {
                 return best;
             }
         };
-        Game game = new Game();
-        game.addPlayer(bot1);
+        Game game = new Game(bot1);
         game.characterSelectionTurn();
         game.playerTurn(bot1);
         assertEquals(1, bot1.getBuiltDistricts().size());
@@ -634,9 +624,7 @@ class BotTest {
                 return Action.NONE;
             }
         };
-        Game game = new Game();
-        game.addPlayer(merchantBot);
-        game.addPlayer(warlordBot);
+        Game game = new Game(merchantBot, warlordBot);
         game.characterSelectionTurn();
         assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(merchantBot);
@@ -683,7 +671,6 @@ class BotTest {
 
     @Test
     void canDestroyTest() {
-        Game game = new Game();
         Bot warlordBot = new Bot("warlordBot", 20, Collections.emptyList()) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
@@ -746,10 +733,7 @@ class BotTest {
                 return Action.NONE;
             }
         };
-        game.addPlayer(warlordBot);
-        game.addPlayer(bot2);
-        game.addPlayer(bot3);
-        game.addPlayer(bishopBot);
+        Game game = new Game(warlordBot, bot3, bot2, bishopBot);
         game.characterSelectionTurn();
         assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(warlordBot);
@@ -759,7 +743,6 @@ class BotTest {
         assertNull(warlordBot.destroyDistrict(game.getIPlayerList())); // bishopBot can't get attacked
         game.playerTurn(bot2);
         assertNotNull(warlordBot.destroyDistrict(game.getIPlayerList()));
-        game.addPlayer(bishopBot);
     }
 
     @Test
@@ -793,9 +776,7 @@ class BotTest {
                 return Action.NONE;
             }
         };
-        Game game = new Game();
-        game.addPlayer(warlordBot);
-        game.addPlayer(merchantBot);
+        Game game = new Game(warlordBot, merchantBot);
         game.characterSelectionTurn();
         for (int i = 1; i < 8; i++) {
             game.playerTurn(merchantBot);
@@ -850,7 +831,7 @@ class BotTest {
             }
         };
 
-        Game gameWithoutMerchant = new Game(List.of(architectWithNotBuildDistricts, warlord, assassin));
+        Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin);
         gameWithoutMerchant.gameTurn();
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
