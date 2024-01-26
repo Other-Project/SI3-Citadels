@@ -147,7 +147,7 @@ public abstract class Player implements IPlayer {
      * Gets all the destroyable districts that the player built
      */
     public List<District> getDestroyableDistricts() {
-        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < Game.MAX_DISTRICT_TO_BUILD ?
+        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < Game.DISTRICT_NUMBER_TO_END ?
                 getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
     }
 
@@ -348,7 +348,7 @@ public abstract class Player implements IPlayer {
         int score = getDistrictsScore();
         if (allColorsInDistricts(lastTurn)) score += 3;
         if (isGameEnder()) score += 4;
-        else if (getBuiltDistricts().size() >= Game.MAX_DISTRICT_TO_BUILD) score += 2;
+        else if (getBuiltDistricts().size() >= Game.DISTRICT_NUMBER_TO_END) score += 2;
         return score;
     }
 
