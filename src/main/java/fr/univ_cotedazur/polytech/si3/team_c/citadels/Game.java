@@ -15,6 +15,8 @@ public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
+    private List<Character> visibleDiscard;
+    private List<Character> availableCharacters;
 
     private Deck deck;
 
@@ -39,6 +41,8 @@ public class Game {
     public Game(int numberPlayers, Player... players) {
         deck = new Deck();
         characterPlayerMap = new HashMap<>();
+        visibleDiscard = new ArrayList<>();
+        availableCharacters = defaultCharacterList();
         playerList = new ArrayList<>(List.of(players));
         charactersToInteractWith = new ArrayList<>();
         eventActions = new EnumMap<>(Action.class);
@@ -107,6 +111,68 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
+    public List<Character> getAvailableCharacters() {
+        return availableCharacters;
+    }
+
+    public void setDiscard() {
+        SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
+        List<Character> hiddenCard = getDiscardList(discardNumbers.getKey(), availableCharacters);
+        if (discardNumbers.getKey() != 0 && discardNumbers.getValue() != 0) {
+            List<Character> availableVisibleDiscard = availableCharacters.stream()
+                    .filter(Character::canBePlacedInVisibleDiscard)
+                    .toList();
+            visibleDiscard = getDiscardList(discardNumbers.getValue(), availableVisibleDiscard);
+            logDiscard(hiddenCard, visibleDiscard);
+        }
+    }
+
+    public List<Character> getDiscardList(int number, List<Character> possibleCharacters) {
+        List<Character> selectedCharacters = new ArrayList<>();
+        for (; number > 0; number--) {
+            Character selectedCharacter = possibleCharacters.get(random.nextInt(possibleCharacters.size()));
+            selectedCharacters.add(selectedCharacter);
+            availableCharacters.remove(selectedCharacter);
+        }
+        return selectedCharacters;
+    }
+
+    public void logDiscard(List<Character> hiddenDiscard, List<Character> visibleDiscard) {
+        LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard :");
+        logCharacterList(hiddenDiscard);
+        LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard :");
+        logCharacterList(visibleDiscard);
+    }
+
+    private void logCharacterList(List<Character> characterList) {
+        for (Character character : characterList)
+            LOGGER.log(Level.INFO, character.toString());
+    }
+
+    private SimpleEntry<Integer, Integer> discardNumbers() {
+        int hiddenCount;
+        int visibleCount;
+        switch (playerList.size()) {
+            case 3, 4 -> {
+                visibleCount = 2;
+                hiddenCount = 1;
+            }
+            case 6, 7 -> {
+                visibleCount = 0;
+                hiddenCount = 1;
+            }
+            case 5 -> {
+                visibleCount = 1;
+                hiddenCount = 1;
+            }
+            default -> {
+                visibleCount = 0;
+                hiddenCount = 0;
+            }
+        }
+        return new SimpleEntry<>(hiddenCount, visibleCount);
+    }
+
     public void registerPlayerForEventAction(Player player, Action eventAction) {
         eventActions.put(eventAction, player);
     }
@@ -157,7 +223,6 @@ public class Game {
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        List<Character> characterList = defaultCharacterList();
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             int playerIndex = (crownIndex + i) % playerList.size();
@@ -168,11 +233,11 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            var choosenCharacter = player.pickCharacter(characterList);
+            var choosenCharacter = player.pickCharacter(availableCharacters);
             characterPlayerMap.put(choosenCharacter, player);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(characterList, beforePlayers);
-            characterList.remove(choosenCharacter);
+            player.setPossibleCharacters(availableCharacters, beforePlayers, visibleDiscard);
+            availableCharacters.remove(choosenCharacter);
         }
     }
 
@@ -222,7 +287,9 @@ public class Game {
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
-        charactersToInteractWith = defaultCharacterList();
+        availableCharacters = defaultCharacterList();
+        setDiscard();
+        charactersToInteractWith = new ArrayList<>(availableCharacters);
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;

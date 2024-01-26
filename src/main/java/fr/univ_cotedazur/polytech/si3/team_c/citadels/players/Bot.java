@@ -172,12 +172,14 @@ public class Bot extends Player {
      * @param availableCharacters the available characters
      * @param beforePlayers       the player who have chosen before
      */
-    public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers) {
+    public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers, List<Character> visibleDiscard) {
+        //TODO AJOUTER VISIBLE DISCARD
         possibleCharacters = new HashMap<>();
 
         // Obtaining the chosen characters before the bot
         List<Character> beforeCharacters = new ArrayList<>(Game.defaultCharacterList());
         beforeCharacters.removeAll(availableCharacters);
+        beforeCharacters.removeAll(visibleDiscard);
 
         // Obtaining characters that was available to the bot without its choice
         List<Character> afterCharacters = new ArrayList<>(availableCharacters);

@@ -75,7 +75,11 @@ class BotTest {
             }
         };
 
-        scriptedGame = new Game(king, architect, merchant, assassin, warlord);
+        scriptedGame = new Game(king, architect, merchant, assassin, warlord) {
+            @Override
+            public void setDiscard() {
+            }
+        };
         for (Player p : scriptedGame.getPlayerList()) {
             p.setPlayers(() -> new ArrayList<>(scriptedGame.getPlayerList().stream().filter(player -> !player.equals(p)).toList()));
         }
@@ -831,7 +835,11 @@ class BotTest {
             }
         };
 
-        Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin);
+        Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin) {
+            @Override
+            public void setDiscard() {
+            }
+        };
         gameWithoutMerchant.gameTurn();
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }

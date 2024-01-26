@@ -20,4 +20,9 @@ public class King extends Character {
     public Action startTurnAction() {
         return Action.GET_CROWN;
     }
+
+    @Override
+    public boolean canBePlacedInVisibleDiscard() {
+        return false;
+    }
 }
