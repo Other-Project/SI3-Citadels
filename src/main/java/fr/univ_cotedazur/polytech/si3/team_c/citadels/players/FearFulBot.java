@@ -28,12 +28,12 @@ public class FearFulBot extends Bot {
         return possibleDestruction(getPlayers()) ? 10 : 0;
     }
 
-    public FearFulBot(String name) {
-        super(name);
-    }
-
     public FearFulBot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
+    }
+
+    public FearFulBot(String name) {
+        super(name);
     }
 
     @Override
@@ -45,8 +45,12 @@ public class FearFulBot extends Bot {
                 + (district.isDestructible() ? 0 : 1);
     }
 
-    private boolean couldDestroy(District district, IPlayer player) {
-        return district.isDestructible() && player.getCoins() + 2 + player.getBuiltDistricts().stream().filter(district1 -> district1.getColor() == Colors.RED).count() >= district.getCost();
+    protected boolean couldDestroy(District district, IPlayer player) {
+        return district.isDestructible() && player.getCoins() + 2 + player.getBuiltDistricts().stream().filter(district1 -> district1.getColor() == Colors.RED).count() >= district.getCost() - 1;
+    }
+
+    protected boolean possibleDestruction(List<IPlayer> players) {
+        return getBuiltDistricts().stream().anyMatch(district -> players.stream().anyMatch(iPlayer -> couldDestroy(district, iPlayer)));
     }
 
     @Override
@@ -61,9 +65,5 @@ public class FearFulBot extends Bot {
             }
         }
         return Optional.ofNullable(bestDistrict);
-    }
-
-    private boolean possibleDestruction(List<IPlayer> players) {
-        return getBuiltDistricts().stream().anyMatch(district -> players.stream().anyMatch(iPlayer -> couldDestroy(district, iPlayer)));
     }
 }
