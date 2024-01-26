@@ -128,9 +128,9 @@ public class Game {
     }
 
     /**
-     * Gets the discard list by the possible characters and the
+     * Gets the discard list by the possible characters and the number of character to remove
      *
-     * @param charactersCount    number of character to take in the possibleCharacters
+     * @param charactersCount    number of characters to take in the possibleCharacters
      * @param possibleCharacters the characters that can be chosen
      */
     public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters) {
