@@ -224,6 +224,7 @@ public class Game {
     public boolean gameTurn() {
         int previousCrown = getCrown();
         charactersToInteractWith = defaultCharacterList();
+        characterPlayerMap.clear();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
@@ -236,7 +237,7 @@ public class Game {
                     if (!isEnd) player.endsGame();
                     isEnd = true;
                 }
-            }
+            } else charactersToInteractWith.remove(character);
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
         if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
