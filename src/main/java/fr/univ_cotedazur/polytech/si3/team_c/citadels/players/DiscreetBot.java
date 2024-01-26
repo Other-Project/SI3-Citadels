@@ -6,6 +6,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public class DiscreetBot extends Bot {
     // The discreet player behaviour is passive : he doesn't attack other players
@@ -78,8 +79,7 @@ public class DiscreetBot extends Bot {
     }
 
     private int differenceOfDistrictsWithFirst() {
-        IPlayer firstPlayer = getPlayers().stream().sorted(
-                Comparator.<IPlayer>comparingInt(player -> player.getBuiltDistricts().size()).reversed()).toList().get(0);
-        return firstPlayer.getHandSize() - getHandSize();
+        Optional<IPlayer> firstPlayer = getPlayers().stream().max(Comparator.comparingInt(player -> player.getBuiltDistricts().size()));
+        return firstPlayer.map(iPlayer -> iPlayer.getBuiltDistricts().size() - getBuiltDistricts().size()).orElse(-1);
     }
 }
