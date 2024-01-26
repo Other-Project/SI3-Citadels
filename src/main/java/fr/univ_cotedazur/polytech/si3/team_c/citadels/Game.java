@@ -112,10 +112,9 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
-    public List<Character> getAvailableCharacters() {
-        return availableCharacters;
-    }
-
+    /**
+     * Sets the discard and removes the obtained characters in availableCharacters
+     */
     public void setDiscard() {
         SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
         List<Character> hiddenCard = getDiscardList(discardNumbers.getKey(), availableCharacters);
@@ -128,9 +127,15 @@ public class Game {
         }
     }
 
-    public List<Character> getDiscardList(int number, List<Character> possibleCharacters) {
+    /**
+     * Gets the discard list by the possible characters and the
+     *
+     * @param charactersCount    number of character to take in the possibleCharacters
+     * @param possibleCharacters the characters that can be chosen
+     */
+    public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters) {
         List<Character> selectedCharacters = new ArrayList<>();
-        for (; number > 0; number--) {
+        for (; charactersCount > 0; charactersCount--) {
             Character selectedCharacter = possibleCharacters.get(random.nextInt(possibleCharacters.size()));
             selectedCharacters.add(selectedCharacter);
             availableCharacters.remove(selectedCharacter);
@@ -138,18 +143,20 @@ public class Game {
         return selectedCharacters;
     }
 
+    /**
+     * Logs the discard
+     *
+     * @param hiddenDiscard  the hidden characters in the discard
+     * @param visibleDiscard the visible characters in the discard
+     */
     public void logDiscard(List<Character> hiddenDiscard, List<Character> visibleDiscard) {
-        LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard :");
-        logCharacterList(hiddenDiscard);
-        LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard :");
-        logCharacterList(visibleDiscard);
+        LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard : {0}", hiddenDiscard);
+        LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard : {0}", visibleDiscard);
     }
 
-    private void logCharacterList(List<Character> characterList) {
-        for (Character character : characterList)
-            LOGGER.log(Level.INFO, character.toString());
-    }
-
+    /**
+     * @return the hidden and visible characters count to remove from availableCharacters
+     */
     private SimpleEntry<Integer, Integer> discardNumbers() {
         int hiddenCount;
         int visibleCount;

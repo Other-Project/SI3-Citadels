@@ -173,7 +173,6 @@ public class Bot extends Player {
      * @param beforePlayers       the player who have chosen before
      */
     public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers, List<Character> visibleDiscard) {
-        //TODO AJOUTER VISIBLE DISCARD
         possibleCharacters = new HashMap<>();
 
         // Obtaining the chosen characters before the bot
