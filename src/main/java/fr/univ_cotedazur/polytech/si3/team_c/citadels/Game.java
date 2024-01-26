@@ -3,6 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.FearFulBot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -45,7 +46,10 @@ public class Game {
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
             Bot bot;
-            switch (random.nextInt(2)) {
+            switch (random.nextInt(3)) {
+                case 2:
+                    bot = new FearFulBot("fearFullBot" + i);
+                    break;
                 case 1:
                     bot = new DiscreetBot("discreetBot" + i);
                     break;

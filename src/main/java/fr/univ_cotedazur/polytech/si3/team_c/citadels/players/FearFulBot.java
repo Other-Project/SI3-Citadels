@@ -5,6 +5,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
 import java.util.List;
+import java.util.Optional;
 
 public class FearFulBot extends Bot {
     @Override
@@ -38,7 +39,7 @@ public class FearFulBot extends Bot {
     @Override
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
-        return (district.getPoint() - 2) * 0.25
+        return (district.getPoint() - 3) * 0.35
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 + (district.isDestructible() ? 0 : 1);
@@ -46,6 +47,20 @@ public class FearFulBot extends Bot {
 
     private boolean couldDestroy(District district, IPlayer player) {
         return district.isDestructible() && player.getCoins() + 2 + player.getBuiltDistricts().stream().filter(district1 -> district1.getColor() == Colors.RED).count() >= district.getCost();
+    }
+
+    @Override
+    protected Optional<District> districtObjective() {
+        District bestDistrict = null;
+        double bestProfitability = Double.MIN_VALUE;
+        for (District district : getHandDistricts()) {
+            double profitability = districtProfitability(district);
+            if ((bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) && profitability >= 0) {
+                bestDistrict = district;
+                bestProfitability = profitability;
+            }
+        }
+        return Optional.ofNullable(bestDistrict);
     }
 
     private boolean possibleDestruction(List<IPlayer> players) {
