@@ -68,7 +68,7 @@ public class DiscreetBot extends Bot {
      * @param district the current district
      */
     private double bonusProfitability(District district) {
-        return (getBuiltDistricts().size() + 1.0) / (getBuiltDistricts().stream().filter(district1 -> district1.getColor() == district.getColor()).count() + 1 << 2);
+        return (getBuiltDistricts().size() * 2 + 1.0) / (getBuiltDistricts().stream().filter(district1 -> district1.getColor() == district.getColor()).count() + 1 << 2);
     }
 
     private boolean tryFinalRush() {
