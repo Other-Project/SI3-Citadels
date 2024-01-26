@@ -236,7 +236,7 @@ public class Bot extends Player {
         switch (character.startTurnAction()) {
             case STARTUP_INCOME -> {
                 coinProfitability += startupIncomeCoin();
-                cardProfitability += startupIncomeCard();
+                cardProfitability += startupIncomeCard(); // Because if there's already an income there's less need to use the income action
             }
             case BEGIN_DRAW -> {
                 cardProfitability += beginDrawCard();
