@@ -221,9 +221,9 @@ public class Bot extends Player {
                 .map(district -> new SimpleEntry<>(district, districtProfitability(district)))
                 .sorted(Comparator.<SimpleEntry<District, Double>>comparingDouble(SimpleEntry::getValue).reversed()).toList();
         int availableCoins = getCoins();
-        double coinNecessity = (8 - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / 8.0;
-        double securityNecessity = getBuiltDistricts().size() / 8.0;
-        double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / 8.0;
+        double coinNecessity = (Game.MAX_DISTRICT_TO_BUILD - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / (double) Game.MAX_DISTRICT_TO_BUILD;
+        double securityNecessity = getBuiltDistricts().size() / (double) Game.MAX_DISTRICT_TO_BUILD;
+        double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / Game.MAX_DISTRICT_TO_BUILD;
         double cardNecessity = 1.0 / (getHandDistricts().size() + 1); // The need to gain cards
         double fear = 0.5 + getPlayers().stream().mapToInt(built -> built.getBuiltDistricts().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
 
@@ -307,7 +307,7 @@ public class Bot extends Player {
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
         return district.getPoint()
-                + quantityOfColorBuilt(district.getColor()) / 8.0
+                + quantityOfColorBuilt(district.getColor()) / (double) Game.MAX_DISTRICT_TO_BUILD
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 - district.getCost();
