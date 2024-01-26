@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
+    public static final int DISTRICT_NUMBER_TO_END = 8;
     private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
 
@@ -214,7 +215,7 @@ public class Game {
      * The method which checks if the game must end according to the number of districts built for the player
      */
     public boolean end(IPlayer player) {
-        return player.getBuiltDistricts().size() >= 8;
+        return player.getBuiltDistricts().size() >= DISTRICT_NUMBER_TO_END;
     }
 
     /**
