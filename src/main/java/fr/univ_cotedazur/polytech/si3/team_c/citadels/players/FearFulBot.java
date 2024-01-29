@@ -14,13 +14,13 @@ public class FearFulBot extends Bot {
         if (nb == 0) {
             return 0;
         }
-        return 10. + nb * 2.;
+        return 6. + nb * 2.;
     }
 
     @Override
     protected double stealCoin() {
         var players = possibleDestruction(getPlayers());
-        return Math.min(0.10 * players.stream().filter(iPlayer -> iPlayer.getCoins() > getCoins()).toList().size(), 1);
+        return Math.min(0.22 * players.stream().filter(iPlayer -> iPlayer.getCoins() > getCoins()).toList().size(), 1);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class FearFulBot extends Bot {
         if (nb == 0) {
             return 0;
         }
-        return 21;
+        return 25;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class FearFulBot extends Bot {
         if (nb == 0) {
             return 0;
         }
-        return nb + 5;
+        return nb + 3;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class FearFulBot extends Bot {
         if (nb == 0) {
             return 0;
         }
-        return 5 + nb;
+        return 10 + nb;
     }
 
     public FearFulBot(String name, int coins, List<District> districts) {

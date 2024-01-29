@@ -625,27 +625,26 @@ class GameTest {
 
     @Test
     void fearFulBotTest() {
-        FearFulBot fearfullBot1 = new FearFulBot("fearful bot1", 10, List.of(new Church(), new DragonGate(), new Church()));
-        Bot simpleBot = new Bot("bot", 50, List.of(new University(), new Castle()));
+        FearFulBot fearfullBot1 = new FearFulBot("fearful bot1", 10, List.of(new Monastery(), new Castle(), new Church(), new TheKeep()));
+        Bot simpleBot = new Bot("bot", 15, List.of(new Castle()));
         game.addPlayer(fearfullBot1);
         game.addPlayer(simpleBot);
         fearfullBot1.buildDistrict(fearfullBot1.getHandDistricts().get(0), 0);
         var characters = Game.defaultCharacterList();
         assertEquals(new Bishop(), fearfullBot1.pickCharacter(characters));
         characters.remove(new Bishop());
+        fearfullBot1.buildDistrict(fearfullBot1.getHandDistricts().get(0), 0);
         assertEquals(new Warlord(), fearfullBot1.pickCharacter(characters));
         characters.remove(new Warlord());
         assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
-        simpleBot.pay(40);
+        simpleBot.pay(3);
+        assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
+        simpleBot.pay(2);
         assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
         simpleBot.pay(5);
-        assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
-        simpleBot.pay(10);
         assertEquals(new Assassin(), fearfullBot1.pickCharacter(characters));
         var cards = List.of(new Manor(), new Battlefield());
         cards.forEach(simpleBot::addDistrictToHand);
         assertEquals(new Magician(), fearfullBot1.pickCharacter(characters));
     }
-
-
 }
