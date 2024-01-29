@@ -3,6 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.districts.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.FearFulBot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -621,4 +622,30 @@ class GameTest {
         smithy.pay(92);
         game.playerTurn(smithy);
     }
+
+    @Test
+    void fearFulBotTest() {
+        FearFulBot fearfullBot1 = new FearFulBot("fearful bot1", 10, List.of(new Church(), new DragonGate(), new Church()));
+        Bot simpleBot = new Bot("bot", 50, List.of(new University(), new Castle()));
+        game.addPlayer(fearfullBot1);
+        game.addPlayer(simpleBot);
+        fearfullBot1.buildDistrict(fearfullBot1.getHandDistricts().get(0), 0);
+        var characters = Game.defaultCharacterList();
+        assertEquals(new Bishop(), fearfullBot1.pickCharacter(characters));
+        characters.remove(new Bishop());
+        assertEquals(new Warlord(), fearfullBot1.pickCharacter(characters));
+        characters.remove(new Warlord());
+        assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
+        simpleBot.pay(40);
+        assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
+        simpleBot.pay(5);
+        assertEquals(new Thief(), fearfullBot1.pickCharacter(characters));
+        simpleBot.pay(10);
+        assertEquals(new Assassin(), fearfullBot1.pickCharacter(characters));
+        var cards = List.of(new Manor(), new Battlefield());
+        cards.forEach(simpleBot::addDistrictToHand);
+        assertEquals(new Magician(), fearfullBot1.pickCharacter(characters));
+    }
+
+
 }

@@ -10,22 +10,53 @@ import java.util.Optional;
 public class FearFulBot extends Bot {
     @Override
     protected double destroyFear() {
-        return possibleDestruction(getPlayers()) ? 10 : 0;
+        var nb = possibleDestruction(getPlayers()).size();
+        if (nb == 0) {
+            return 0;
+        }
+        return 10. + nb * 2.;
+    }
+
+    @Override
+    protected double stealCoin() {
+        var players = possibleDestruction(getPlayers());
+        return Math.min(0.10 * players.stream().filter(iPlayer -> iPlayer.getCoins() > getCoins()).toList().size(), 1);
+    }
+
+    @Override
+    protected double nonDestructibleSecurity() {
+        var nb = possibleDestruction(getPlayers()).size();
+        if (nb == 0) {
+            return 0;
+        }
+        return 21;
     }
 
     @Override
     protected double exchangePlayerFear() {
-        return possibleDestruction(getPlayers()) ? 10 : 0;
+        var nb = possibleExchange(getPlayers());
+        if (nb < getPlayers().size() / 2.) {
+            return 5 + nb;
+        }
+        return 7 + nb * 2;
     }
 
     @Override
     protected double killFear() {
-        return possibleDestruction(getPlayers()) ? 10 : 0;
+        var nb = possibleKill(getPlayers());
+        if (nb == 0) {
+            return 0;
+        }
+        return nb + 5;
     }
 
     @Override
     protected double stealFear() {
-        return possibleDestruction(getPlayers()) ? 10 : 0;
+        var nb = possibleSteal(getPlayers());
+        if (nb == 0) {
+            return 0;
+        }
+        return 5 + nb;
     }
 
     public FearFulBot(String name, int coins, List<District> districts) {
@@ -49,8 +80,22 @@ public class FearFulBot extends Bot {
         return district.isDestructible() && player.getCoins() + 2 + player.getBuiltDistricts().stream().filter(district1 -> district1.getColor() == Colors.RED).count() >= district.getCost() - 1;
     }
 
-    protected boolean possibleDestruction(List<IPlayer> players) {
-        return getBuiltDistricts().stream().anyMatch(district -> players.stream().anyMatch(iPlayer -> couldDestroy(district, iPlayer)));
+    protected List<IPlayer> possibleDestruction(List<IPlayer> players) {
+        return players.stream().filter(iPlayer -> getBuiltDistricts().stream().anyMatch(district -> couldDestroy(district, iPlayer))).toList();
+    }
+
+    protected double possibleKill(List<IPlayer> players) {
+        var mostDangerous = getMostDangerousPlayersByBuiltDistricts(players);
+        int numberOfPoint = getBuiltDistricts().stream().mapToInt(District::getPoint).sum();
+        return (double) players.size() - mostDangerous.stream().takeWhile(iPlayer -> iPlayer.getBuiltDistricts().stream().mapToInt(District::getPoint).sum() >= numberOfPoint).toList().size();
+    }
+
+    protected double possibleExchange(List<IPlayer> players) {
+        return players.stream().filter(iPlayer -> iPlayer.getHandSize() < getHandSize()).toList().size();
+    }
+
+    protected double possibleSteal(List<IPlayer> players) {
+        return players.stream().filter(iPlayer -> iPlayer.getCoins() < getCoins()).toList().size();
     }
 
     @Override
