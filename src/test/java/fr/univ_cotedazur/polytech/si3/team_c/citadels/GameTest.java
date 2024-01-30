@@ -11,6 +11,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class GameTest {
     private Game game;
@@ -40,11 +41,11 @@ class GameTest {
         Bot bot1 = new Bot("bot1", 1500, List.of(new Temple(), new Battlefield(), new Castle()
                 , new Cathedral(), new Church(), new Docks(), new DragonGate(), new Fortress()));
         game.addPlayer(bot1);
-        assertFalse(game.end(bot1));
+        assertFalse(bot1.endsGame());
         for (District district : bot1.getHandDistricts()) {
             bot1.buildDistrict(district, 0);
         }
-        assertTrue(game.end(bot1));
+        assertTrue(bot1.endsGame());
     }
 
     @Test
@@ -620,5 +621,62 @@ class GameTest {
         assertEquals(92, smithy.getCoins());
         smithy.pay(92);
         game.playerTurn(smithy);
+    }
+
+    @Test
+    void discardTest() {
+        Bot bot1 = new Bot("Bot1", 0, List.of());
+        Bot bot2 = new Bot("Bot2", 0, List.of());
+        Bot bot3 = new Bot("Bot3", 0, List.of());
+
+        Character thief = new Thief();
+        Character warlord = new Warlord();
+        Character merchant = new Merchant();
+
+        List<Character> characters = List.of(thief, merchant, warlord);
+
+        Game testGame = spy(new Game(bot1, bot2, bot3));
+
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            args[1] = new ArrayList(List.of(thief));
+            return invocation.callRealMethod();
+        }).when(testGame).getDiscardList(eq(1), anyList());
+
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            args[1] = new ArrayList(List.of(merchant, warlord));
+            return invocation.callRealMethod();
+        }).when(testGame).getDiscardList(eq(2), anyList());
+
+        testGame.characterSelectionTurn();
+
+
+        assertFalse(characters.contains(bot1.getCharacter().orElseThrow()));
+        assertFalse(characters.contains(bot2.getCharacter().orElseThrow()));
+        assertFalse(characters.contains(bot3.getCharacter().orElseThrow()));
+    }
+
+    @Test
+    void threePlayerRules() {
+        Player bot1 = new Bot("bot1", 0, List.of());
+        Player bot2 = new Bot("bot2", 0, List.of());
+        Player bot3 = new Bot("bot3", 0, List.of());
+
+        Game threePlayerGame = new Game(bot1, bot2, bot3);
+        threePlayerGame.start();
+        bot1.getPlayers();
+
+        assertEquals(2, bot1.getPlayers().size());
+        assertEquals(10, bot1.numberOfDistrictsToEnd());
+        assertEquals(10, bot2.numberOfDistrictsToEnd());
+        assertEquals(10, bot3.numberOfDistrictsToEnd());
+        assertEquals(List.of(new Thief(), new Magician(), new King(),
+                new Bishop(), new Merchant(), new Architect(), new Warlord()), threePlayerGame.charactersList());
+    }
+
+    @Test
+    void sevenPlayerRules() {
+
     }
 }

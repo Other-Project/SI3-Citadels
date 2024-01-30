@@ -13,10 +13,8 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
-    public static final int DISTRICT_NUMBER_TO_END = 8;
     private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
-    private List<Character> visibleDiscard;
     private List<Character> availableCharacters;
 
     private Deck deck;
@@ -42,9 +40,8 @@ public class Game {
     public Game(int numberPlayers, Player... players) {
         deck = new Deck();
         characterPlayerMap = new HashMap<>();
-        visibleDiscard = new ArrayList<>();
-        availableCharacters = defaultCharacterList();
         playerList = new ArrayList<>(List.of(players));
+        availableCharacters = charactersList();
         charactersToInteractWith = new ArrayList<>();
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
@@ -112,20 +109,23 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
+    public record Discard(List<Character> hidden, List<Character> visible) {
+    }
+
     /**
      * Sets the discard and removes the obtained characters in availableCharacters
      */
-    public void setDiscard() {
+    public Discard getDiscard() {
         SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
-        List<Character> hiddenCard = getDiscardList(discardNumbers.getKey(), availableCharacters);
-        if (discardNumbers.getKey() != 0 && discardNumbers.getValue() != 0) {
-            List<Character> availableVisibleDiscard = availableCharacters.stream()
-                    .filter(Character::canBePlacedInVisibleDiscard)
-                    .toList();
-            visibleDiscard = getDiscardList(discardNumbers.getValue(), availableVisibleDiscard);
-            logDiscard(hiddenCard, visibleDiscard);
-        }
+        List<Character> hiddenDiscard = getDiscardList(discardNumbers.getKey(), availableCharacters);
+        List<Character> availableVisibleDiscard = new ArrayList(availableCharacters.stream()
+                .filter(character -> character.canBePlacedInVisibleDiscard() && availableCharacters.contains(character))
+                .toList());
+        List<Character> visibleDiscard = getDiscardList(discardNumbers.getValue(), availableVisibleDiscard);
+        logDiscard(hiddenDiscard, visibleDiscard);
+        return new Discard(hiddenDiscard, visibleDiscard);
     }
+
 
     /**
      * Gets the discard list by the possible characters and the number of character to remove
@@ -138,6 +138,7 @@ public class Game {
         for (; charactersCount > 0; charactersCount--) {
             Character selectedCharacter = possibleCharacters.get(random.nextInt(possibleCharacters.size()));
             selectedCharacters.add(selectedCharacter);
+            possibleCharacters.remove(selectedCharacter);
             availableCharacters.remove(selectedCharacter);
         }
         return selectedCharacters;
@@ -228,9 +229,22 @@ public class Game {
     }
 
     /**
+     * Returns the list of characters in relation to the number of players
+     */
+    public List<Character> charactersList() {
+        List<Character> characters = defaultCharacterList();
+        if (playerList.size() == 3) characters.remove(0);
+        return characters;
+    }
+
+    /**
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
+        availableCharacters = charactersList();
+        Discard discard = getDiscard();
+        charactersToInteractWith = new ArrayList<>(availableCharacters);
+        characterPlayerMap.clear();
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             int playerIndex = (crownIndex + i) % playerList.size();
@@ -241,10 +255,16 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            var choosenCharacter = player.pickCharacter(availableCharacters);
+            Character choosenCharacter;
+            // In a game with seven players the last player needs to choose between hidden discard and the remaining character
+            if (playerList.size() == 7 && i == 6) {
+                if (!discard.hidden().isEmpty())
+                    choosenCharacter = player.pickCharacter(List.of(discard.hidden().get(0), availableCharacters.get(0)));
+                else throw new IllegalStateException();
+            } else choosenCharacter = player.pickCharacter(availableCharacters);
             characterPlayerMap.put(choosenCharacter, player);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(availableCharacters, beforePlayers, visibleDiscard);
+            player.setPossibleCharacters(availableCharacters, beforePlayers, discard.visible());
             availableCharacters.remove(choosenCharacter);
         }
     }
@@ -284,33 +304,20 @@ public class Game {
     }
 
     /**
-     * The method which checks if the game must end according to the number of districts built for the player
-     */
-    public boolean end(IPlayer player) {
-        return player.getBuiltDistricts().size() >= DISTRICT_NUMBER_TO_END;
-    }
-
-    /**
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
-        availableCharacters = defaultCharacterList();
-        setDiscard();
-        charactersToInteractWith = new ArrayList<>(availableCharacters);
-        characterPlayerMap.clear();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
-        for (Character character : defaultCharacterList()) {
+        for (Character character : charactersList()) {
             if (characterPlayerMap.containsKey(character)) {
                 Player player = characterPlayerMap.get(character);
                 LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
                 playerTurn(player);
-                if (end(player)) {
-                    if (!isEnd) player.endsGame();
+                if (!isEnd && player.endsGame())
                     isEnd = true;
-                }
             } else charactersToInteractWith.remove(character);
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
@@ -363,6 +370,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(4).start();
+        new Game(7).start();
     }
 }

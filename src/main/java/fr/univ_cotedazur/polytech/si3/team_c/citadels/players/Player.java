@@ -147,7 +147,7 @@ public abstract class Player implements IPlayer {
      * Gets all the destroyable districts that the player built
      */
     public List<District> getDestroyableDistricts() {
-        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < Game.DISTRICT_NUMBER_TO_END ?
+        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < numberOfDistrictsToEnd() ?
                 getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
     }
 
@@ -348,7 +348,7 @@ public abstract class Player implements IPlayer {
         int score = getDistrictsScore();
         if (allColorsInDistricts(lastTurn)) score += 3;
         if (isGameEnder()) score += 4;
-        else if (getBuiltDistricts().size() >= Game.DISTRICT_NUMBER_TO_END) score += 2;
+        else if (getBuiltDistricts().size() >= numberOfDistrictsToEnd()) score += 2;
         return score;
     }
 
@@ -417,8 +417,12 @@ public abstract class Player implements IPlayer {
     /**
      * Set the endPlayer boolean to true
      */
-    public void endsGame() {
-        gameEnder = true;
+    public boolean endsGame() {
+        if (getBuiltDistricts().size() >= numberOfDistrictsToEnd()) {
+            gameEnder = true;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -520,6 +524,14 @@ public abstract class Player implements IPlayer {
         } catch (Exception e) {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Returns the number of districts to end the game
+     */
+    public int numberOfDistrictsToEnd() {
+        if (getPlayers().size() + 1 == 3) return 10;
+        return 8;
     }
 
     public void setPlayers(Callable<List<IPlayer>> players) {
