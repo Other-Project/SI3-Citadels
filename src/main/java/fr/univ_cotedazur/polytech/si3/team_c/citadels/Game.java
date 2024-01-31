@@ -151,8 +151,10 @@ public class Game {
      * @param visibleDiscard the visible characters in the discard
      */
     public void logDiscard(List<Character> hiddenDiscard, List<Character> visibleDiscard) {
-        LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard : {0}", hiddenDiscard);
-        LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard : {0}", visibleDiscard);
+        if (!hiddenDiscard.isEmpty())
+            LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard : {0}", hiddenDiscard);
+        if (!visibleDiscard.isEmpty())
+            LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard : {0}", visibleDiscard);
     }
 
     /**
@@ -370,6 +372,6 @@ public class Game {
 
     public static void main(String... args) {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(7).start();
+        new Game(4).start();
     }
 }
