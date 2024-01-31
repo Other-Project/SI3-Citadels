@@ -109,11 +109,9 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
-    public record Discard(List<Character> hidden, List<Character> visible) {
-    }
 
     /**
-     * Sets the discard and removes the obtained characters in availableCharacters
+     * Gets the discard and removes the obtained characters in availableCharacters
      */
     public Discard getDiscard() {
         SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
@@ -125,7 +123,6 @@ public class Game {
         logDiscard(hiddenDiscard, visibleDiscard);
         return new Discard(hiddenDiscard, visibleDiscard);
     }
-
 
     /**
      * Gets the discard list by the possible characters and the number of character to remove
@@ -158,7 +155,7 @@ public class Game {
     }
 
     /**
-     * @return the hidden and visible characters count to remove from availableCharacters
+     * @return the hidden and visible discard character counts
      */
     private SimpleEntry<Integer, Integer> discardNumbers() {
         int hiddenCount;

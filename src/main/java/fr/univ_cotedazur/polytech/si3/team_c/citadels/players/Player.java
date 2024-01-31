@@ -415,7 +415,8 @@ public abstract class Player implements IPlayer {
     }
 
     /**
-     * Set the endPlayer boolean to true if the player ends the game
+     * Checks whether the player has fulfilled the end-of-game conditions
+     * Note: Must not be called if the game has already been ended by another player
      */
     public boolean endsGame() {
         if (getBuiltDistricts().size() >= numberOfDistrictsToEnd()) {

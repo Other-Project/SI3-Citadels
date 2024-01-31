@@ -638,12 +638,14 @@ class GameTest {
 
         Game testGame = spy(new Game(bot1, bot2, bot3));
 
+        // Force the hidden discard to be the Thief
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             args[1] = new ArrayList<>(List.of(thief));
             return invocation.callRealMethod();
         }).when(testGame).getDiscardList(eq(1), anyList());
 
+        // Force the visible discard to be the Merchant and the Warlord
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             args[1] = new ArrayList<>(List.of(merchant, warlord));
@@ -652,6 +654,7 @@ class GameTest {
 
         testGame.characterSelectionTurn();
 
+        // Check that the characters chosen by the bots aren't in the discard
         assertFalse(characters.contains(bot1.getCharacter().orElseThrow()));
         assertFalse(characters.contains(bot2.getCharacter().orElseThrow()));
         assertFalse(characters.contains(bot3.getCharacter().orElseThrow()));
@@ -725,6 +728,7 @@ class GameTest {
 
         Game testGame = spy(new Game(bot1, bot2, bot3, bot4, bot5, bot6, bot7));
 
+        // Force the hidden discard to be the Warlord
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             args[1] = new ArrayList<>(List.of(warlord));
@@ -734,6 +738,7 @@ class GameTest {
 
         testGame.characterSelectionTurn();
 
+        // Get the argument passed to the pickCharacter method of bot7
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Character>> argument = ArgumentCaptor.forClass(List.class);
         verify(bot7).pickCharacter(argument.capture());
