@@ -118,7 +118,7 @@ public class Game {
     public Discard getDiscard() {
         SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
         List<Character> hiddenDiscard = getDiscardList(discardNumbers.getKey(), availableCharacters);
-        List<Character> availableVisibleDiscard = new ArrayList(availableCharacters.stream()
+        List<Character> availableVisibleDiscard = new ArrayList<>(availableCharacters.stream()
                 .filter(character -> character.canBePlacedInVisibleDiscard() && availableCharacters.contains(character))
                 .toList());
         List<Character> visibleDiscard = getDiscardList(discardNumbers.getValue(), availableVisibleDiscard);

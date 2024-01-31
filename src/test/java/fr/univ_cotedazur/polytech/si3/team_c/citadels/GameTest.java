@@ -734,6 +734,7 @@ class GameTest {
 
         testGame.characterSelectionTurn();
 
+        @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Character>> argument = ArgumentCaptor.forClass(List.class);
         verify(bot7).pickCharacter(argument.capture());
         assertEquals(List.of(new Warlord(), new Bishop()), argument.getValue());
