@@ -6,6 +6,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -639,18 +640,17 @@ class GameTest {
 
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
-            args[1] = new ArrayList(List.of(thief));
+            args[1] = new ArrayList<>(List.of(thief));
             return invocation.callRealMethod();
         }).when(testGame).getDiscardList(eq(1), anyList());
 
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
-            args[1] = new ArrayList(List.of(merchant, warlord));
+            args[1] = new ArrayList<>(List.of(merchant, warlord));
             return invocation.callRealMethod();
         }).when(testGame).getDiscardList(eq(2), anyList());
 
         testGame.characterSelectionTurn();
-
 
         assertFalse(characters.contains(bot1.getCharacter().orElseThrow()));
         assertFalse(characters.contains(bot2.getCharacter().orElseThrow()));
@@ -677,6 +677,65 @@ class GameTest {
 
     @Test
     void sevenPlayerRules() {
+        Bot bot1 = new Bot("Bot1", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Thief());
+                return new Thief();
+            }
+        };
+        Bot bot2 = new Bot("Bot2", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Assassin());
+                return new Assassin();
+            }
+        };
+        Bot bot3 = new Bot("Bot3", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Merchant());
+                return new Merchant();
+            }
+        };
+        Bot bot4 = new Bot("Bot4", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Magician());
+                return new Magician();
+            }
+        };
+        Bot bot5 = new Bot("Bot5", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new King());
+                return new King();
+            }
+        };
+        Bot bot6 = new Bot("Bot6", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                setCharacter(new Architect());
+                return new Architect();
+            }
+        };
+        Bot bot7 = spy(new Bot("Bot7", 0, List.of()));
 
+        Character warlord = new Warlord();
+
+        Game testGame = spy(new Game(bot1, bot2, bot3, bot4, bot5, bot6, bot7));
+
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            args[1] = new ArrayList<>(List.of(warlord));
+            return invocation.callRealMethod();
+        }).when(testGame).getDiscardList(eq(1), anyList());
+
+
+        testGame.characterSelectionTurn();
+
+        ArgumentCaptor<List<Character>> argument = ArgumentCaptor.forClass(List.class);
+        verify(bot7).pickCharacter(argument.capture());
+        assertEquals(List.of(new Warlord(), new Bishop()), argument.getValue());
     }
 }
