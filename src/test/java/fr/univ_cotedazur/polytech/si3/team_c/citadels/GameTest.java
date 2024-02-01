@@ -637,20 +637,21 @@ class GameTest {
         List<Character> characters = List.of(thief, merchant, warlord);
 
         Game testGame = spy(new Game(bot1, bot2, bot3));
+        List<Character> availableCharacters = Game.defaultCharacterList();
+        availableCharacters.remove(new Assassin());
 
-        // Force the hidden discard to be the Thief
-        doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
-            args[1] = new ArrayList<>(List.of(thief));
-            return invocation.callRealMethod();
-        }).when(testGame).getDiscardList(eq(1), anyList());
+        Discard discard = new Discard(3, availableCharacters) {
+            // Force the hidden discard to be the Thief and the visible discard to be the Merchant and the Warlord
+            @Override
+            public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters, List<Character> availableCharacters) {
+                if (charactersCount == 1) possibleCharacters = new ArrayList<>(List.of(thief));
+                if (charactersCount == 2) possibleCharacters = new ArrayList<>(List.of(merchant, warlord));
+                return super.getDiscardList(charactersCount, possibleCharacters, availableCharacters);
+            }
+        };
 
-        // Force the visible discard to be the Merchant and the Warlord
-        doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
-            args[1] = new ArrayList<>(List.of(merchant, warlord));
-            return invocation.callRealMethod();
-        }).when(testGame).getDiscardList(eq(2), anyList());
+        doAnswer(invocationOnMock -> discard).when(testGame).getDiscard();
+        doAnswer(invocationOnMock -> availableCharacters).when(testGame).charactersList();
 
         testGame.characterSelectionTurn();
 
@@ -727,14 +728,19 @@ class GameTest {
         Character warlord = new Warlord();
 
         Game testGame = spy(new Game(bot1, bot2, bot3, bot4, bot5, bot6, bot7));
+        List<Character> availableCharacters = Game.defaultCharacterList();
 
-        // Force the hidden discard to be the Warlord
-        doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
-            args[1] = new ArrayList<>(List.of(warlord));
-            return invocation.callRealMethod();
-        }).when(testGame).getDiscardList(eq(1), anyList());
+        Discard discard = new Discard(7, availableCharacters) {
+            // Force the hidden discard to be the Warlord
+            @Override
+            public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters, List<Character> availableCharacters) {
+                if (charactersCount == 1) possibleCharacters = new ArrayList<>(List.of(warlord));
+                return super.getDiscardList(charactersCount, possibleCharacters, availableCharacters);
+            }
+        };
 
+        doAnswer(invocationOnMock -> availableCharacters).when(testGame).charactersList();
+        doAnswer(invocationOnMock -> discard).when(testGame).getDiscard();
 
         testGame.characterSelectionTurn();
 

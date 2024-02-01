@@ -78,7 +78,7 @@ class BotTest {
         scriptedGame = new Game(king, architect, merchant, assassin, warlord) {
             @Override
             public Discard getDiscard() {
-                return new Discard(List.of(), List.of());
+                return new Discard();
             }
         };
         for (Player p : scriptedGame.getPlayerList()) {
@@ -541,7 +541,7 @@ class BotTest {
         Game game = new Game(warlordBot, bishopBot, merchantBot, kingBot) {
             @Override
             public Discard getDiscard() {
-                return new Discard(List.of(), List.of());
+                return new Discard();
             }
         };
         game.characterSelectionTurn();
@@ -746,7 +746,7 @@ class BotTest {
         Game game = new Game(warlordBot, bot3, bot2, bishopBot) {
             @Override
             public Discard getDiscard() {
-                return new Discard(List.of(), List.of());
+                return new Discard();
             }
         };
         game.characterSelectionTurn();
@@ -863,7 +863,7 @@ class BotTest {
         Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin, bishop) {
             @Override
             public Discard getDiscard() {
-                return new Discard(List.of(), List.of());
+                return new Discard();
             }
         };
         gameWithoutMerchant.gameTurn();

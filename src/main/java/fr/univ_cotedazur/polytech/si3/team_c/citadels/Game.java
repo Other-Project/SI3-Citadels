@@ -109,78 +109,6 @@ public class Game {
         return new ArrayList<>(charactersToInteractWith);
     }
 
-
-    /**
-     * Gets the discard and removes the obtained characters in availableCharacters
-     */
-    public Discard getDiscard() {
-        SimpleEntry<Integer, Integer> discardNumbers = discardNumbers();
-        List<Character> hiddenDiscard = getDiscardList(discardNumbers.getKey(), availableCharacters);
-        List<Character> availableVisibleDiscard = new ArrayList<>(availableCharacters.stream()
-                .filter(character -> character.canBePlacedInVisibleDiscard() && availableCharacters.contains(character))
-                .toList());
-        List<Character> visibleDiscard = getDiscardList(discardNumbers.getValue(), availableVisibleDiscard);
-        logDiscard(hiddenDiscard, visibleDiscard);
-        return new Discard(hiddenDiscard, visibleDiscard);
-    }
-
-    /**
-     * Gets the discard list by the possible characters and the number of character to remove
-     *
-     * @param charactersCount    number of characters to take in the possibleCharacters
-     * @param possibleCharacters the characters that can be chosen
-     */
-    public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters) {
-        List<Character> selectedCharacters = new ArrayList<>();
-        for (; charactersCount > 0; charactersCount--) {
-            Character selectedCharacter = possibleCharacters.get(random.nextInt(possibleCharacters.size()));
-            selectedCharacters.add(selectedCharacter);
-            possibleCharacters.remove(selectedCharacter);
-            availableCharacters.remove(selectedCharacter);
-        }
-        return selectedCharacters;
-    }
-
-    /**
-     * Logs the discard
-     *
-     * @param hiddenDiscard  the hidden characters in the discard
-     * @param visibleDiscard the visible characters in the discard
-     */
-    public void logDiscard(List<Character> hiddenDiscard, List<Character> visibleDiscard) {
-        if (!hiddenDiscard.isEmpty())
-            LOGGER.log(Level.INFO, "The following characters have been placed in the hidden discard : {0}", hiddenDiscard);
-        if (!visibleDiscard.isEmpty())
-            LOGGER.log(Level.INFO, "The following characters have been placed in the visible discard : {0}", visibleDiscard);
-    }
-
-    /**
-     * @return the hidden and visible discard character counts
-     */
-    private SimpleEntry<Integer, Integer> discardNumbers() {
-        int hiddenCount;
-        int visibleCount;
-        switch (playerList.size()) {
-            case 3, 4 -> {
-                visibleCount = 2;
-                hiddenCount = 1;
-            }
-            case 6, 7 -> {
-                visibleCount = 0;
-                hiddenCount = 1;
-            }
-            case 5 -> {
-                visibleCount = 1;
-                hiddenCount = 1;
-            }
-            default -> {
-                visibleCount = 0;
-                hiddenCount = 0;
-            }
-        }
-        return new SimpleEntry<>(hiddenCount, visibleCount);
-    }
-
     public void registerPlayerForEventAction(Player player, Action eventAction) {
         eventActions.put(eventAction, player);
     }
@@ -237,11 +165,19 @@ public class Game {
     }
 
     /**
+     * @return a new Discard by the number of player in the Game
+     */
+    public Discard getDiscard() {
+        return new Discard(playerList.size(), availableCharacters);
+    }
+
+    /**
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
         availableCharacters = charactersList();
         Discard discard = getDiscard();
+        LOGGER.log(Level.INFO, discard::toString);
         charactersToInteractWith = new ArrayList<>(availableCharacters);
         characterPlayerMap.clear();
         int crownIndex = getCrown();
@@ -257,13 +193,13 @@ public class Game {
             Character choosenCharacter;
             // In a game with seven players the last player needs to choose between hidden discard and the remaining character
             if (playerList.size() == 7 && i == 6) {
-                if (!discard.hidden().isEmpty())
-                    choosenCharacter = player.pickCharacter(List.of(discard.hidden().get(0), availableCharacters.get(0)));
+                if (!discard.getHidden().isEmpty())
+                    choosenCharacter = player.pickCharacter(List.of(discard.getHidden().get(0), availableCharacters.get(0)));
                 else throw new IllegalStateException();
             } else choosenCharacter = player.pickCharacter(availableCharacters);
             characterPlayerMap.put(choosenCharacter, player);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(availableCharacters, beforePlayers, discard.visible());
+            player.setPossibleCharacters(availableCharacters, beforePlayers, discard.getVisible());
             availableCharacters.remove(choosenCharacter);
         }
     }
