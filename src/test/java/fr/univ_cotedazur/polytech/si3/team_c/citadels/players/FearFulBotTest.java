@@ -41,12 +41,12 @@ class FearFulBotTest {
     @Test
     void possibleExchangeTest() {
         assertEquals(2, bot1.possibleExchange(List.of(bot1, bot2, bot3)));
-        assertEquals(11, bot1.exchangePlayerFear());
+        assertEquals(9, bot1.exchangePlayerFear());
         bot3.addDistrictToHand(new Smithy());
         bot3.addDistrictToHand(new Battlefield());
         bot3.addDistrictToHand(new Church());
         assertEquals(1, bot1.possibleExchange(List.of(bot1, bot2, bot3)));
-        assertEquals(9, bot1.exchangePlayerFear());
+        assertEquals(7, bot1.exchangePlayerFear());
     }
 
     @Test
@@ -66,10 +66,10 @@ class FearFulBotTest {
     void somebodyCouldStealTest() {
         bot1.buildDistrict(bot1.getHandDistricts().get(0), 0);
         assertEquals(1, bot1.possibleSteal(bot1.getPlayers()));
-        assertEquals(11, bot1.stealFear());
+        assertEquals(8, bot1.stealFear());
         bot3.pay(20);
         assertEquals(2, bot1.possibleSteal(bot1.getPlayers()));
-        assertEquals(12, bot1.stealFear());
+        assertEquals(9, bot1.stealFear());
         bot3.gainCoins(100);
         bot2.gainCoins(100);
         assertEquals(0, bot1.possibleSteal(bot1.getPlayers()));
