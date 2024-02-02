@@ -5,7 +5,6 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The fearful bot has a fear of other player,
@@ -117,9 +116,9 @@ public class FearFulBot extends Bot {
 
     /**
      * This method allows the bot to know if another player could destroy a specific district
-     * @param district the district to test if it could be destroyed
-     * @param player the player who maybe could destroy the district
      *
+     * @param district the district to test if it could be destroyed
+     * @param player   the player who maybe could destroy the district
      * @return true if the player could destroy the given district and false else
      */
     protected boolean couldDestroy(District district, IPlayer player) {
@@ -128,8 +127,8 @@ public class FearFulBot extends Bot {
 
     /**
      * This method allows the bot to know if another player could destroy one of its built district
-     * @param players the List of other player
      *
+     * @param players the List of other player
      * @return the list of player who could destroy one built district
      */
     protected List<IPlayer> possibleDestruction(List<IPlayer> players) {
@@ -138,8 +137,8 @@ public class FearFulBot extends Bot {
 
     /**
      * This method allows the bot to know the number of player could want to kill it
-     * @param players the List of other player
      *
+     * @param players the List of other player
      * @return the number of player could want to kill it
      */
     protected double possibleKill(List<IPlayer> players) {
@@ -150,8 +149,8 @@ public class FearFulBot extends Bot {
 
     /**
      * This method allows the bot to know the number of player could want to exchange his cards with it
-     * @param players the List of other player
      *
+     * @param players the List of other player
      * @return the number of player could want to exchange his cards with it
      */
     protected double possibleExchange(List<IPlayer> players) {
@@ -160,25 +159,11 @@ public class FearFulBot extends Bot {
 
     /**
      * This method allows the bot to know the number of player could want to steal it
-     * @param players the List of other player
      *
+     * @param players the List of other player
      * @return the number of player could want to steal it
      */
     protected double possibleSteal(List<IPlayer> players) {
         return players.stream().filter(iPlayer -> iPlayer.getCoins() < getCoins()).toList().size();
-    }
-
-    @Override
-    protected Optional<District> districtObjective() {
-        District bestDistrict = null;
-        double bestProfitability = Double.MIN_VALUE;
-        for (District district : getHandDistricts()) {
-            double profitability = districtProfitability(district);
-            if ((bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) && profitability >= 0) {
-                bestDistrict = district;
-                bestProfitability = profitability;
-            }
-        }
-        return Optional.ofNullable(bestDistrict);
     }
 }
