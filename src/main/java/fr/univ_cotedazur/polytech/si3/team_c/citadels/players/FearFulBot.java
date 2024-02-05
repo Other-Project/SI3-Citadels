@@ -10,7 +10,6 @@ import java.util.List;
  * The fearful bot has a fear of other player,
  * it tries to choose character to avoid being destroyed, killed, stolen,
  * or having its hand exchanged with somebody
- * <p>
  * The main fear is to have a district destroyed,
  * the second is to have its hand exchanged because it could have interesting districts,
  * the third is to be stolen, and the last is to be killed.
