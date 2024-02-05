@@ -151,7 +151,7 @@ public class Bot extends Player {
     }
 
     public Bot(String name, int coins, List<District> districts) {
-        this(name, coins, districts, 1.0);
+        this(name, coins, districts, 2.0);
     }
 
     Bot(String name, int coins, List<District> districts, double goodDistrictProfitability) {
