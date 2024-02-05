@@ -226,7 +226,7 @@ public class Game {
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
-        for (Character character : CharacterManager.defaultCharacterList()) {
+        for (Character character : characterManager.charactersList()) {
             if (characterManager.characterIsChosen(character)) {
                 Player player = characterManager.getPlayer(character);
                 LOGGER.log(Level.INFO, "It is now {0}''s turn", character);

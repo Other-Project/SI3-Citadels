@@ -11,15 +11,21 @@ public class CharacterManager {
     private List<Character> availableCharacters;
     private List<Character> visible;
     private List<Character> hidden;
+    private final List<Character> characters;
     private final Random random;
     private final int playerCount;
 
     public CharacterManager(int playerCount, Random random) {
+        this(playerCount, random, defaultCharacterList());
+    }
+
+    public CharacterManager(int playerCount, Random random, List<Character> characters) {
         this.playerCount = playerCount;
         this.random = random;
         this.hidden = new ArrayList<>();
         this.visible = new ArrayList<>();
         characterPlayerMap = new HashMap<>();
+        this.characters = characters;
         this.availableCharacters = new ArrayList<>(charactersList());
     }
 
@@ -49,7 +55,7 @@ public class CharacterManager {
      * Returns the list of characters in relation to the number of players
      */
     public List<Character> charactersList() {
-        return new ArrayList<>(defaultCharacterList().stream()
+        return new ArrayList<>(characters.stream()
                 .filter(character -> character.minimumNumberOfPlayers() <= playerCount)
                 .toList());
     }
@@ -86,7 +92,7 @@ public class CharacterManager {
      * @return the hidden discard size
      */
     private int getHiddenDiscardSize() {
-        return playerCount >= 3 && playerCount <= 7 ? 1 : 0;
+        return (playerCount >= 3 && playerCount <= 7) ? 1 : 0;
     }
 
     /**
@@ -137,12 +143,16 @@ public class CharacterManager {
         return visible;
     }
 
+    protected List<Character> getHidden() {
+        return hidden;
+    }
+
     /**
      * @return the possible characters to choose for the player
      */
     public List<Character> possibleCharactersToChoose() {
         List<Character> possibleCharacters = getAvailableCharacters();
-        // In a game with seven players the last player needs to choose between hidden discard and the remaining character
+        // In a game with one available character, the last player needs to choose between hidden discard and the remaining character
         if (getAvailableCharacters().size() == 1)
             possibleCharacters.add(hidden.get(0));
         return possibleCharacters;
