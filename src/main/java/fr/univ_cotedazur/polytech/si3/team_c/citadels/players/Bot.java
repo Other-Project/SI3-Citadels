@@ -440,7 +440,7 @@ public class Bot extends Player {
      * @param availableCharacters the characters that can be chosen
      * @return the estimated character of a player
      */
-    private Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
+    protected Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
         List<Character> characters = possibleCharacters.getOrDefault(player, availableCharacters);
         characters.retainAll(availableCharacters);
         if (characters.size() == 1) return characters.get(0);
@@ -509,7 +509,7 @@ public class Bot extends Player {
      * @param attributeExtractor the attribute extractor
      * @return the player with the max attribute and the number associated
      */
-    private SimpleEntry<IPlayer, Integer> playerWithMaxAttribute(ToIntFunction<IPlayer> attributeExtractor) {
+    protected SimpleEntry<IPlayer, Integer> playerWithMaxAttribute(ToIntFunction<IPlayer> attributeExtractor) {
         return getPlayers().stream()
                 .max(Comparator.comparingInt(attributeExtractor))
                 .map(player -> new SimpleEntry<>(player, attributeExtractor.applyAsInt(player)))
