@@ -7,6 +7,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -311,10 +312,17 @@ public class Bot extends Player {
      */
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
+        var builtColors = getBuiltDistricts().stream().map(District::getColor).collect(Collectors.toSet());
+        var missingColorsForBonus = Arrays.stream(Colors.values()).filter(Predicate.not(builtColors::contains)).toList();
+
         return district.getPoint()
                 + quantityOfColorBuilt(district.getColor()) / (double) Game.DISTRICT_NUMBER_TO_END
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
+                + (district.bonusColors(false).stream().anyMatch(missingColorsForBonus::contains) ? 1 : 0)
+                + (district.isDestructible() ? 1 : 0)
+                + district.getAction().size()
+                + district.getEventAction().size()
                 - district.getCost();
     }
 
