@@ -143,13 +143,19 @@ public class Bot extends Player {
         return 1;
     }
     private HashMap<IPlayer, List<Character>> possibleCharacters;
+    private final double goodDistrictProfitability;
 
     public Bot(String name) {
-        super(name, 0, Collections.emptyList());
+        this(name, 0, Collections.emptyList());
     }
 
     public Bot(String name, int coins, List<District> districts) {
+        this(name, coins, districts, 1.0);
+    }
+
+    Bot(String name, int coins, List<District> districts, double goodDistrictProfitability) {
         super(name, coins, districts);
+        this.goodDistrictProfitability = goodDistrictProfitability;
     }
 
 
@@ -324,7 +330,7 @@ public class Bot extends Player {
         double bestProfitability = Double.MIN_VALUE;
         for (District district : getHandDistricts()) {
             double profitability = districtProfitability(district);
-            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost()) && districtProfitability(district) >= 0) {
                 bestDistrict = district;
                 bestProfitability = profitability;
             }
@@ -557,8 +563,14 @@ public class Bot extends Player {
                 playerToExchange = p;
                 nbCards = playerHandSize;
             }
-
         }
+
+        if (nbCards - getHandDistricts().size() >= 5) return playerToExchange;
+        // If a district profitability is over the good district profitability, the bot must keep it
+        long numberOfCardsToKeep = getHandDistricts().stream()
+                .filter(district -> districtProfitability(district) >= goodDistrictProfitability).count();
+        // At this state, if we have at least 2 good cards the bot will prefer to exchange cards with deck
+        if (numberOfCardsToKeep >= 2) return null;
         return playerToExchange;
     }
 
@@ -570,7 +582,7 @@ public class Bot extends Player {
     public List<District> chooseCardsToExchangeWithDeck() {
         List<District> cardToExchange = new ArrayList<>();
         for (District d : getHandDistricts()) {
-            if (districtProfitability(d) < 1) cardToExchange.add(d);
+            if (districtProfitability(d) < goodDistrictProfitability) cardToExchange.add(d);
         }
         return cardToExchange;
     }

@@ -3,6 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -41,11 +42,11 @@ public class DiscreetBot extends Bot {
     }
 
     public DiscreetBot(String name) {
-        super(name);
+        this(name, 0, Collections.emptyList());
     }
 
     public DiscreetBot(String name, int coins, List<District> districts) {
-        super(name, coins, districts);
+        super(name, coins, districts, 3.0);
     }
 
     @Override
