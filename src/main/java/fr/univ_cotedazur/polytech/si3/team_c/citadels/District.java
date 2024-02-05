@@ -1,5 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("java:S2160")
@@ -52,8 +53,8 @@ public abstract class District extends Card {
      * @param builtInLastTurn a boolean that is true if the card was built last turn
      * @return The colors that will be taken into account when counting bonuses
      */
-    public Optional<Colors> bonusColors(boolean builtInLastTurn) {
-        return Optional.of(getColor());
+    public List<Colors> bonusColors(boolean builtInLastTurn) {
+        return List.of(getColor());
     }
 
     /**

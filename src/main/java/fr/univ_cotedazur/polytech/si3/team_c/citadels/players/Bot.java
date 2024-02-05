@@ -412,16 +412,6 @@ public class Bot extends Player {
         return built;
     }
 
-    @Override
-    public Optional<Colors> pickBonusColor(Set<Colors> tookColors) {
-        for (Colors color : Colors.values()) {
-            if (color != Colors.NONE && !tookColors.contains(color)) {
-                return Optional.of(color);
-            }
-        }
-        return Optional.empty();
-    }
-
     /**
      * Gives the most constructed color with its number of occurrences
      *
