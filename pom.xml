@@ -46,6 +46,16 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jcommander</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.83</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -113,7 +123,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>fr.univ_cotedazur.polytech.si3.team_c.citadels.Game</mainClass>
+                    <mainClass>fr.univ_cotedazur.polytech.si3.team_c.citadels.Main</mainClass>
+
                     <!--          <arguments>
                                 <argument>argument1</argument>
                               </arguments>
