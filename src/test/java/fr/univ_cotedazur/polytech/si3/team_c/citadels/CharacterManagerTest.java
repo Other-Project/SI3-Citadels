@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class CharacterManagerTest {
     @Test
-    void characterConstructorTest() {
+    void functionalityTesting() {
         Character magician = new Magician();
         Character merchant = new Merchant();
 
