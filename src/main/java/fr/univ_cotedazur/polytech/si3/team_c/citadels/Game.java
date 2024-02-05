@@ -1,6 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
@@ -13,15 +12,12 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
-    private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
-    private List<Character> availableCharacters;
-
     private Deck deck;
-
     private int crown;
     private int currentTurn = 0;
     private final Map<Action, Player> eventActions;
+    private final CharacterManager characterManager;
 
     /**
      * The characters the player can interact with
@@ -38,11 +34,15 @@ public class Game {
     }
 
     public Game(int numberPlayers, Player... players) {
+        this(numberPlayers, null, players);
+    }
+
+    public Game(int numberPlayers, CharacterManager characterManager, Player... players) {
+        if (characterManager == null) characterManager = new CharacterManager(numberPlayers, random);
         deck = new Deck();
-        characterPlayerMap = new HashMap<>();
         playerList = new ArrayList<>(List.of(players));
-        availableCharacters = charactersList();
         charactersToInteractWith = new ArrayList<>();
+        this.characterManager = characterManager;
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
@@ -79,6 +79,14 @@ public class Game {
         player.setPlayers(() -> new ArrayList<>(playerList.stream().filter(p -> !p.equals(player)).toList()));
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
+    }
+
+    /**
+     * @return the number of districts to end the game
+     */
+    public int numberOfDistrictsToEnd() {
+        if (playerList.size() == 3) return 10;
+        return 8;
     }
 
     protected void setDefaultDeck() {
@@ -144,42 +152,17 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.gainCoins(2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
+            p.setNumberOfDistrictsToEnd(numberOfDistrictsToEnd());
         }
-    }
-
-    /**
-     * Gets the default list of characters
-     */
-    public static List<Character> defaultCharacterList() {
-        return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
-                new Bishop(), new Merchant(), new Architect(), new Warlord()));
-    }
-
-    /**
-     * Returns the list of characters in relation to the number of players
-     */
-    public List<Character> charactersList() {
-        List<Character> characters = defaultCharacterList();
-        if (playerList.size() == 3) characters.remove(0);
-        return characters;
-    }
-
-    /**
-     * @return a new Discard by the number of player in the Game
-     */
-    public Discard getDiscard() {
-        return new Discard(playerList.size(), availableCharacters);
     }
 
     /**
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        availableCharacters = charactersList();
-        Discard discard = getDiscard();
-        LOGGER.log(Level.INFO, discard::toString);
-        charactersToInteractWith = new ArrayList<>(availableCharacters);
-        characterPlayerMap.clear();
+        characterManager.generate();
+        LOGGER.info(characterManager::toString);
+        charactersToInteractWith = new ArrayList<>(characterManager.getAvailableCharacters());
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             int playerIndex = (crownIndex + i) % playerList.size();
@@ -190,17 +173,11 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            Character choosenCharacter;
-            // In a game with seven players the last player needs to choose between hidden discard and the remaining character
-            if (playerList.size() == 7 && i == 6) {
-                if (!discard.getHidden().isEmpty())
-                    choosenCharacter = player.pickCharacter(List.of(discard.getHidden().get(0), availableCharacters.get(0)));
-                else throw new IllegalStateException();
-            } else choosenCharacter = player.pickCharacter(availableCharacters);
-            characterPlayerMap.put(choosenCharacter, player);
+            Character choosenCharacter = player.pickCharacter(characterManager.possibleCharactersToChoose());
+            characterManager.addPlayerCharacter(player, choosenCharacter);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(availableCharacters, beforePlayers, discard.getVisible());
-            availableCharacters.remove(choosenCharacter);
+            player.setPossibleCharacters(characterManager.getAvailableCharacters(), beforePlayers, characterManager.getVisible());
+            characterManager.getAvailableCharacters().remove(choosenCharacter);
         }
     }
 
@@ -246,9 +223,9 @@ public class Game {
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
-        for (Character character : charactersList()) {
-            if (characterPlayerMap.containsKey(character)) {
-                Player player = characterPlayerMap.get(character);
+        for (Character character : CharacterManager.defaultCharacterList()) {
+            if (characterManager.characterIsChosen(character)) {
+                Player player = characterManager.getPlayer(character);
                 LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
                 playerTurn(player);
                 if (!isEnd && player.endsGame())
@@ -278,6 +255,18 @@ public class Game {
     }
 
     /**
+     * Perform an action on a character
+     *
+     * @param character the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action    the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        if (characterManager.characterIsChosen(character))
+            characterManager.getPlayer(character).addSufferedAction(action, committer);
+    }
+
+    /**
      * @return the string for the winners display
      */
     public String winnersDisplay() {
@@ -289,18 +278,6 @@ public class Game {
             result.append("There is an equality between players : ")
                     .append(winners.getKey().stream().map(Player::getName).collect(Collectors.joining(", ")));
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
-    }
-
-    /**
-     * Perform an action on a character
-     *
-     * @param character the character who will suffer the action
-     * @param committer the player who commits the action
-     * @param action    the committed action
-     */
-    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        if (characterPlayerMap.containsKey(character))
-            characterPlayerMap.get(character).addSufferedAction(action, committer);
     }
 
     public static void main(String... args) {

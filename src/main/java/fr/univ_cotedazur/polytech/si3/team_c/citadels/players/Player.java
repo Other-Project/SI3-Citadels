@@ -29,6 +29,7 @@ public abstract class Player implements IPlayer {
 
     private Callable<List<IPlayer>> players;
 
+    private int numberOfDistrictsToEnd = 8;
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
@@ -147,7 +148,7 @@ public abstract class Player implements IPlayer {
      * Gets all the destroyable districts that the player built
      */
     public List<District> getDestroyableDistricts() {
-        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < numberOfDistrictsToEnd() ?
+        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < getNumberOfDistrictsToEnd() ?
                 getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
     }
 
@@ -348,7 +349,7 @@ public abstract class Player implements IPlayer {
         int score = getDistrictsScore();
         if (allColorsInDistricts(lastTurn)) score += 3;
         if (isGameEnder()) score += 4;
-        else if (getBuiltDistricts().size() >= numberOfDistrictsToEnd()) score += 2;
+        else if (getBuiltDistricts().size() >= getNumberOfDistrictsToEnd()) score += 2;
         return score;
     }
 
@@ -419,7 +420,7 @@ public abstract class Player implements IPlayer {
      * Note: Must not be called if the game has already been ended by another player
      */
     public boolean endsGame() {
-        if (getBuiltDistricts().size() >= numberOfDistrictsToEnd()) {
+        if (getBuiltDistricts().size() >= getNumberOfDistrictsToEnd()) {
             gameEnder = true;
             return true;
         }
@@ -527,15 +528,23 @@ public abstract class Player implements IPlayer {
         }
     }
 
-    /**
-     * Returns the number of districts to end the game
-     */
-    public int numberOfDistrictsToEnd() {
-        if (getPlayers().size() + 1 == 3) return 10;
-        return 8;
-    }
-
     public void setPlayers(Callable<List<IPlayer>> players) {
         this.players = players;
+    }
+
+    /**
+     * Sets the number of district to end the game
+     *
+     * @param numberOfDistrictsToEnd the number given by the game
+     */
+    public void setNumberOfDistrictsToEnd(int numberOfDistrictsToEnd) {
+        this.numberOfDistrictsToEnd = numberOfDistrictsToEnd;
+    }
+
+    /**
+     * @return the number of districts to end the game
+     */
+    public int getNumberOfDistrictsToEnd() {
+        return numberOfDistrictsToEnd;
     }
 }

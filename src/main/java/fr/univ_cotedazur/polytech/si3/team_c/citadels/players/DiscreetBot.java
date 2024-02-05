@@ -72,8 +72,8 @@ public class DiscreetBot extends Bot {
     }
 
     private boolean tryFinalRush() {
-        return numberOfDistrictsToEnd() - getHandSize() > 1
-                && numberOfDistrictsToEnd() - getHandSize() <= 3
+        return getNumberOfDistrictsToEnd() - getHandSize() > 1
+                && getNumberOfDistrictsToEnd() - getHandSize() <= 3
                 && getCoins() >= 4;
     }
 

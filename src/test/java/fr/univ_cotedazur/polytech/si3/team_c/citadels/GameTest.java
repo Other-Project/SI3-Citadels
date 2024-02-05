@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -34,7 +35,7 @@ class GameTest {
     void defaultCharacterList() {
         List<Character> characterList = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
-        assertEquals(characterList, Game.defaultCharacterList());
+        assertEquals(characterList, CharacterManager.defaultCharacterList());
     }
 
     @Test
@@ -192,6 +193,15 @@ class GameTest {
 
     @Test
     void testAssassinTurn() {
+        CharacterManager characterManager = new CharacterManager(2, new Random()) {
+            @Override
+            public List<Character> charactersList() {
+                return CharacterManager.defaultCharacterList();
+            }
+        };
+
+        Game twoPlayersGameWithAssassin = new Game(0, characterManager);
+
         Bot assassinBot = new Bot("killer", 3000, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
@@ -206,7 +216,7 @@ class GameTest {
             }
         };
 
-        List<District> merchantDistricts = game.getDeck().draw(2);
+        List<District> merchantDistricts = twoPlayersGameWithAssassin.getDeck().draw(2);
         Bot merchantBot = new Bot("merchant", 0, merchantDistricts) {
             @Override
             public Character pickCharacter(List<Character> availableCharacters) {
@@ -216,10 +226,9 @@ class GameTest {
             }
         };
 
-
-        game.addPlayer(assassinBot);
-        game.addPlayer(merchantBot);
-        game.gameTurn();
+        twoPlayersGameWithAssassin.addPlayer(assassinBot);
+        twoPlayersGameWithAssassin.addPlayer(merchantBot);
+        twoPlayersGameWithAssassin.gameTurn();
         assertTrue(merchantBot.sufferAction(SufferedActions.KILLED));
         assertTrue(merchantBot.getBuiltDistricts().isEmpty());
         assertEquals(merchantDistricts, merchantBot.getHandDistricts());
@@ -636,22 +645,21 @@ class GameTest {
 
         List<Character> characters = List.of(thief, merchant, warlord);
 
-        Game testGame = spy(new Game(bot1, bot2, bot3));
-        List<Character> availableCharacters = Game.defaultCharacterList();
+        List<Character> availableCharacters = CharacterManager.defaultCharacterList();
         availableCharacters.remove(new Assassin());
 
-        Discard discard = new Discard(3, availableCharacters) {
+        CharacterManager characterManager = new CharacterManager(3, new Random()) {
             // Force the hidden discard to be the Thief and the visible discard to be the Merchant and the Warlord
             @Override
-            public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters, List<Character> availableCharacters) {
-                if (charactersCount == 1) possibleCharacters = new ArrayList<>(List.of(thief));
-                if (charactersCount == 2) possibleCharacters = new ArrayList<>(List.of(merchant, warlord));
-                return super.getDiscardList(charactersCount, possibleCharacters, availableCharacters);
+            public List<Character> getDiscardList(int charactersCount, Predicate<Character> characterPredicate) {
+                if (charactersCount == 1) characterPredicate = character -> character.equals(thief);
+                if (charactersCount == 2)
+                    characterPredicate = character -> List.of(merchant, warlord).contains(character);
+                return super.getDiscardList(charactersCount, characterPredicate);
             }
         };
 
-        doAnswer(invocationOnMock -> discard).when(testGame).getDiscard();
-        doAnswer(invocationOnMock -> availableCharacters).when(testGame).charactersList();
+        Game testGame = spy(new Game(3, characterManager, bot1, bot2, bot3));
 
         testGame.characterSelectionTurn();
 
@@ -667,16 +675,19 @@ class GameTest {
         Player bot2 = new Bot("bot2", 0, List.of());
         Player bot3 = new Bot("bot3", 0, List.of());
 
-        Game threePlayerGame = new Game(bot1, bot2, bot3);
+        CharacterManager characterManager = new CharacterManager(3, new Random());
+
+        Game threePlayerGame = new Game(3, characterManager, bot1, bot2, bot3);
         threePlayerGame.start();
         bot1.getPlayers();
 
+        assertEquals(3, threePlayerGame.getPlayerList().size());
         assertEquals(2, bot1.getPlayers().size());
-        assertEquals(10, bot1.numberOfDistrictsToEnd());
-        assertEquals(10, bot2.numberOfDistrictsToEnd());
-        assertEquals(10, bot3.numberOfDistrictsToEnd());
+        assertEquals(10, bot1.getNumberOfDistrictsToEnd());
+        assertEquals(10, bot2.getNumberOfDistrictsToEnd());
+        assertEquals(10, bot3.getNumberOfDistrictsToEnd());
         assertEquals(List.of(new Thief(), new Magician(), new King(),
-                new Bishop(), new Merchant(), new Architect(), new Warlord()), threePlayerGame.charactersList());
+                new Bishop(), new Merchant(), new Architect(), new Warlord()), characterManager.charactersList());
     }
 
     @Test
@@ -725,22 +736,20 @@ class GameTest {
         };
         Bot bot7 = spy(new Bot("Bot7", 0, List.of()));
 
-        Character warlord = new Warlord();
+        List<Character> availableCharacters = CharacterManager.defaultCharacterList();
 
-        Game testGame = spy(new Game(bot1, bot2, bot3, bot4, bot5, bot6, bot7));
-        List<Character> availableCharacters = Game.defaultCharacterList();
-
-        Discard discard = new Discard(7, availableCharacters) {
+        CharacterManager characterManager = spy(new CharacterManager(7, new Random()) {
             // Force the hidden discard to be the Warlord
             @Override
-            public List<Character> getDiscardList(int charactersCount, List<Character> possibleCharacters, List<Character> availableCharacters) {
-                if (charactersCount == 1) possibleCharacters = new ArrayList<>(List.of(warlord));
-                return super.getDiscardList(charactersCount, possibleCharacters, availableCharacters);
+            public List<Character> getDiscardList(int charactersCount, Predicate<Character> characterPredicate) {
+                characterPredicate = character -> character.equals(new Warlord());
+                return super.getDiscardList(charactersCount, characterPredicate);
             }
-        };
+        });
 
-        doAnswer(invocationOnMock -> availableCharacters).when(testGame).charactersList();
-        doAnswer(invocationOnMock -> discard).when(testGame).getDiscard();
+        Game testGame = spy(new Game(7, characterManager, bot1, bot2, bot3, bot4, bot5, bot6, bot7));
+
+        doAnswer(invocationOnMock -> availableCharacters).when(characterManager).charactersList();
 
         testGame.characterSelectionTurn();
 
@@ -748,6 +757,7 @@ class GameTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Character>> argument = ArgumentCaptor.forClass(List.class);
         verify(bot7).pickCharacter(argument.capture());
-        assertEquals(List.of(new Warlord(), new Bishop()), argument.getValue());
+        assertTrue(List.of(argument.getValue().get(0), bot7.getCharacter().orElseThrow()).contains(new Warlord()));
+        assertTrue(List.of(argument.getValue().get(0), bot7.getCharacter().orElseThrow()).contains(new Bishop()));
     }
 }

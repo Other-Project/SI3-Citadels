@@ -175,7 +175,7 @@ public class Bot extends Player {
         possibleCharacters = new HashMap<>();
 
         // Obtaining the chosen characters before the bot
-        List<Character> beforeCharacters = new ArrayList<>(Game.defaultCharacterList());
+        List<Character> beforeCharacters = new ArrayList<>(CharacterManager.defaultCharacterList());
         if (getPlayers().size() == 3) beforeCharacters.remove(0);
         beforeCharacters.removeAll(availableCharacters);
         beforeCharacters.removeAll(visibleDiscard);
@@ -222,9 +222,9 @@ public class Bot extends Player {
                 .map(district -> new SimpleEntry<>(district, districtProfitability(district)))
                 .sorted(Comparator.<SimpleEntry<District, Double>>comparingDouble(SimpleEntry::getValue).reversed()).toList();
         int availableCoins = getCoins();
-        double coinNecessity = (numberOfDistrictsToEnd() - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / (double) numberOfDistrictsToEnd();
-        double securityNecessity = getBuiltDistricts().size() / (double) numberOfDistrictsToEnd();
-        double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / numberOfDistrictsToEnd();
+        double coinNecessity = (getNumberOfDistrictsToEnd() - getBuiltDistricts().size() - districtsByProfitability.stream().takeWhile(district -> availableCoins - district.getKey().getCost() > 0).count()) / (double) getNumberOfDistrictsToEnd();
+        double securityNecessity = getBuiltDistricts().size() / (double) getNumberOfDistrictsToEnd();
+        double buildNecessity = (1 - coinNecessity) * getBuiltDistricts().size() / getNumberOfDistrictsToEnd();
         double cardNecessity = 1.0 / (getHandDistricts().size() + 1); // The need to gain cards
         double fear = 0.5 + getPlayers().stream().mapToInt(built -> built.getBuiltDistricts().size() - getBuiltDistricts().size()).max().orElse(0) / 16.0; // The need to handicap other players
 
@@ -308,7 +308,7 @@ public class Bot extends Player {
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
         return district.getPoint()
-                + quantityOfColorBuilt(district.getColor()) / (double) numberOfDistrictsToEnd()
+                + quantityOfColorBuilt(district.getColor()) / (double) getNumberOfDistrictsToEnd()
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 - district.getCost();

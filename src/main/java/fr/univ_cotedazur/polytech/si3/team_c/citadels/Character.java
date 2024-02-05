@@ -51,4 +51,11 @@ public abstract class Character extends Card implements Comparable<Character> {
     public boolean canBePlacedInVisibleDiscard() {
         return true;
     }
+
+    /**
+     * @return the minimum number of players to be present
+     */
+    public int minimumNumberOfPlayers() {
+        return 0;
+    }
 }
