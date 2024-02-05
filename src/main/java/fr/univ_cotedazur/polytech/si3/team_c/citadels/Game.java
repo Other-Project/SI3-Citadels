@@ -39,11 +39,10 @@ public class Game {
     }
 
     public Game(int numberPlayers, CharacterManager characterManager, Player... players) {
-        if (characterManager == null) characterManager = new CharacterManager(numberPlayers, random);
+        this.characterManager = (characterManager == null) ? new CharacterManager(numberPlayers, random) : characterManager;
         deck = new Deck();
         playerList = new ArrayList<>(List.of(players));
         charactersToInteractWith = new ArrayList<>();
-        this.characterManager = characterManager;
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
@@ -86,7 +85,7 @@ public class Game {
     }
 
     /**
-     * @return the number of districts to end the game
+     * @return the number of districts to build to end the game
      */
     public int numberOfDistrictsToEnd() {
         if (playerList.size() == 3) return 10;
@@ -178,9 +177,9 @@ public class Game {
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
             Character choosenCharacter = player.pickCharacter(characterManager.possibleCharactersToChoose());
+            player.setPossibleCharacters(beforePlayers, characterManager);
             characterManager.addPlayerCharacter(player, choosenCharacter);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(characterManager.getAvailableCharacters(), beforePlayers, characterManager.getVisible());
             characterManager.getAvailableCharacters().remove(choosenCharacter);
         }
     }

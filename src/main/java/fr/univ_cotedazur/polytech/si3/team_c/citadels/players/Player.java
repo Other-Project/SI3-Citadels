@@ -488,7 +488,7 @@ public abstract class Player implements IPlayer {
      **/
     public abstract boolean wantsToTakeADestroyedDistrict(District district);
 
-    public abstract void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers, List<Character> visibleDiscard);
+    public abstract void setPossibleCharacters(List<IPlayer> beforePlayers, CharacterManager characterManager);
 
     /**
      * Adds the action committed by a player on the player

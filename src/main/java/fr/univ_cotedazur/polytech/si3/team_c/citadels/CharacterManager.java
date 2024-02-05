@@ -19,14 +19,16 @@ public class CharacterManager {
         this.random = random;
         this.hidden = new ArrayList<>();
         this.visible = new ArrayList<>();
+        characterPlayerMap = new HashMap<>();
+        this.availableCharacters = new ArrayList<>(charactersList());
     }
 
     /**
      * Sets all the values for the character selection turn
      */
-    public void generate() {
+    protected void generate() {
         characterPlayerMap = new HashMap<>();
-        availableCharacters = new ArrayList<>(charactersList());
+        this.availableCharacters = new ArrayList<>(charactersList());
         setHiddenDiscard();
         setVisibleDiscard();
     }
@@ -56,7 +58,7 @@ public class CharacterManager {
      * @param character the character to be checked
      * @return true if the character has been chosen
      */
-    public boolean characterIsChosen(Character character) {
+    protected boolean characterIsChosen(Character character) {
         return characterPlayerMap.containsKey(character);
     }
 
@@ -66,7 +68,7 @@ public class CharacterManager {
      * @param charactersCount    number of characters to take in the possibleCharacters
      * @param characterPredicate gives information on whether the character can be chosen
      */
-    public List<Character> getDiscardList(int charactersCount, Predicate<Character> characterPredicate) {
+    protected List<Character> getDiscardList(int charactersCount, Predicate<Character> characterPredicate) {
         List<Character> selectedCharacters = new ArrayList<>();
         List<Character> possibleCharacters = new ArrayList<>(getAvailableCharacters().stream()
                 .filter(characterPredicate)
@@ -84,25 +86,18 @@ public class CharacterManager {
      * @return the hidden discard size
      */
     private int getHiddenDiscardSize() {
-        if (playerCount >= 3 && playerCount <= 7) return 1;
-        return 0;
+        return playerCount >= 3 && playerCount <= 7 ? 1 : 0;
     }
 
     /**
      * @return the visible discard size
      */
     private int getVisibleDiscardSize() {
-        switch (playerCount) {
-            case 3, 4 -> {
-                return 2;
-            }
-            case 5 -> {
-                return 1;
-            }
-            default -> {
-                return 0;
-            }
-        }
+        return switch (playerCount) {
+            case 3, 4 -> 2;
+            case 5 -> 1;
+            default -> 0;
+        };
     }
 
     /**
@@ -125,7 +120,7 @@ public class CharacterManager {
      * @param character the player's character
      * @param player    the player
      */
-    public void addPlayerCharacter(Player player, Character character) {
+    protected void addPlayerCharacter(Player player, Character character) {
         characterPlayerMap.put(character, player);
         getAvailableCharacters().remove(character);
     }
@@ -134,7 +129,7 @@ public class CharacterManager {
      * @param character the character inspected
      * @return the character who corresponds to the player
      */
-    public Player getPlayer(Character character) {
+    protected Player getPlayer(Character character) {
         return characterPlayerMap.get(character);
     }
 

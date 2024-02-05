@@ -174,20 +174,19 @@ public class Bot extends Player {
     /**
      * Initialize the HashMap with possible characters for each player
      *
-     * @param availableCharacters the available characters
      * @param beforePlayers       the player who have chosen before
+     * @param characterManager the character manager of the game which gives all the information about the characters
      */
-    public void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers, List<Character> visibleDiscard) {
+    public void setPossibleCharacters(List<IPlayer> beforePlayers, CharacterManager characterManager) {
         possibleCharacters = new HashMap<>();
 
         // Obtaining the chosen characters before the bot
-        List<Character> beforeCharacters = new ArrayList<>(CharacterManager.defaultCharacterList());
-        if (getPlayers().size() == 3) beforeCharacters.remove(0);
-        beforeCharacters.removeAll(availableCharacters);
-        beforeCharacters.removeAll(visibleDiscard);
+        List<Character> beforeCharacters = new ArrayList<>(characterManager.charactersList());
+        beforeCharacters.removeAll(characterManager.possibleCharactersToChoose());
+        beforeCharacters.removeAll(characterManager.getVisible());
 
         // Obtaining characters that was available to the bot without its choice
-        List<Character> afterCharacters = new ArrayList<>(availableCharacters);
+        List<Character> afterCharacters = new ArrayList<>(characterManager.possibleCharactersToChoose());
         afterCharacters.remove(getCharacter().orElseThrow());
 
         // Obtaining the players who will choose after the bot

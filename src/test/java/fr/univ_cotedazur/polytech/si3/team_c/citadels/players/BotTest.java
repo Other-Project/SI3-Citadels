@@ -857,6 +857,7 @@ class BotTest {
 
         Game gameWithoutMerchant = new Game(4, characterManager, architectWithNotBuildDistricts, warlord, assassin, bishop);
         gameWithoutMerchant.gameTurn();
+        assertTrue(characterManager.getVisible().isEmpty());
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
 
