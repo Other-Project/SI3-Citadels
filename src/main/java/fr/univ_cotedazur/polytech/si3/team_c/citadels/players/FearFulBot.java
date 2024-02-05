@@ -40,7 +40,7 @@ public class FearFulBot extends Bot {
 
     /**
      * This method gives a bonus to choosing the bishop if other players can destroy certain districts.
-     * The number 25 is returned because it provides a significant advantage to the Bishop but it leaves the choice.
+     * The number 25 is returned because it provides a significant advantage to the Bishop, but it leaves the choice.
      * For example if the warlord is available and the bot has several red districts
      */
     @Override
@@ -83,7 +83,7 @@ public class FearFulBot extends Bot {
     }
 
     /**
-     * This method calculates the bot's fear of being steal.
+     * This method calculates the bot's fear of being stolen.
      *
      * @return 0 if nobody has reasons to steal the bot. Otherwise, it returns 7 plus the number of players who could have a reason to steal.
      */
