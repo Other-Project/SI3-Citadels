@@ -55,7 +55,7 @@ public class FearFulBot extends Bot {
     /**
      * This method calculates the bot’s fear of having its cards exchanged with another player.
      *
-     * @return It returns 5 plus the number of players who could have a reason to exchange, if this number is upper than half it multiplied by 2.
+     * @return It returns 5 plus the number of players who could have a reason to exchange, if this number is upper than half of the number of player it multiplied by 2.
      *
      */
     @Override
@@ -68,7 +68,7 @@ public class FearFulBot extends Bot {
     }
 
     /**
-     * This method calculates the bot's fear of being killed. It returns 0 if nobody has reasons to kill the bot.
+     * This method calculates the bot's fear of being killed.
      *
      * @return 0 if nobody could kill or 3 plus the number of players who could have a reason to kill because it is the least significant fear.
      */
