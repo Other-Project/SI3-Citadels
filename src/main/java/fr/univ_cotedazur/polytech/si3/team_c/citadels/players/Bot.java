@@ -322,7 +322,7 @@ public class Bot extends Player {
         double bestProfitability = Double.MIN_VALUE;
         for (District district : getHandDistricts()) {
             double profitability = districtProfitability(district);
-            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost()) && districtProfitability(district) >= 0) {
                 bestDistrict = district;
                 bestProfitability = profitability;
             }
