@@ -835,4 +835,17 @@ class BotTest {
         gameWithoutMerchant.gameTurn();
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
     }
+
+    @Test
+    void exchangeWithPlayerTest() {
+        Bot magicianBot1 = new Bot("magicianBot", 5, Collections.emptyList());
+        Bot magicianBot2 = new Bot("magicianBot", 5, List.of(new University()));
+        Bot magicianBot3 = new Bot("magicianBot", 5, List.of(new Tavern(), new Temple()));
+        Bot magicianBot4 = new Bot("magicianBot", 5, List.of(new University(), new DragonGate()));
+        Bot bot2 = new Bot("bot2", 20, List.of(new Battlefield(), new Castle(), new Docks(), new Smithy(), new DragonGate()));
+        assertEquals(bot2, magicianBot1.playerToExchangeCards(List.of(bot2)));
+        assertEquals(bot2, magicianBot2.playerToExchangeCards(List.of(bot2)));
+        assertEquals(bot2, magicianBot3.playerToExchangeCards(List.of(bot2)));
+        assertNull(magicianBot4.playerToExchangeCards(List.of(bot2)));
+    }
 }
