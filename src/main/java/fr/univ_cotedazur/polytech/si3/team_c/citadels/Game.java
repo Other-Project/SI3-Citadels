@@ -1,10 +1,7 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.AgressiveBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -46,9 +43,10 @@ public class Game {
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
-            Bot bot = switch (random.nextInt(3)) {
+            Bot bot = switch (random.nextInt(4)) {
+                case 3 -> new AgressiveBot("agressiveBot" + i);
+                case 2 -> new FearFulBot("fearFullBot" + i);
                 case 1 -> new DiscreetBot("discreetBot" + i);
-                case 2 -> new AgressiveBot("agressiveBot" + i);
                 default -> new Bot("bot" + i);
             };
             playerList.add(bot);

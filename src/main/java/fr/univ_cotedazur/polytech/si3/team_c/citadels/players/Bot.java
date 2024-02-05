@@ -34,13 +34,12 @@ public class Bot extends Player {
     protected double startupIncomeCoin() {
         return 1;
     }  // There's an income, so the bot could get more coins
-
     /**
      * Level of the need to draw cards if there's a startup income
      */
     protected double startupIncomeCard() {
         return 0.5;
-    } // Because if there's already an income there's less need to use the income action
+    }
     /**
      * Level of card gained if the bot could draw extra cards
      */
@@ -75,8 +74,8 @@ public class Bot extends Player {
      * Level of the need to attack other players if the bot has the crown
      */
     protected double crownFear() {
-        return 0.125;
-    } // If the bot takes the crown, he is pretty neutral
+        return 0.125; // If the bot takes the crown, he is pretty neutral
+    }
     /**
      * Level of security the bot feels if he could kill another player
      */
@@ -144,13 +143,19 @@ public class Bot extends Player {
         return 1;
     }
     private HashMap<IPlayer, List<Character>> possibleCharacters;
+    private final double goodDistrictProfitability;
 
     public Bot(String name) {
-        super(name, 0, Collections.emptyList());
+        this(name, 0, Collections.emptyList());
     }
 
     public Bot(String name, int coins, List<District> districts) {
+        this(name, coins, districts, 1.0);
+    }
+
+    Bot(String name, int coins, List<District> districts, double goodDistrictProfitability) {
         super(name, coins, districts);
+        this.goodDistrictProfitability = goodDistrictProfitability;
     }
 
 
@@ -237,7 +242,7 @@ public class Bot extends Player {
         switch (character.startTurnAction()) {
             case STARTUP_INCOME -> {
                 coinProfitability += startupIncomeCoin();
-                cardProfitability += startupIncomeCard();
+                cardProfitability += startupIncomeCard(); // Because if there's already an income there's less need to use the income action
             }
             case BEGIN_DRAW -> {
                 cardProfitability += beginDrawCard();
@@ -323,7 +328,7 @@ public class Bot extends Player {
         double bestProfitability = Double.MIN_VALUE;
         for (District district : getHandDistricts()) {
             double profitability = districtProfitability(district);
-            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost())) {
+            if (bestDistrict == null || profitability > bestProfitability || (profitability == bestProfitability && district.getCost() < bestDistrict.getCost()) && districtProfitability(district) >= 0) {
                 bestDistrict = district;
                 bestProfitability = profitability;
             }
@@ -353,9 +358,11 @@ public class Bot extends Player {
     @Override
     public Action nextAction(Set<Action> remainingActions) {
         var objective = districtObjective();
+        var wantsToExchangeWithPlayer = remainingActions.contains(Action.EXCHANGE_PLAYER) && playerToExchangeCards(getPlayers()) != null;
+
         if (remainingActions.contains(Action.INCOME) && ((objective.isPresent() && objective.get().getCost() > getCoins()) || getHandDistricts().size() >= 4))
             return Action.INCOME;// Pick coins if the bot has an objective and the objective cost more than what he has or if the bot already has a lot of cards in hand
-        if (remainingActions.contains(Action.DRAW))
+        if (remainingActions.contains(Action.DRAW) && !wantsToExchangeWithPlayer)
             return Action.DRAW;// Draw districts in the deck if the bot has no more cards in hand
         if (remainingActions.contains(Action.BUILD) && objective.isPresent() && objective.get().getCost() <= getCoins())
             return Action.BUILD;// Build a district if the bot has an objective and if it has enough money to build the objective
@@ -369,7 +376,7 @@ public class Bot extends Player {
             return Action.STEAL;// Try to steal a character if the player's character is the Thief
         if (remainingActions.contains(Action.KILL))
             return Action.KILL;// Try to kill a character if the player's character is the Assassin
-        if (remainingActions.contains(Action.EXCHANGE_PLAYER) && playerToExchangeCards(getPlayers()) != null)
+        if (wantsToExchangeWithPlayer)
             return Action.EXCHANGE_PLAYER;
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !chooseCardsToExchangeWithDeck().isEmpty())
             return Action.EXCHANGE_DECK;
@@ -554,8 +561,14 @@ public class Bot extends Player {
                 playerToExchange = p;
                 nbCards = playerHandSize;
             }
-
         }
+
+        if (nbCards - getHandDistricts().size() >= 5) return playerToExchange;
+        // If a district profitability is over the good district profitability, the bot must keep it
+        long numberOfCardsToKeep = getHandDistricts().stream()
+                .filter(district -> districtProfitability(district) >= goodDistrictProfitability).count();
+        // At this state, if we have at least 2 good cards the bot will prefer to exchange cards with deck
+        if (numberOfCardsToKeep >= 2) return null;
         return playerToExchange;
     }
 
@@ -567,7 +580,7 @@ public class Bot extends Player {
     public List<District> chooseCardsToExchangeWithDeck() {
         List<District> cardToExchange = new ArrayList<>();
         for (District d : getHandDistricts()) {
-            if (districtProfitability(d) < 1) cardToExchange.add(d);
+            if (districtProfitability(d) < goodDistrictProfitability) cardToExchange.add(d);
         }
         return cardToExchange;
     }
