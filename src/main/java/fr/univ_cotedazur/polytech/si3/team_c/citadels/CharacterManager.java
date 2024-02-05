@@ -61,7 +61,7 @@ public class CharacterManager {
     }
 
     /**
-     * Gets the discard list by the possible characters and the number of character to remove
+     * Gets the discard list by the possible characters and the number of characters to remove
      *
      * @param charactersCount    number of characters to take in the possibleCharacters
      * @param characterPredicate gives information on whether the character can be chosen
