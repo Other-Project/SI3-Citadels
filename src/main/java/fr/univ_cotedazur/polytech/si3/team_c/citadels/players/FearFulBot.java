@@ -39,9 +39,9 @@ public class FearFulBot extends Bot {
     }
 
     /**
-     * This method gives a bonus to choosing the bishop if other players can destroy certain districts.
-     * The number 25 is returned because it provides a significant advantage to the Bishop, but it leaves the choice.
-     * For example if the warlord is available and the bot has several red districts
+     * If other players can destroy certain districts, this method gives a bonus to choosing character which can't be destroyed.
+     * The number 25 is returned because it provides a significant advantage to the character which can't be destroyed, but it leaves the choice.
+     * (for example if the warlord is available and the bot has several red districts)
      */
     @Override
     protected double nonDestructibleSecurity() {
@@ -55,9 +55,8 @@ public class FearFulBot extends Bot {
     /**
      * This method calculates the bot’s fear of having its cards exchanged with another player.
      *
-     * @return If the number of players who have this reason is less than half the total number of player.
-     * It returns 5 plus the number of players who could have a reason to exchange
-     * Else, it returns 5 plus the number of players who could have a reason to exchange cards, multiplied by 2.
+     * @return It returns 5 plus the number of players who could have a reason to exchange, if this number is upper than half it multiplied by 2.
+     *
      */
     @Override
     protected double exchangePlayerFear() {
