@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     public static final int DISTRICT_NUMBER_TO_END = 8;
