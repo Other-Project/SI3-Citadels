@@ -106,10 +106,10 @@ public class FearFulBot extends Bot {
     @Override
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
-        return (district.getPoint() - 3) * 0.35
+        return (district.getPoint() - 3) * 0.35 // we subtract 3 to the number of points, to have a negative profitability if the district gives 1 or 2 points
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
-                + (district.isDestructible() ? 0 : 1);
+                + (district.isDestructible() ? 0 : 3);
     }
 
     /**
