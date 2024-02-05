@@ -7,6 +7,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A player (human or robot)
@@ -295,14 +296,6 @@ public abstract class Player implements IPlayer {
     protected abstract List<District> pickDistrictsToBuild(int maxAmountToChoose, int turn);
 
     /**
-     * Choose a color for the bonus score and add it
-     *
-     * @param tookColors the colors already chosen
-     * @return the chosen color
-     */
-    public abstract Optional<Colors> pickBonusColor(Set<Colors> tookColors);
-
-    /**
      * @return the current score given by the districts of the player
      */
     public int getDistrictsScore() {
@@ -324,20 +317,20 @@ public abstract class Player implements IPlayer {
      * @param lastTurn the number of the last turn
      **/
     public boolean allColorsInDistricts(int lastTurn) {
-        Set<Colors> tookColors = new HashSet<>();
-        int anyCount = 0;
-        for (District district : getBuiltDistricts()) {
-            Optional<Colors> color = district.bonusColors(builtInTheLastTurn(district, lastTurn));
-            if (color.isPresent()) tookColors.add(color.get());
-            else anyCount++;
-        }
-        if (tookColors.size() == Colors.values().length - 1) return true;
-        else if (anyCount + tookColors.size() >= Colors.values().length - 1) {
-            for (int i = 0; i < anyCount; i++) {
-                pickBonusColor(tookColors).ifPresent(tookColors::add);
-            }
-        }
-        return Colors.values().length - 1 == tookColors.size();
+        return allColorsInDistricts(lastTurn, getBuiltDistricts(), Collections.emptySet(), 0);
+    }
+
+    private boolean allColorsInDistricts(int lastTurn, List<District> builtDistricts, Set<Colors> selectedColors, int index) {
+        if (selectedColors.containsAll(Arrays.stream(Colors.values()).filter(Predicate.not(Colors.NONE::equals)).toList()))
+            return true;
+        if (index >= builtDistricts.size()) return false;
+        District district = builtDistricts.get(index);
+        List<Colors> colors = district.bonusColors(builtInTheLastTurn(district, lastTurn));
+        return colors.stream().anyMatch(color -> {
+            var colorsToTry = new HashSet<>(selectedColors);
+            colorsToTry.add(color);
+            return allColorsInDistricts(lastTurn, builtDistricts, colorsToTry, index + 1);
+        });
     }
 
     /**
