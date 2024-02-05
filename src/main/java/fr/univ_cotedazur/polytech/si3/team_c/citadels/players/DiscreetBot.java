@@ -47,7 +47,7 @@ public class DiscreetBot extends Bot {
     }
 
     public DiscreetBot(String name, int coins, List<District> districts) {
-        super(name, coins, districts, 3);
+        super(name, coins, districts, 3.0);
     }
 
     @Override

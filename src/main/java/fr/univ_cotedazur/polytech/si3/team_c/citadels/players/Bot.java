@@ -143,17 +143,17 @@ public class Bot extends Player {
         return 1;
     }
     private HashMap<IPlayer, List<Character>> possibleCharacters;
-    private final int goodDistrictProfitability;
+    private final double goodDistrictProfitability;
 
     public Bot(String name) {
         this(name, 0, Collections.emptyList());
     }
 
     public Bot(String name, int coins, List<District> districts) {
-        this(name, coins, districts, 1);
+        this(name, coins, districts, 1.0);
     }
 
-    Bot(String name, int coins, List<District> districts, int goodDistrictProfitability) {
+    Bot(String name, int coins, List<District> districts, double goodDistrictProfitability) {
         super(name, coins, districts);
         this.goodDistrictProfitability = goodDistrictProfitability;
     }

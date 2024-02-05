@@ -96,7 +96,7 @@ public class FearFulBot extends Bot {
     }
 
     public FearFulBot(String name, int coins, List<District> districts) {
-        super(name, coins, districts);
+        super(name, coins, districts, 0.35);
     }
 
     public FearFulBot(String name) {
