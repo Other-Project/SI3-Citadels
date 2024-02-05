@@ -7,6 +7,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -150,7 +151,7 @@ public class Bot extends Player {
     }
 
     public Bot(String name, int coins, List<District> districts) {
-        this(name, coins, districts, 1.0);
+        this(name, coins, districts, 2.0);
     }
 
     Bot(String name, int coins, List<District> districts, double goodDistrictProfitability) {
@@ -312,10 +313,17 @@ public class Bot extends Player {
      */
     protected double districtProfitability(District district) {
         if (getBuiltDistricts().contains(district)) return -1; // We can't build the same district twice
+        var builtColors = getBuiltDistricts().stream().map(District::getColor).collect(Collectors.toSet());
+        var missingColorsForBonus = Arrays.stream(Colors.values()).filter(Predicate.not(builtColors::contains)).toList();
+
         return district.getPoint()
                 + quantityOfColorBuilt(district.getColor()) / (double) getNumberOfDistrictsToEnd()
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
+                + (district.bonusColors(false).stream().anyMatch(missingColorsForBonus::contains) ? 1 : 0)
+                + (district.isDestructible() ? 0 : 1)
+                + district.getAction().size()
+                + district.getEventAction().size()
                 - district.getCost();
     }
 
@@ -554,7 +562,7 @@ public class Bot extends Player {
             }
         }
 
-        if (nbCards - getHandDistricts().size() >= 5) return playerToExchange;
+        if (nbCards - handSize >= 5) return playerToExchange;
         // If a district profitability is over the good district profitability, the bot must keep it
         long numberOfCardsToKeep = getHandDistricts().stream()
                 .filter(district -> districtProfitability(district) >= goodDistrictProfitability).count();
