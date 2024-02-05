@@ -320,7 +320,7 @@ public class Bot extends Player {
                 + districtPropertyGain(district, District::numberOfDistrictsToDraw, this::numberOfDistrictsToDraw) / (getBuiltDistricts().size() + 1)
                 + districtPropertyGain(district, District::numberOfDistrictsToKeep, this::numberOfDistrictsToKeep) / (getBuiltDistricts().size() + 1)
                 + (district.bonusColors(false).stream().anyMatch(missingColorsForBonus::contains) ? 1 : 0)
-                + (district.isDestructible() ? 1 : 0)
+                + (district.isDestructible() ? 0 : 1)
                 + district.getAction().size()
                 + district.getEventAction().size()
                 - district.getCost();
@@ -571,7 +571,7 @@ public class Bot extends Player {
             }
         }
 
-        if (nbCards - getHandDistricts().size() >= 5) return playerToExchange;
+        if (nbCards - handSize >= 5) return playerToExchange;
         // If a district profitability is over the good district profitability, the bot must keep it
         long numberOfCardsToKeep = getHandDistricts().stream()
                 .filter(district -> districtProfitability(district) >= goodDistrictProfitability).count();
