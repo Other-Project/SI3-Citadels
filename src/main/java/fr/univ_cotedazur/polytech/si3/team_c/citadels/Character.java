@@ -44,4 +44,18 @@ public abstract class Character extends Card implements Comparable<Character> {
     public boolean canHaveADistrictDestroyed() {
         return true;
     }
+
+    /**
+     * @return true if the character can be placed in the visible discard
+     */
+    public boolean canBePlacedInVisibleDiscard() {
+        return true;
+    }
+
+    /**
+     * @return the minimum number of players to be present
+     */
+    public int minimumNumberOfPlayers() {
+        return 0;
+    }
 }
