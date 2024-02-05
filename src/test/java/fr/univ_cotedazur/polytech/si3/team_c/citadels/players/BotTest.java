@@ -75,7 +75,11 @@ class BotTest {
             }
         };
 
-        scriptedGame = new Game(king, architect, merchant, assassin, warlord);
+        // No discard
+        CharacterManager characterManager = characterManagerWithoutDiscard(5);
+
+        scriptedGame = new Game(5, characterManager, king, architect, merchant, assassin, warlord);
+
         for (Player p : scriptedGame.getPlayerList()) {
             p.setPlayers(() -> new ArrayList<>(scriptedGame.getPlayerList().stream().filter(player -> !player.equals(p)).toList()));
         }
@@ -533,7 +537,10 @@ class BotTest {
             }
         };
         // Here, we force bishopBot and bot3 to take the income, so they can only build the district in their hands
-        Game game = new Game(warlordBot, bishopBot, merchantBot, kingBot);
+
+        CharacterManager characterManager = characterManagerWithoutDiscard(4);
+
+        Game game = new Game(4, characterManager, warlordBot, bishopBot, merchantBot, kingBot);
         game.characterSelectionTurn();
         game.playerTurn(bishopBot);
         game.playerTurn(bishopBot);
@@ -733,7 +740,9 @@ class BotTest {
                 return Action.NONE;
             }
         };
-        Game game = new Game(warlordBot, bot3, bot2, bishopBot);
+        CharacterManager characterManager = characterManagerWithoutDiscard(4);
+
+        Game game = new Game(4, characterManager, warlordBot, bot3, bot2, bishopBot);
         game.characterSelectionTurn();
         assertNull(warlordBot.destroyDistrict(game.getIPlayerList()));
         game.playerTurn(warlordBot);
@@ -831,9 +840,37 @@ class BotTest {
             }
         };
 
-        Game gameWithoutMerchant = new Game(architectWithNotBuildDistricts, warlord, assassin);
+        Bot bishop = new Bot("Bishop", 0, List.of()) {
+            @Override
+            public Character pickCharacter(List<Character> availableCharacters) {
+                super.pickCharacter(availableCharacters);
+                setCharacter(new Bishop());
+                return new Bishop();
+            }
+
+            @Override
+            public int getHandSize() {
+                return 0;
+            }
+        };
+        CharacterManager characterManager = characterManagerWithoutDiscard(4);
+
+        Game gameWithoutMerchant = new Game(4, characterManager, architectWithNotBuildDistricts, warlord, assassin, bishop);
         gameWithoutMerchant.gameTurn();
+        assertTrue(characterManager.getVisible().isEmpty());
         assertTrue(architectWithNotBuildDistricts.sufferAction(SufferedActions.KILLED));
+    }
+
+    public static CharacterManager characterManagerWithoutDiscard(int playerCount) {
+        return new CharacterManager(playerCount, new Random()) {
+            @Override
+            protected void setHiddenDiscard() {
+            }
+
+            @Override
+            protected void setVisibleDiscard() {
+            }
+        };
     }
 
     @Test

@@ -29,6 +29,7 @@ public abstract class Player implements IPlayer {
 
     private Callable<List<IPlayer>> players;
 
+    private int numberOfDistrictsToEnd = 8;
 
     protected Player(String name, int coins, List<District> districts) {
         this.name = name;
@@ -147,7 +148,7 @@ public abstract class Player implements IPlayer {
      * Gets all the destroyable districts that the player built
      */
     public List<District> getDestroyableDistricts() {
-        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < Game.DISTRICT_NUMBER_TO_END ?
+        return character != null && character.canHaveADistrictDestroyed() && getBuiltDistricts().size() < getNumberOfDistrictsToEnd() ?
                 getBuiltDistricts().stream().filter(District::isDestructible).toList() : Collections.emptyList();
     }
 
@@ -348,7 +349,7 @@ public abstract class Player implements IPlayer {
         int score = getDistrictsScore();
         if (allColorsInDistricts(lastTurn)) score += 3;
         if (isGameEnder()) score += 4;
-        else if (getBuiltDistricts().size() >= Game.DISTRICT_NUMBER_TO_END) score += 2;
+        else if (getBuiltDistricts().size() >= getNumberOfDistrictsToEnd()) score += 2;
         return score;
     }
 
@@ -415,10 +416,15 @@ public abstract class Player implements IPlayer {
     }
 
     /**
-     * Set the endPlayer boolean to true
+     * Checks whether the player has fulfilled the end-of-game conditions
+     * Note: Must not be called if the game has already been ended by another player
      */
-    public void endsGame() {
-        gameEnder = true;
+    public boolean endsGame() {
+        if (getBuiltDistricts().size() >= getNumberOfDistrictsToEnd()) {
+            gameEnder = true;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -482,7 +488,7 @@ public abstract class Player implements IPlayer {
      **/
     public abstract boolean wantsToTakeADestroyedDistrict(District district);
 
-    public abstract void setPossibleCharacters(List<Character> availableCharacters, List<IPlayer> beforePlayers);
+    public abstract void setPossibleCharacters(List<IPlayer> beforePlayers, CharacterManager characterManager);
 
     /**
      * Adds the action committed by a player on the player
@@ -524,5 +530,21 @@ public abstract class Player implements IPlayer {
 
     public void setPlayers(Callable<List<IPlayer>> players) {
         this.players = players;
+    }
+
+    /**
+     * Sets the number of district to end the game
+     *
+     * @param numberOfDistrictsToEnd the number given by the game
+     */
+    public void setNumberOfDistrictsToEnd(int numberOfDistrictsToEnd) {
+        this.numberOfDistrictsToEnd = numberOfDistrictsToEnd;
+    }
+
+    /**
+     * @return the number of districts to end the game
+     */
+    public int getNumberOfDistrictsToEnd() {
+        return numberOfDistrictsToEnd;
     }
 }
