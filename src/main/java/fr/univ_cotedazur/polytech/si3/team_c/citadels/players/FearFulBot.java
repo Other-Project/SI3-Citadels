@@ -4,6 +4,7 @@ import fr.univ_cotedazur.polytech.si3.team_c.citadels.Colors;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -100,7 +101,7 @@ public class FearFulBot extends Bot {
     }
 
     public FearFulBot(String name) {
-        super(name);
+        this(name, 0, Collections.emptyList());
     }
 
     @Override
