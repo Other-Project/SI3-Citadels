@@ -26,9 +26,8 @@ public class Main {
                 .build()
                 .parse(args);
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        if (twoThousand) {
-            twoThousandGames();
-        } else if (demo) {
+        if (twoThousand) twoThousandGames();
+        else if (demo) {
             Arrays.stream(LOGGER.getParent().getHandlers()).forEach(handler -> handler.setLevel(Level.FINEST));
             LOGGER.setLevel(Level.FINEST);
             gameBase();
@@ -56,27 +55,20 @@ public class Main {
             if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin();
             else botWinners.forEach(bot -> stat.get(bot).addEquality());
 
-
             List<String> players = new ArrayList<>(game.getPlayerList().stream().map(Player::getName).toList());
             players.removeAll(botWinners.stream().toList());
             players.forEach(bot -> stat.get(bot).addLoose());
 
             bots.forEach(Player::resetPlayer);
-
         }
-
-        for (Map.Entry<String, Statistic> entry : stat.entrySet()) {
-            entry.getValue().getPourcent(numberOfGames);
-        }
-
+        for (Map.Entry<String, Statistic> entry : stat.entrySet()) entry.getValue().getPourcent(numberOfGames);
         return stat;
     }
 
     private static void displayResult(HashMap<String, Statistic> stat, int numberOfGames) {
         StringBuilder message = new StringBuilder("Statistic measures on " + numberOfGames + " games :\n");
-        for (Map.Entry<String, Statistic> entry : stat.entrySet()) {
+        for (Map.Entry<String, Statistic> entry : stat.entrySet())
             message.append(entry.getKey()).append("\n\t").append(stat.get(entry.getKey()).toString()).append("\n");
-        }
         message.append("\n");
         String display = message.toString();
         LOGGER.log(Level.INFO, display);
