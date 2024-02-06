@@ -2,10 +2,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.FearFulBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -30,7 +27,7 @@ public class Main {
                 .parse(args);
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
         if (twoThousand) {
-            twoThousandGame();
+            twoThousandGames();
         } else if (demo) {
             Arrays.stream(LOGGER.getParent().getHandlers()).forEach(handler -> handler.setLevel(Level.FINEST));
             LOGGER.setLevel(Level.FINEST);
@@ -85,8 +82,8 @@ public class Main {
         LOGGER.log(Level.INFO, display);
     }
 
-    public static void twoThousandGame() {
-        List<Player> bots = new ArrayList<>(List.of(new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot")));
+    public static void twoThousandGames() {
+        List<Player> bots = new ArrayList<>(List.of(new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot")));
         HashMap<String, Statistic> res = playMultipleGames(bots, 1000);
         displayResult(res, 1000);
         bots = new ArrayList<>(List.of(new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4")));
