@@ -2,9 +2,10 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 public class Statistic {
 
-    private double win;
-    private double loose;
-    private double equality;
+    private int win;
+    private int loose;
+    private int equality;
+
 
     public void addWin() {
         win++;
@@ -31,19 +32,28 @@ public class Statistic {
     }
 
     public Statistic() {
-        win = 0.;
-        loose = 0.;
-        equality = 0.;
+        win = 0;
+        loose = 0;
+        equality = 0;
     }
 
-    public void getPourcent(double numberTest) {
-        win = win * 100. / numberTest;
-        loose = loose * 100. / numberTest;
-        equality = equality * 100. / numberTest;
+    public float getWinPercentage() {
+        return win * 100f / numberOfTest();
     }
 
+    public float getLoosePercentage() {
+        return loose * 100f / numberOfTest();
+    }
+
+    public float getEqualityPercentage() {
+        return equality * 100f / numberOfTest();
+    }
+
+    public int numberOfTest() {
+        return win + loose + equality;
+    }
     @Override
     public String toString() {
-        return "Win : " + win + "% / Loose : " + loose + "% / Equality : " + equality + "%";
+        return "Win : " + getWinPercentage() + "% / Loose : " + getLoosePercentage() + "% / Equality : " + getEqualityPercentage() + "%";
     }
 }

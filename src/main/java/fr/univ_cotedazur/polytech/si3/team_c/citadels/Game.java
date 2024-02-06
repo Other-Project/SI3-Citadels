@@ -128,6 +128,7 @@ public class Game {
 
 
     public void start() {
+        playerList.forEach(Player::resetPlayer);
         playerInitialization();
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.FINE, "Game starts");
