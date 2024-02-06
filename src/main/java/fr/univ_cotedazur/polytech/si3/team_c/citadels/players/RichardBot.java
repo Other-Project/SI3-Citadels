@@ -85,6 +85,11 @@ public class RichardBot extends Bot {
         return potentialMaxCoins;
     }
 
+    /**
+     * Detects if a player can attempt a final rush given all the characters except the visible ones
+     *
+     * @param characterManager to determine the characters to process
+     */
     private boolean playerCanAttemptFinalRush(CharacterManager characterManager) {
         for (Character character : characterManager.charactersList().stream()
                 .filter(character -> !characterManager.getVisible().contains(character)).toList()) {
@@ -93,6 +98,9 @@ public class RichardBot extends Bot {
         return false;
     }
 
+    /**
+     * Detects if a player can attend a final rush with the given character
+     */
     private boolean playerCanAttemptFinalRush(Character character) {
         for (IPlayer player : getPlayers()) {
             if (player.getCoins() >= 4
@@ -104,6 +112,10 @@ public class RichardBot extends Bot {
         return false;
     }
 
+    /**
+     * Detects if a player is on the verge of building his penultimate district
+     *
+     */
     private List<IPlayer> playerWillBuildPenultimateDistrict() {
         return getPlayers().stream().filter(player -> player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2).toList();
     }

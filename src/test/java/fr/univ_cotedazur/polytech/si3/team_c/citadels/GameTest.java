@@ -100,7 +100,7 @@ class GameTest {
         Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                for (Character character : characterManager.getAvailableCharacters())
+                for (Character character : characterManager.possibleCharactersToChoose())
                     if (!(character instanceof King)) {
                         setCharacter(character);
                         return character;
@@ -111,7 +111,7 @@ class GameTest {
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                for (Character character : characterManager.getAvailableCharacters())
+                for (Character character : characterManager.possibleCharactersToChoose())
                     if (!(character instanceof King)) {
                         setCharacter(character);
                         return character;
