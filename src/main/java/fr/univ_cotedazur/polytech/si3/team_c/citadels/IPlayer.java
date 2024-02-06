@@ -1,7 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IPlayer {
     /**
@@ -28,11 +27,6 @@ public interface IPlayer {
      * Gets all the destroyable districts that the player built
      */
     List<District> getDestroyableDistricts();
-
-    /**
-     * Gets the chosen character (can be empty if the player hasn't chosen yet)
-     */
-    Optional<Character> getCharacter();
 
     /**
      * Gets if the current player has the crown
