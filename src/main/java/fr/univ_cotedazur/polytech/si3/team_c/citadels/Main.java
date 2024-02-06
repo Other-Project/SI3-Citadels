@@ -65,7 +65,7 @@ public class Main {
             players.removeAll(botWinners.stream().toList());
             players.forEach(bot -> stat.get(bot).addLoose());
 
-            bots = new ArrayList<>(botsInit);
+            bots.forEach(Player::resetPlayer);
 
         }
 

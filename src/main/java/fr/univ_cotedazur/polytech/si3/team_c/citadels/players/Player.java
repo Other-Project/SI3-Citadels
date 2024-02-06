@@ -525,4 +525,14 @@ public abstract class Player implements IPlayer {
     public void setPlayers(Callable<List<IPlayer>> players) {
         this.players = players;
     }
+
+    public void resetPlayer() {
+        this.coins = 0;
+        this.handDistricts.clear();
+        this.builtDistricts.clear();
+        this.sufferedActions.clear();
+        this.character = null;
+        this.actionSet.clear();
+        this.gameEnder = false;
+    }
 }
