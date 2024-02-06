@@ -18,10 +18,24 @@ import static org.mockito.Mockito.*;
 
 class GameTest {
     private Game game;
+    Random characterManagerRandom;
 
     @BeforeEach
     void setup() {
         game = new Game();
+        characterManagerRandom = new Random();
+    }
+
+    public static CharacterManager characterManagerWithoutDiscard(int playerCount, List<Character> characterList) {
+        return new CharacterManager(playerCount, new Random(), characterList) {
+            @Override
+            protected void setHiddenDiscard() {
+            }
+
+            @Override
+            protected void setVisibleDiscard() {
+            }
+        };
     }
 
     @Test
@@ -63,7 +77,7 @@ class GameTest {
     void crownTestWithKingPlayer() {
         Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new King());
                 return getCharacter().orElseThrow();
             }
@@ -71,8 +85,8 @@ class GameTest {
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2));
         game.addPlayer(bot1);
         game.addPlayer(bot2);
-        bot1.pickCharacter(List.of(new King()));
-        bot2.pickCharacter(List.of(new Magician()));
+        bot1.pickCharacter(characterManagerWithoutDiscard(2, List.of(new King())));
+        bot2.pickCharacter(characterManagerWithoutDiscard(2, List.of(new Magician())));
         for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
             assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
@@ -85,8 +99,8 @@ class GameTest {
     void crownTestWithoutKingPlayer() {
         Bot bot1 = new Bot("bot1", 2, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                for (Character character : availableCharacters)
+            public Character pickCharacter(CharacterManager characterManager) {
+                for (Character character : characterManager.getAvailableCharacters())
                     if (!(character instanceof King)) {
                         setCharacter(character);
                         return character;
@@ -96,8 +110,8 @@ class GameTest {
         };
         Bot bot2 = new Bot("bot2", 2, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                for (Character character : availableCharacters)
+            public Character pickCharacter(CharacterManager characterManager) {
+                for (Character character : characterManager.getAvailableCharacters())
                     if (!(character instanceof King)) {
                         setCharacter(character);
                         return character;
@@ -110,8 +124,8 @@ class GameTest {
         List<Character> availableCharacters = new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
                 new Bishop(), new Merchant(), new Architect(), new Warlord()));
 
-        availableCharacters.remove(bot1.pickCharacter(availableCharacters));
-        bot2.pickCharacter(availableCharacters);
+        availableCharacters.remove(bot1.pickCharacter(characterManagerWithoutDiscard(2, availableCharacters)));
+        bot2.pickCharacter(characterManagerWithoutDiscard(2, availableCharacters));
         game.setCrown(bot1);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
@@ -165,8 +179,8 @@ class GameTest {
     void testThiefTurn() {
         Bot trickedBot1 = new Bot("bot1", 0, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Thief()) ? new Thief() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Thief()) ? new Thief() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -178,8 +192,8 @@ class GameTest {
         };
         Bot trickedBot2 = new Bot("bot2", 500, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -205,7 +219,7 @@ class GameTest {
 
         Bot assassinBot = new Bot("killer", 3000, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 Assassin assassin = new Assassin();
                 setCharacter(assassin);
                 return assassin;
@@ -220,7 +234,7 @@ class GameTest {
         List<District> merchantDistricts = twoPlayersGameWithAssassin.getDeck().draw(2);
         Bot merchantBot = new Bot("merchant", 0, merchantDistricts) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 Merchant merchant = new Merchant();
                 setCharacter(merchant);
                 return merchant;
@@ -239,7 +253,7 @@ class GameTest {
     void testMerchantTurn() {
         Bot merchantBot = new Bot("merchant", 0, new ArrayList<>()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 Merchant merchant = new Merchant();
                 setCharacter(merchant);
                 return merchant;
@@ -265,8 +279,8 @@ class GameTest {
                 return getActionSet();
             }
         };
-        bot1.pickCharacter(List.of(new Magician())); // Create a bot with the character magician
-        bot2.pickCharacter(List.of(new King()));
+        bot1.pickCharacter(characterManagerWithoutDiscard(2, List.of(new Magician()))); // Create a bot with the character magician
+        bot2.pickCharacter(characterManagerWithoutDiscard(2, List.of(new King())));
         game.addPlayer(bot1);
         game.addPlayer(bot2);
         game.playerTurn(bot1); // The bot will exchange his cards with the other player
@@ -316,8 +330,8 @@ class GameTest {
         game.setParametrisedDeck(List.of(new Laboratory(), new Battlefield(), new Temple(), new Castle(), new Market(), new Tavern(), new Manor()));
         Bot trickedBot = new Bot("botTricked", 0, Collections.emptyList()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Architect()) ? new Architect() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -341,8 +355,8 @@ class GameTest {
 
         Bot trickedBot = new Bot("bot1", 500, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Architect()) ? new Architect() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Architect()) ? new Architect() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -357,16 +371,16 @@ class GameTest {
     void warlordTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
         };
         Bot merchantBot = new Bot("merchantBot", 10, List.of(new Church(), new Monastery())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -401,16 +415,16 @@ class GameTest {
     void warlordAgainstBishopTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
         };
         Bot bishopBot = new Bot("bot 3", 10, List.of(new Harbor())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Bishop()) ? new Bishop() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Bishop()) ? new Bishop() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -441,7 +455,7 @@ class GameTest {
     void warlordGraveyardTest() {
         Player bot1 = new Bot("bot1", 100, List.of(new Graveyard())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Warlord());
                 return new Warlord();
             }
@@ -471,7 +485,7 @@ class GameTest {
     void notWarlordGraveyardTest() {
         Player bot1 = new Bot("bot1", 100, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Warlord());
                 return new Warlord();
             }
@@ -486,7 +500,7 @@ class GameTest {
         Player bot2 = new Bot("bot2", 100, List.of(new DragonGate(), new University()));
         Player bot3 = new Bot("bot3", 100, List.of(new Graveyard())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Warlord());
                 return new Assassin();
             }
@@ -516,8 +530,8 @@ class GameTest {
     void endgameDistrictDestructionTest() {
         Bot warlordBot = new Bot("bot 1", 10, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Warlord()) ? new Warlord() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -525,8 +539,8 @@ class GameTest {
         Bot merchantBot = new Bot("merchantBot", 50, List.of(new Church(), new Monastery(), new Harbor(), new Castle(),
                 new Temple(), new University(), new WatchTower(), new Tavern(), new Smithy())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -562,8 +576,8 @@ class GameTest {
         Bot magicianBot = new Bot("MagicianBot", 100, List.of(new Laboratory(), new Church(), new Monastery(), new Harbor(), new Castle(),
                 new Temple())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Magician()) ? new Magician() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Magician()) ? new Magician() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -593,8 +607,8 @@ class GameTest {
     void destroyedCardLocationTest() { // Tests if the discarded cards are added to the game deck
         Bot merchantBot = new Bot("merchantBot", 50, game.getDeck().draw(2)) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
-                Character best = availableCharacters.contains(new Merchant()) ? new Merchant() : availableCharacters.get(0);
+            public Character pickCharacter(CharacterManager characterManager) {
+                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -610,7 +624,7 @@ class GameTest {
     void takeThreeTest() {
         Player smithy = new Bot("smithy", 100, List.of(new Smithy())) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new King());
                 return new King();
             }
@@ -695,42 +709,42 @@ class GameTest {
     void sevenPlayerRules() {
         Bot bot1 = new Bot("Bot1", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Thief());
                 return new Thief();
             }
         };
         Bot bot2 = new Bot("Bot2", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Assassin());
                 return new Assassin();
             }
         };
         Bot bot3 = new Bot("Bot3", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Merchant());
                 return new Merchant();
             }
         };
         Bot bot4 = new Bot("Bot4", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Magician());
                 return new Magician();
             }
         };
         Bot bot5 = new Bot("Bot5", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new King());
                 return new King();
             }
         };
         Bot bot6 = new Bot("Bot6", 0, List.of()) {
             @Override
-            public Character pickCharacter(List<Character> availableCharacters) {
+            public Character pickCharacter(CharacterManager characterManager) {
                 setCharacter(new Architect());
                 return new Architect();
             }
@@ -756,10 +770,10 @@ class GameTest {
 
         // Get the argument passed to the pickCharacter method of bot7
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<Character>> argument = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<CharacterManager> argument = ArgumentCaptor.forClass(CharacterManager.class);
         verify(bot7).pickCharacter(argument.capture());
-        assertTrue(List.of(argument.getValue().get(0), bot7.getCharacter().orElseThrow()).contains(new Warlord()));
-        assertTrue(List.of(argument.getValue().get(0), bot7.getCharacter().orElseThrow()).contains(new Bishop()));
+        assertTrue(List.of(argument.getValue().getAvailableCharacters().get(0), bot7.getCharacter().orElseThrow()).contains(new Warlord()));
+        assertTrue(List.of(argument.getValue().getAvailableCharacters().get(0), bot7.getCharacter().orElseThrow()).contains(new Bishop()));
     }
 
     @Test
@@ -770,20 +784,20 @@ class GameTest {
         game.addPlayer(simpleBot);
         fearfulBot1.buildDistrict(fearfulBot1.getHandDistricts().get(0), 0);
         var characters = CharacterManager.defaultCharacterList();
-        assertEquals(new Bishop(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Bishop(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         characters.remove(new Bishop());
         fearfulBot1.buildDistrict(fearfulBot1.getHandDistricts().get(0), 0);
-        assertEquals(new Warlord(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Warlord(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         characters.remove(new Warlord());
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         simpleBot.pay(3);
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         simpleBot.pay(2);
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         simpleBot.pay(5);
-        assertEquals(new Assassin(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Architect(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
         var cards = List.of(new Manor(), new Battlefield());
         cards.forEach(simpleBot::addDistrictToHand);
-        assertEquals(new Magician(), fearfulBot1.pickCharacter(characters));
+        assertEquals(new Magician(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
     }
 }

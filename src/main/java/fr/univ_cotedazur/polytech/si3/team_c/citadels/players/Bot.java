@@ -201,12 +201,12 @@ public class Bot extends Player {
     }
 
     @Override
-    public Character pickCharacter(List<Character> availableCharacters) {
-        super.pickCharacter(availableCharacters);
+    public Character pickCharacter(CharacterManager characterManager) {
+        super.pickCharacter(characterManager);
         Character best = null;
         double maxProfitability = -100;
-        for (Character character : availableCharacters) {
-            var profitability = characterProfitability(character);
+        for (Character character : characterManager.getAvailableCharacters()) {
+            var profitability = characterProfitability(character, characterManager);
             if (profitability <= maxProfitability) continue;
             best = character;
             maxProfitability = profitability;
@@ -221,7 +221,7 @@ public class Bot extends Player {
      *
      * @param character The character whose profitability is to be calculated
      */
-    protected double characterProfitability(Character character) {
+    protected double characterProfitability(Character character, CharacterManager characterManager) {
         if (getPlayers() == null) return 0;
 
         List<SimpleEntry<District, Double>> districtsByProfitability = getHandDistricts().stream()

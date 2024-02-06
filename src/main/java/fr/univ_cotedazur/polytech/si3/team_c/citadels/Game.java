@@ -1,6 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -168,7 +167,7 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            Character choosenCharacter = player.pickCharacter(characterManager.possibleCharactersToChoose());
+            Character choosenCharacter = player.pickCharacter(characterManager);
             player.setPossibleCharacters(beforePlayers, characterManager);
             characterManager.addPlayerCharacter(player, choosenCharacter);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
