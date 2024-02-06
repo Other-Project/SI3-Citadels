@@ -235,10 +235,10 @@ public abstract class Player implements IPlayer {
     /**
      * Asks the player to choose a character
      *
-     * @param availableCharacters A list of the characters available
+     * @param characterManager to access the available characters and the shown characters
      * @return The character that has been chosen
      */
-    public Character pickCharacter(List<Character> availableCharacters) {
+    public Character pickCharacter(CharacterManager characterManager) {
         sufferedActions = new EnumMap<>(SufferedActions.class);
         return null;
     }
