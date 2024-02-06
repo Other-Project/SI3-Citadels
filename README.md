@@ -35,7 +35,25 @@ The first step is to make:
 - Character cards
 - The neighbourhood cards
 - The game system
-- Implement the first robot
+- Implement the first bot
+
+We then chose to implement different types of bots with different characteristics:
+
+- The discreet bot whose principle is to be as discreet as possible so as not to be affected by
+  the actions of other players.
+- The aggressive bot, whose aim is to take as many actions as possible on the other players.
+- The fearful bot, which is afraid of all the other players and plays it safe as soon as it is potentially in danger
+
+At the same time, we've corrected a number of bugs detected in the tests and refactored the `Game`
+class by creating the `Action` and `CharacterManager` classes, which respectively
+manage the actions and the data needed for the character selection turn.
+
+Finally, we implemented the features requested during the rush week:
+
+- [The Statistics mode](#statistics-mode)
+- [The CSV mode](#csv-mode)
+- The Richard's bot which uses
+  the [strategy given by Richard](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509)
 
 ## Launching with Maven:
 
@@ -47,18 +65,34 @@ The first step is to make:
 > ```
 
 - ### The main program
+  - #### Demo mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--demo"
+      ```
+    Launch the demo of a single game with the full log.
 
-  ```
-  mvn clean compile exec:java
-  ```
+  - #### Statistics mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--2thousands"
+      ```
+    Launch 2 x 1000 games and print statistics.
 
-- ### The tests
+  - #### CSV mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--2thousands"
+      ```
+    Launch a simulation of several games (not necessarily 1000) with
+    rereading of "stats/gamestats.csv" if it exists and addition of new statistics.
+
+- ### Testing
+  To execute the tests, you need to use this command :
 
   ```
   mvn clean test
   ```
 
 - ### Generate a jar and launch it:
+  To generate the `.jar` package and run the program :
 
   ```
   mvn clean package
