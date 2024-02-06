@@ -43,29 +43,66 @@ public class Main {
     }
 
     public static void twoThousandGame() {
+        List<Player> bots = new ArrayList<>(List.of(new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot")));
+
         HashMap<String, Statistic> stat = new HashMap<>();
-        stat.put(Bot.class.getName(), new Statistic());
-        stat.put(FearFulBot.class.getName(), new Statistic());
-        stat.put(DiscreetBot.class.getName(), new Statistic());
+        bots.forEach(bot -> stat.put(bot.getName(), new Statistic()));
 
         for (int k = 0; k < 1000; k++) {
 
-            Game game = new Game(new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"));
+            Game game = new Game();
+            bots.forEach(game::addPlayer);
             game.start();
 
             SimpleEntry<List<Player>, Integer> winners = game.getWinners();
-            List<String> botWinners = winners.getKey().stream().map(bot -> bot.getClass().getName()).toList();
+            List<String> botWinners = winners.getKey().stream().map(Player::getName).toList();
 
 
             if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin();
             else botWinners.forEach(bot -> stat.get(bot).addEquality());
 
 
-            List<String> players = new ArrayList<>(game.getPlayerList().stream().map(player -> player.getClass().getName()).toList());
+            List<String> players = new ArrayList<>(game.getPlayerList().stream().map(Player::getName).toList());
             players.removeAll(botWinners.stream().toList());
             players.forEach(bot -> stat.get(bot).addLoose());
+
+            bots = new ArrayList<>(List.of(new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot")));
+
         }
+        LOGGER.log(Level.INFO, "Statistic measures on 1000 games : \n");
         for (Map.Entry<String, Statistic> entry : stat.entrySet()) {
+            entry.getValue().getPourcent(1000);
+            String message = entry.getKey() + " " + stat.get(entry.getKey()).toString();
+            LOGGER.log(Level.INFO, message);
+        }
+
+        stat.clear();
+        bots = new ArrayList<>(List.of(new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4")));
+        bots.forEach(bot -> stat.put(bot.getName(), new Statistic()));
+
+        for (int k = 0; k < 1000; k++) {
+
+            Game game = new Game();
+            bots.forEach(game::addPlayer);
+            game.start();
+
+            SimpleEntry<List<Player>, Integer> winners = game.getWinners();
+            List<String> botWinners = winners.getKey().stream().map(Player::getName).toList();
+
+
+            if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin();
+            else botWinners.forEach(bot -> stat.get(bot).addEquality());
+
+
+            List<String> players = new ArrayList<>(game.getPlayerList().stream().map(Player::getName).toList());
+            players.removeAll(botWinners.stream().toList());
+            players.forEach(bot -> stat.get(bot).addLoose());
+
+            bots = new ArrayList<>(List.of(new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4")));
+        }
+        LOGGER.log(Level.INFO, "Statistic measures on 1000 games : \n");
+        for (Map.Entry<String, Statistic> entry : stat.entrySet()) {
+            entry.getValue().getPourcent(1000);
             String message = entry.getKey() + " " + stat.get(entry.getKey()).toString();
             LOGGER.log(Level.INFO, message);
         }
