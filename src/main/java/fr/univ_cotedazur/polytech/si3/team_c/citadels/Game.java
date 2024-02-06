@@ -12,7 +12,6 @@ public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
     private List<Player> playerList;
     private Deck deck;
-    private int crown;
     private int currentTurn = 0;
     private final Map<Action, Player> eventActions;
     private final CharacterManager characterManager;
@@ -100,7 +99,6 @@ public class Game {
     }
 
     public void setCrown(Player player) {
-        crown = playerList.indexOf(player);
         player.setCrown();
     }
 
