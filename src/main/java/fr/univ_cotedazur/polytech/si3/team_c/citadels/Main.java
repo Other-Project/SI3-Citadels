@@ -33,7 +33,7 @@ public class Main {
         if (twoThousand) twoThousandGames();
         else {
             HashMap<String, Statistic> res = playMultipleGames(1, 4);
-            LOGGER.log(Level.INFO, res.toString());
+            LOGGER.info(res::toString);
         }
     }
 
@@ -41,7 +41,7 @@ public class Main {
         HashMap<String, Statistic> stat = new HashMap<>() {
             @Override
             public String toString() {
-                StringBuilder message = new StringBuilder("Statistic measures on " + numberOfGames + " games :\n");
+                StringBuilder message = new StringBuilder("Statistic measures on ").append(numberOfGames).append(" games :\n");
                 for (Map.Entry<String, Statistic> entry : this.entrySet())
                     message.append(entry.getKey()).append("\n\t").append(this.get(entry.getKey()).toString()).append("\n");
                 return message.toString();
@@ -72,8 +72,8 @@ public class Main {
 
     public static void twoThousandGames() {
         HashMap<String, Statistic> res = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
-        LOGGER.log(Level.INFO, res.toString());
+        LOGGER.info(res::toString);
         res = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
-        LOGGER.log(Level.INFO, res.toString());
+        LOGGER.info(res::toString);
     }
 }
