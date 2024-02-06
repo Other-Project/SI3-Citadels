@@ -33,7 +33,7 @@ The aim is to implement this game and create parties made up entirely of robots.
 The first step is to make:
 
 - Character cards
-- The districts cards
+- The district cards
 - The game system
 - Implement the first bot
 
