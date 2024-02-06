@@ -1,9 +1,7 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.FearFulBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -46,7 +44,8 @@ public class Game {
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
-            Bot bot = switch (random.nextInt(3)) {
+            Bot bot = switch (random.nextInt(4)) {
+                case 3 -> new AgressiveBot("agressiveBot" + i);
                 case 2 -> new FearFulBot("fearFullBot" + i);
                 case 1 -> new DiscreetBot("discreetBot" + i);
                 default -> new Bot("bot" + i);
@@ -195,7 +194,7 @@ public class Game {
             // The player who has been robbed give all his coins to the Thief
         }
         if (player.sufferAction(SufferedActions.KILLED)) {
-            LOGGER.log(Level.FINE, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
@@ -277,4 +276,3 @@ public class Game {
             characterManager.getPlayer(character).addSufferedAction(action, committer);
     }
 }
-
