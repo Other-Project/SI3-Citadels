@@ -31,14 +31,13 @@ public class Main {
             LOGGER.setLevel(Level.FINEST);
         }
         if (twoThousand) twoThousandGames();
-        else gameBase();
+        else {
+            HashMap<String, Statistic> res = playMultipleGames(1, 4);
+            LOGGER.log(Level.INFO, res.toString());
+        }
     }
 
-    public static void gameBase() {
-        new Game(4).start();
-    }
-
-    private static HashMap<String, Statistic> playMultipleGames(int numberOfGames, Player... players) {
+    private static HashMap<String, Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) {
         HashMap<String, Statistic> stat = new HashMap<>() {
             @Override
             public String toString() {
@@ -48,18 +47,18 @@ public class Main {
                 return message.toString();
             }
         };
-        List<Player> listOfPlayers = new ArrayList<>(List.of(players));
-        listOfPlayers.forEach(player -> stat.put(player.getName(), new Statistic()));
+
 
         for (int k = 0; k < numberOfGames; k++) {
 
-            Game game = new Game();
-            listOfPlayers.forEach(game::addPlayer);
+            Game game = new Game(numberOfPlayers, players);
+            game.getPlayerList().forEach(player -> {
+                if (!stat.containsKey(player.getName())) stat.put(player.getName(), new Statistic());
+            });
             game.start();
 
             SimpleEntry<List<Player>, Integer> winners = game.getWinners();
             List<String> botWinners = winners.getKey().stream().map(Player::getName).toList();
-
 
             if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin();
             else botWinners.forEach(bot -> stat.get(bot).addEquality());
@@ -72,9 +71,9 @@ public class Main {
     }
 
     public static void twoThousandGames() {
-        HashMap<String, Statistic> res = playMultipleGames(1000, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
+        HashMap<String, Statistic> res = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
         LOGGER.log(Level.INFO, res.toString());
-        res = playMultipleGames(1000, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
+        res = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
         LOGGER.log(Level.INFO, res.toString());
     }
 }
