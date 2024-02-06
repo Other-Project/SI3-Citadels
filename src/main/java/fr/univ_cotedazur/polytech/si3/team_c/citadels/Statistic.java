@@ -19,15 +19,15 @@ public class Statistic {
         equality++;
     }
 
-    public double getWin() {
+    public int getWin() {
         return win;
     }
 
-    public double getLoose() {
+    public int getLoose() {
         return loose;
     }
 
-    public double getEquality() {
+    public int getEquality() {
         return equality;
     }
 

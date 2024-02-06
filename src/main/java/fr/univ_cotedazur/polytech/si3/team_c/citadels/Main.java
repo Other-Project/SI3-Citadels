@@ -48,13 +48,9 @@ public class Main {
             }
         };
 
-
         for (int k = 0; k < numberOfGames; k++) {
-
             Game game = new Game(numberOfPlayers, players);
-            game.getPlayerList().forEach(player -> {
-                if (!stat.containsKey(player.getName())) stat.put(player.getName(), new Statistic());
-            });
+            game.getPlayerList().forEach(player -> stat.putIfAbsent(player.getName(), new Statistic()));
             game.start();
 
             SimpleEntry<List<Player>, Integer> winners = game.getWinners();

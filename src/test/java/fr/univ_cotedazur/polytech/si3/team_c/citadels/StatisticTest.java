@@ -63,6 +63,19 @@ class StatisticTest {
     }
 
     @Test
+    void percentageTest() {
+        stat.addWin();
+        stat.addEquality();
+        assertEquals(50.0, stat.getWinPercentage());
+        assertEquals(50.0, stat.getEqualityPercentage());
+        stat.addLoose();
+        stat.addLoose();
+        assertEquals(25.0, stat.getWinPercentage());
+        assertEquals(25.0, stat.getEqualityPercentage());
+        assertEquals(50.0, stat.getLoosePercentage());
+    }
+
+    @Test
     void toStringTest() {
         stat.addWin();
         assertEquals("Win : 100.0% / Loose : 0.0% / Equality : 0.0%", stat.toString());
