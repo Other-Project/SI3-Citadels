@@ -829,8 +829,6 @@ class BotTest {
         Bot architectWithNotBuildDistricts = new Bot("Architect", 2, List.of()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                super.pickCharacter(characterManager
-                );
                 setCharacter(new Architect());
                 return new Architect();
             }
@@ -844,7 +842,6 @@ class BotTest {
         Bot bishop = new Bot("Bishop", 0, List.of()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                super.pickCharacter(characterManager);
                 setCharacter(new Bishop());
                 return new Bishop();
             }
