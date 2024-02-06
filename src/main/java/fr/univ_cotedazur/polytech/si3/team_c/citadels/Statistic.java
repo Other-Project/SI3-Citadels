@@ -42,20 +42,25 @@ public class Statistic {
 
     public void addWin() {
         wins++;
-        runs++;
-        winsPercentage = wins / (float) runs;
+        runned();
     }
 
     public void addLoss() {
         losses++;
-        runs++;
-        lossesPercentage = losses / (float) runs;
+        runned();
     }
 
     public void addEquality() {
         equalities++;
+        runned();
+    }
+
+    private void runned() {
         runs++;
-        equalitiesPercentage = equalities / (float) runs;
+        winsPercentage = wins * 100f / runs;
+        equalitiesPercentage = equalities * 100f / runs;
+        lossesPercentage = losses * 100f / runs;
+
     }
 
     public int getWin() {
@@ -85,6 +90,7 @@ public class Statistic {
     public int numberOfTest() {
         return runs;
     }
+
     @Override
     public String toString() {
         return "Win : " + getWinPercentage() + "% / Loose : " + getLoosePercentage() + "% / Equality : " + getEqualityPercentage() + "%";
