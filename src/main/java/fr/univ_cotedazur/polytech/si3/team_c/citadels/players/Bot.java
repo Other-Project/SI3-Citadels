@@ -201,12 +201,12 @@ public class Bot extends Player {
     }
 
     @Override
-    public Character pickCharacter(List<Character> availableCharacters) {
-        super.pickCharacter(availableCharacters);
+    public Character pickCharacter(CharacterManager characterManager) {
+        super.pickCharacter(characterManager);
         Character best = null;
         double maxProfitability = -100;
-        for (Character character : availableCharacters) {
-            var profitability = characterProfitability(character);
+        for (Character character : characterManager.possibleCharactersToChoose()) {
+            var profitability = characterProfitability(character, characterManager);
             if (profitability <= maxProfitability) continue;
             best = character;
             maxProfitability = profitability;
@@ -221,7 +221,7 @@ public class Bot extends Player {
      *
      * @param character The character whose profitability is to be calculated
      */
-    protected double characterProfitability(Character character) {
+    protected double characterProfitability(Character character, CharacterManager characterManager) {
         if (getPlayers() == null) return 0;
 
         List<SimpleEntry<District, Double>> districtsByProfitability = getHandDistricts().stream()
@@ -439,7 +439,7 @@ public class Bot extends Player {
      * @param availableCharacters the characters that can be chosen
      * @return the estimated character of a player
      */
-    private Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
+    protected Character characterEstimation(IPlayer player, List<Character> availableCharacters) {
         List<Character> characters = possibleCharacters.getOrDefault(player, availableCharacters);
         characters.retainAll(availableCharacters);
         if (characters.size() == 1) return characters.get(0);
@@ -508,7 +508,7 @@ public class Bot extends Player {
      * @param attributeExtractor the attribute extractor
      * @return the player with the max attribute and the number associated
      */
-    private SimpleEntry<IPlayer, Integer> playerWithMaxAttribute(ToIntFunction<IPlayer> attributeExtractor) {
+    protected SimpleEntry<IPlayer, Integer> playerWithMaxAttribute(ToIntFunction<IPlayer> attributeExtractor) {
         return getPlayers().stream()
                 .max(Comparator.comparingInt(attributeExtractor))
                 .map(player -> new SimpleEntry<>(player, attributeExtractor.applyAsInt(player)))

@@ -235,10 +235,10 @@ public abstract class Player implements IPlayer {
     /**
      * Asks the player to choose a character
      *
-     * @param availableCharacters A list of the characters available
+     * @param characterManager to access the available characters and the shown characters
      * @return The character that has been chosen
      */
-    public Character pickCharacter(List<Character> availableCharacters) {
+    public Character pickCharacter(CharacterManager characterManager) {
         sufferedActions = new EnumMap<>(SufferedActions.class);
         return null;
     }
@@ -539,5 +539,15 @@ public abstract class Player implements IPlayer {
      */
     public int getNumberOfDistrictsToEnd() {
         return numberOfDistrictsToEnd;
+    }
+
+    public void resetPlayer() {
+        this.coins = 0;
+        this.handDistricts.clear();
+        this.builtDistricts.clear();
+        this.sufferedActions.clear();
+        this.character = null;
+        this.actionSet.clear();
+        this.gameEnder = false;
     }
 }

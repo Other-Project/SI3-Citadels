@@ -1,6 +1,5 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -124,22 +123,23 @@ public class Game {
         if (!eventActions.containsKey(eventAction)) return;
         String text = eventAction.doEventAction(this, caller, eventActions.get(eventAction), param);
         if (text != null)
-            LOGGER.info(text);
+            LOGGER.fine(text);
     }
 
 
     public void start() {
+        playerList.forEach(Player::resetPlayer);
         playerInitialization();
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
-        LOGGER.log(Level.INFO, "Game starts");
+        LOGGER.log(Level.FINE, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
-            LOGGER.log(Level.INFO, "===== Turn {0} =====", i);
+            LOGGER.log(Level.FINE, "===== Turn {0} =====", i);
             currentTurn = i;
             if (gameTurn()) break;
         }
-        LOGGER.log(Level.INFO, this::winnersDisplay);
-        LOGGER.log(Level.INFO, "Game ends");
+        LOGGER.log(Level.FINE, this::winnersDisplay);
+        LOGGER.log(Level.FINE, "Game ends");
     }
 
     public void playerInitialization() {
@@ -156,7 +156,7 @@ public class Game {
      */
     public void characterSelectionTurn() {
         characterManager.generate();
-        LOGGER.info(characterManager::toString);
+        LOGGER.fine(characterManager::toString);
         charactersToInteractWith = new ArrayList<>(characterManager.getAvailableCharacters());
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
@@ -168,10 +168,10 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            Character choosenCharacter = player.pickCharacter(characterManager.possibleCharactersToChoose());
+            Character choosenCharacter = player.pickCharacter(characterManager);
             player.setPossibleCharacters(beforePlayers, characterManager);
             characterManager.addPlayerCharacter(player, choosenCharacter);
-            LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
+            LOGGER.log(Level.FINE, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
             characterManager.getAvailableCharacters().remove(choosenCharacter);
         }
     }
@@ -180,13 +180,13 @@ public class Game {
      * Player chooses the action he wants to play during his turn
      */
     public void playerTurn(Player player) {
-        LOGGER.info(player::toString);
+        LOGGER.fine(player::toString);
         player.createActionSet();
         charactersToInteractWith.remove(player.getCharacter().orElseThrow());
         if (player.sufferAction(SufferedActions.STOLEN)) {
             Player robber = (Player) player.actionCommitter(SufferedActions.STOLEN).orElseThrow();
-            LOGGER.log(Level.INFO, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
-            LOGGER.log(Level.INFO, "{0} gains {1} coins from {2} and has now {3} coins",
+            LOGGER.log(Level.FINE, "{0} was robbed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+            LOGGER.log(Level.FINE, "{0} gains {1} coins from {2} and has now {3} coins",
                     new Object[]{robber.getName(), player.getCoins(), player.getName(), player.getCoins() + robber.getCoins()});
 
             robber.gainCoins(player.getCoins());
@@ -194,7 +194,7 @@ public class Game {
             // The player who has been robbed give all his coins to the Thief
         }
         if (player.sufferAction(SufferedActions.KILLED)) {
-            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+            LOGGER.log(Level.FINE, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();
@@ -203,10 +203,11 @@ public class Game {
 
         Action action;
         while ((action = player.nextAction()) != Action.NONE) {
-            LOGGER.log(Level.INFO, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
-            LOGGER.info(action.doAction(this, player));
+            LOGGER.log(Level.FINE, "{0} wants to {1}", new Object[]{player.getName(), action.getDescription()});
+            String message = action.doAction(this, player);
+            LOGGER.fine(message);
             player.removeAction(action);
-            LOGGER.info(player::toString);
+            LOGGER.fine(player::toString);
         }
     }
 
@@ -216,12 +217,12 @@ public class Game {
     public boolean gameTurn() {
         int previousCrown = getCrown();
         characterSelectionTurn();
-        LOGGER.log(Level.INFO, "The game turn begins");
+        LOGGER.log(Level.FINE, "The game turn begins");
         boolean isEnd = false;
         for (Character character : characterManager.charactersList()) {
             if (characterManager.characterIsChosen(character)) {
                 Player player = characterManager.getPlayer(character);
-                LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
+                LOGGER.log(Level.FINE, "It is now {0}''s turn", character);
                 playerTurn(player);
                 if (!isEnd && player.endsGame())
                     isEnd = true;
@@ -250,18 +251,6 @@ public class Game {
     }
 
     /**
-     * Perform an action on a character
-     *
-     * @param character the character who will suffer the action
-     * @param committer the player who commits the action
-     * @param action    the committed action
-     */
-    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        if (characterManager.characterIsChosen(character))
-            characterManager.getPlayer(character).addSufferedAction(action, committer);
-    }
-
-    /**
      * @return the string for the winners display
      */
     public String winnersDisplay() {
@@ -275,8 +264,15 @@ public class Game {
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
     }
 
-    public static void main(String... args) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        new Game(4).start();
+    /**
+     * Perform an action on a character
+     *
+     * @param character the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action    the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        if (characterManager.characterIsChosen(character))
+            characterManager.getPlayer(character).addSufferedAction(action, committer);
     }
 }

@@ -153,7 +153,7 @@ public class CharacterManager {
     public List<Character> possibleCharactersToChoose() {
         List<Character> possibleCharacters = getAvailableCharacters();
         // In a game with one available character, the last player needs to choose between hidden discard and the remaining character
-        if (getAvailableCharacters().size() == 1)
+        if (getAvailableCharacters().size() == 1 && !hidden.isEmpty())
             possibleCharacters.add(hidden.get(0));
         return possibleCharacters;
     }
