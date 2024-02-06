@@ -91,16 +91,22 @@ public class Game {
         this.deck = new Deck(cards);
     }
 
-    public int getCrown() {
-        return crown;
+    public Player getCrown() {
+        return playerList.stream().filter(Player::hasCrown).findFirst().orElse(playerList.get(0));
+    }
+
+    public int getCrownIndex() {
+        return playerList.indexOf(getCrown());
     }
 
     public void setCrown(Player player) {
-        setCrown(playerList.indexOf(player));
+        crown = playerList.indexOf(player);
+        player.setCrown();
     }
 
     private void setCrown(int player) {
-        crown = player;
+        Player playerToCrown = playerList.get(player);
+        setCrown(playerToCrown);
     }
 
     public int getCurrentTurn() {
@@ -148,6 +154,7 @@ public class Game {
             p.gainCoins(2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
             p.setNumberOfDistrictsToEnd(numberOfDistrictsToEnd());
+            p.resetCrown();
         }
     }
 
@@ -158,16 +165,16 @@ public class Game {
         characterManager.generate();
         LOGGER.fine(characterManager::toString);
         charactersToInteractWith = new ArrayList<>(characterManager.getAvailableCharacters());
-        int crownIndex = getCrown();
+        int crownedPlayerIndex = getCrownIndex();
         for (int i = 0; i < playerList.size(); i++) {
-            int playerIndex = (crownIndex + i) % playerList.size();
+            int playerIndex = (crownedPlayerIndex + i) % playerList.size();
             var player = playerList.get(playerIndex);
             // Stores players who have already chosen their character
             List<IPlayer> beforePlayers;
-            if (playerIndex < crownIndex) {
-                beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
+            if (playerIndex < crownedPlayerIndex) {
+                beforePlayers = new ArrayList<>(playerList.subList(crownedPlayerIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
-            } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
+            } else beforePlayers = new ArrayList<>(playerList.subList(crownedPlayerIndex, playerIndex));
             Character choosenCharacter = player.pickCharacter(characterManager);
             player.setPossibleCharacters(beforePlayers, characterManager);
             characterManager.addPlayerCharacter(player, choosenCharacter);
@@ -215,7 +222,9 @@ public class Game {
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
-        int previousCrown = getCrown();
+
+        Player previousCrownedPlayer = getCrown();
+        int previousCrownedPlayerIndex = getCrownIndex();
         characterSelectionTurn();
         LOGGER.log(Level.FINE, "The game turn begins");
         boolean isEnd = false;
@@ -228,9 +237,9 @@ public class Game {
                     isEnd = true;
             } else charactersToInteractWith.remove(character);
         }
-        Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
-        if (getCrown() == previousCrown && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
-            setCrown((getCrown() + 1) % playerList.size());
+        Optional<Character> characterKing = playerList.get(previousCrownedPlayerIndex).getCharacter();
+        if (getCrown() == previousCrownedPlayer && characterKing.isPresent() && !characterKing.get().startTurnAction().equals(Action.GET_CROWN))
+            setCrown((previousCrownedPlayerIndex + 1) % playerList.size());
         return isEnd;
     }
 

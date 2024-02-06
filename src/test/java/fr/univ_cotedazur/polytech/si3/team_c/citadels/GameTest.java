@@ -89,10 +89,10 @@ class GameTest {
         bot2.pickCharacter(characterManagerWithoutDiscard(2, List.of(new Magician())));
         for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown does not turn between player if there is a King
-        assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+        assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
     }
 
     @Test
@@ -129,10 +129,10 @@ class GameTest {
         game.setCrown(bot1);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
         }
-        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
-        assertEquals(bot2, game.getPlayerList().get(game.getCrown()));
+        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown doesn't turn between player if there is no King
+        assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
     }
 
     @Test
