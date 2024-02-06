@@ -1,42 +1,43 @@
-# Projet Citadels - Team C
+# Citadels Project - Team C
 
 **[Lassauniere Théo](https://github.com/theoLassauniere), [Galli Evan](https://github.com/06Games),
 [Lubrat Jilian](https://github.com/LubratJilian), [Michelozzi Antoine-Marie](https://github.com/mantoniu)**  
 Polytech Nice-Sophia - SI3 PS5
 
-**Objectifs :** Recréer le jeu de société Citadelles et simuler une partie avec 4 robots ou plus.
+**Goals :** Recreate the board game Citadels and simulate a game with 4 or more robots.
 
 ------------------------
 
-## Présentation :
+## Introducing :
 
-### Le jeu Citadelles
+### The citadel game
 
-Citadelles est un jeu de société composé de cartes personnage ayant toutes une capacité différente 
-et de cartes quartier de couleurs différentes (rouge, jaune, bleu, vert et violet), 
-les cartes violettes ont, comme les personnages, des capacités propres. 
+Citadels is a board game made up of character cards, each with a different ability,
+and districts of different colours (red, yellow, blue, green and purple).
+Like the characters, the purple cards have their own abilities.
 
-Un tour se déroule de la façon suivante :
-* Chaque joueur en partant de celui qui a la couronne, choisit à tour de rôle son personnage. 
-* Puis chaque personnage est appelé dans un ordre défini. 
-* La personne ayant choisi le personnage peut alors réaliser différentes actions :
-  * piocher 2 cartes ou prendre 2 pièces d'or
-  * construire un quartier : pour construire un quartier, il faut avoir assez de pièces pour pouvoir payer le coût indiqué sur la carte. 
-  * réaliser l'action spéciale associée à son personnage ou à un de ses quartiers violets déjà construit. 
+A turn proceeds as described below:
 
-La partie se termine quand une personne a construit 8 quartiers, et on décompte pour chaque joueur son nombre de points, 
-qui est équivalent à la somme des coûts de chacun des quartiers, sauf cas particuliers.
+* Each player in turn chooses their character, starting with the player with the crown.
+* Each character is then called up in a set order.
+* The person who has chosen the character can then perform various actions:
+  * draw 2 cards or take 2 gold coins
+  * build a district: to build a district, you must have enough coins to pay the cost shown on the card.
+  * perform the special action associated with your character or one of your already-built purple districts.
 
-L'objectif est d'implémenter ce jeu et de réaliser des parties composées uniquement de robots.
+The game ends when a player has built 8 districts (or 10 if there are 3 players), and each player's points are counted,
+which is equivalent to the sum of the costs of each of the districts, except in special cases.
 
-Il faut ainsi dans un premier temps réaliser:
+The aim is to implement this game and create parties made up entirely of robots.
 
-- Les cartes personnages 
-- Les cartes quartiers 
-- Le système de jeu
-- L'implémentation d'un premier robot
+The first step is to make:
 
-## Lancement avec Maven:
+- Character cards
+- The neighbourhood cards
+- The game system
+- Implement the first robot
+
+## Launching with Maven:
 
 > **Note**  
 > The terminal must use UTF8 encoding for emoji to be displayed correctly.  
@@ -45,26 +46,21 @@ Il faut ainsi dans un premier temps réaliser:
 > [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 > ```
 
-- ### Le programme principal
+- ### The main program
 
   ```
   mvn clean compile exec:java
   ```
 
-- ### Les tests 
+- ### The tests
 
   ```
   mvn clean test
   ```
 
-- ###  Générer un jar puis le lancer:
+- ### Generate a jar and launch it:
 
   ```
   mvn clean package
   java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
   ```
-
-
-
-
-
