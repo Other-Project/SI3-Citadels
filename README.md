@@ -69,7 +69,7 @@ Finally, we implemented the features requested during the rush week:
       ```
       mvn clean compile exec:java -Dexec.args="--demo"
       ```
-    Launch the demo of a single game with the full log.
+    Launch the demo of a single game with all the logs.
 
   - #### Statistics mode
       ```
