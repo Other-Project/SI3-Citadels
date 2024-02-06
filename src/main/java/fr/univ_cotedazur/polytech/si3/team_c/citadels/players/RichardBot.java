@@ -14,7 +14,7 @@ public class RichardBot extends Bot {
     }
 
     public RichardBot(String name, int coins, List<District> districts) {
-        super(name, coins, districts, 1.0);
+        super(name, coins, districts);
     }
 
     @Override

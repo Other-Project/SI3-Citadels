@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BotTest {
 
-    Random characterManagerRandom;
     Player player1, player2;
     Bot bot1, bot2;
     Bot merchant, assassin, architect,
@@ -24,7 +23,6 @@ class BotTest {
 
     @BeforeEach
     void setUp() {
-        Random characterManagerRandom = new Random();
         player1 = bot1 = new Bot("Bot 1", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate()));
         player2 = bot2 = new Bot("Bot 2", 2, List.of(new Battlefield(), new Castle(), new Church(), new DragonGate(), new Docks(), new Laboratory()));
         assassin = new Bot("Assassin", 100, List.of()) {
@@ -153,7 +151,7 @@ class BotTest {
         assertTrue(player1.buildDistrict(new WatchTower(), 0));
         assertEquals(Action.NONE, player1.nextAction(Set.of(Action.SPECIAL_INCOME))); // The player has no yellow districts built
 
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Merchant(), new King(), new Bishop())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Merchant(), new King(), new Bishop())));
         assertEquals(Action.INCOME, player1.nextAction(Set.of(Action.DRAW, Action.BUILD, Action.SPECIAL_INCOME, Action.INCOME))); // The player has a lot of cards in hand
         assertEquals(2, player1.gainIncome());
         assertEquals(7, player1.getCoins());
@@ -162,16 +160,16 @@ class BotTest {
         assertEquals(Action.NONE, player1.nextAction(Set.of(Action.SPECIAL_INCOME))); // The player has no card of the color of his character
         assertEquals(0, player1.gainSpecialIncome());
 
-        assertEquals(new Warlord(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Merchant(), new Warlord())))); // The warlord is more profitable as the player will gain at least one more coins that with the merchant
+        assertEquals(new Warlord(), player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Merchant(), new Warlord())))); // The warlord is more profitable as the player will gain at least one more coins that with the merchant
         assertEquals(2, player1.gainSpecialIncome()); // The player has 2 red cards
     }
 
     @Test
     void pickCharacterSetsPlayer() {
         assertTrue(player1.getCharacter().isEmpty());
-        assertEquals(new Architect(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Architect()))));
+        assertEquals(new Architect(), player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Architect()))));
         assertEquals(new Architect(), player1.getCharacter().get());
-        assertEquals(new Magician(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Magician()))));
+        assertEquals(new Magician(), player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Magician()))));
         assertEquals(new Magician(), player1.getCharacter().get());
     }
 
@@ -182,34 +180,34 @@ class BotTest {
         Player feared = new Bot("feared", 100, List.of(new Graveyard(), new Church(), new Castle(), new Smithy(), new Cathedral(), new DragonGate(), new Monastery()));
 
         List<Character> characters = new ArrayList<>(AllCharacters);
-        assertEquals(new Architect(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters))); // The bot should choose the architect as he gains 2 more coins
+        assertEquals(new Architect(), player1.pickCharacter(characterManagerWithoutDiscard(1, characters))); // The bot should choose the architect as he gains 2 more coins
         characters.remove(new Architect());
-        assertEquals(new Merchant(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters))); // The bot should choose the merchant as he gains 1 more coin
+        assertEquals(new Merchant(), player1.pickCharacter(characterManagerWithoutDiscard(1, characters))); // The bot should choose the merchant as he gains 1 more coin
         List<District> someBlueDistricts = List.of(new Monastery(), new Cathedral());
         for (District district : someBlueDistricts) {
             player1.addDistrictToHand(district);
             player1.gainCoins(district.getCost());
             assertTrue(player1.buildDistrict(district, 0));
         }
-        assertEquals(new Bishop(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters))); // The bot should choose the bishop as he gains 2 more coins and some security (from the warlord)
+        assertEquals(new Bishop(), player1.pickCharacter(characterManagerWithoutDiscard(1, characters))); // The bot should choose the bishop as he gains 2 more coins and some security (from the warlord)
         for (District district : someBlueDistricts) player1.removeDistrictFromDistrictBuilt(district);
 
 
         player1.setPlayers(() -> List.of(feared));
         characters = new ArrayList<>(AllCharacters);
-        assertEquals(new Thief(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters))); // The bot should choose the thief as the other player has a lot of money
+        assertEquals(new Thief(), player1.pickCharacter(characterManagerWithoutDiscard(1, characters))); // The bot should choose the thief as the other player has a lot of money
 
         feared.pay(100);
         player1.gainCoins(10);
         player1.removeFromHand(List.of(new DragonGate()));
         assertEquals(0, feared.getCoins());
-        assertEquals(new Magician(), player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters))); // The bot should choose the magician as the other player has a lot of cards, the bot already have some money and none of his card are really valuable
+        assertEquals(new Magician(), player1.pickCharacter(characterManagerWithoutDiscard(1, characters))); // The bot should choose the magician as the other player has a lot of cards, the bot already have some money and none of his card are really valuable
 
         for (District district : feared.getHandDistricts()) {
             feared.gainCoins(district.getCost());
             assertTrue(feared.buildDistrict(district, 0));
         }
-        Character picked = player1.pickCharacter(new CharacterManager(1, characterManagerRandom, characters));
+        Character picked = player1.pickCharacter(characterManagerWithoutDiscard(1, characters));
         assertTrue(List.of(new Assassin(), new Warlord()).contains(picked), picked::toString); // The bot should try to prevent the other player from winning
     }
 
@@ -316,16 +314,16 @@ class BotTest {
 
     @Test
     void createActionSetTest() {
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new King())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new King())));
         player1.createActionSet();
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Bishop())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Bishop())));
         player1.createActionSet();
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Warlord())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Warlord())));
         player1.createActionSet();
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME, Action.DESTROY)), player1.getActionSet());
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Merchant())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Merchant())));
         player1.createActionSet();
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.SPECIAL_INCOME, Action.DRAW, Action.INCOME)), player1.getActionSet());
         bot1.gainCoins(10);
@@ -339,7 +337,7 @@ class BotTest {
 
     @Test
     void removeActionSetTest() {
-        player1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new King())));
+        player1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new King())));
         player1.createActionSet();
         assertTrue(player1.removeAction(Action.SPECIAL_INCOME));
         assertEquals(new HashSet<>(List.of(Action.BUILD, Action.DRAW, Action.INCOME)), player1.getActionSet());
@@ -364,8 +362,8 @@ class BotTest {
         };
         bot1.setPlayers(() -> List.of(bot2));
         bot2.setPlayers(() -> List.of(bot1));
-        bot1.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new Magician()))); // Create a bot with the character magician
-        bot2.pickCharacter(new CharacterManager(1, characterManagerRandom, List.of(new King())));
+        bot1.pickCharacter(characterManagerWithoutDiscard(1, List.of(new Magician()))); // Create a bot with the character magician
+        bot2.pickCharacter(characterManagerWithoutDiscard(1, List.of(new King())));
         assertEquals(Set.of(Action.EXCHANGE_DECK, Action.EXCHANGE_PLAYER), bot1.createActionSet());
         assertEquals(List.of(new Battlefield(), new Castle(), new Church()), bot1.chooseCardsToExchangeWithDeck());
         assertEquals(bot2, bot1.playerToExchangeCards(bot1.getPlayers()));
@@ -391,7 +389,7 @@ class BotTest {
 
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new King()) ? new King() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new King()) ? new King() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -409,7 +407,7 @@ class BotTest {
 
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Merchant()) ? new Merchant() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -427,7 +425,7 @@ class BotTest {
 
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Bishop()) ? new Bishop() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Bishop()) ? new Bishop() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -445,7 +443,7 @@ class BotTest {
 
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Warlord()) ? new Warlord() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -479,7 +477,7 @@ class BotTest {
         Bot warlordBot = new Bot("warlordBot", 50, Collections.emptyList()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Warlord()) ? new Warlord() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -487,7 +485,7 @@ class BotTest {
         Bot bishopBot = new Bot("bishopBot", 50, List.of(new TheKeep(), new Temple())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Bishop()) ? new Bishop() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Bishop()) ? new Bishop() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -505,7 +503,7 @@ class BotTest {
         Bot merchantBot = new Bot("merchantBot", 50, List.of(new Harbor(), new Temple(), new Church())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Merchant()) ? new Merchant() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -523,7 +521,7 @@ class BotTest {
         Bot kingBot = new Bot("kingBot", 50, List.of(new University(), new Harbor(), new Prison(), new Docks())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new King()) ? new King() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new King()) ? new King() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -577,7 +575,7 @@ class BotTest {
 
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new King()) ? new King() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new King()) ? new King() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -595,7 +593,7 @@ class BotTest {
         Bot warlordBot = new Bot("warlordBot", 1, Collections.emptyList()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Warlord()) ? new Warlord() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -613,7 +611,7 @@ class BotTest {
         Bot merchantBot = new Bot("merchantBot", 50, List.of(new Observatory(), new HauntedCity(), new Temple(), new Church(), new Harbor())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Merchant()) ? new Merchant() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -683,7 +681,7 @@ class BotTest {
         Bot warlordBot = new Bot("warlordBot", 20, Collections.emptyList()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Warlord()) ? new Warlord() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -691,7 +689,7 @@ class BotTest {
         Bot bot2 = new Bot("bot 2", 10, List.of(new WatchTower())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Merchant()) ? new Merchant() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -709,7 +707,7 @@ class BotTest {
         Bot bot3 = new Bot("bot 3", 10, List.of(new TheKeep())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new King()) ? new King() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new King()) ? new King() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -727,7 +725,7 @@ class BotTest {
         Bot bishopBot = new Bot("bishopBot", 10, List.of(new Harbor(), new Temple())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Bishop()) ? new Bishop() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Bishop()) ? new Bishop() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -761,7 +759,7 @@ class BotTest {
         Bot warlordBot = new Bot("bot 1", 10, Collections.emptyList()) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Warlord()) ? new Warlord() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Warlord()) ? new Warlord() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -770,7 +768,7 @@ class BotTest {
                 new Temple(), new University(), new WatchTower(), new Tavern(), new Smithy())) {
             @Override
             public Character pickCharacter(CharacterManager characterManager) {
-                Character best = characterManager.getAvailableCharacters().contains(new Merchant()) ? new Merchant() : characterManager.getAvailableCharacters().get(0);
+                Character best = characterManager.possibleCharactersToChoose().contains(new Merchant()) ? new Merchant() : characterManager.possibleCharactersToChoose().get(0);
                 setCharacter(best);
                 return best;
             }
@@ -865,7 +863,11 @@ class BotTest {
     }
 
     public static CharacterManager characterManagerWithoutDiscard(int playerCount) {
-        return new CharacterManager(playerCount, new Random()) {
+        return characterManagerWithoutDiscard(playerCount, CharacterManager.defaultCharacterList());
+    }
+
+    public static CharacterManager characterManagerWithoutDiscard(int playerCount, List<Character> characterList) {
+        return new CharacterManager(playerCount, new Random(), characterList) {
             @Override
             protected void setHiddenDiscard() {
             }

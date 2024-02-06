@@ -205,7 +205,7 @@ public class Bot extends Player {
         super.pickCharacter(characterManager);
         Character best = null;
         double maxProfitability = -100;
-        for (Character character : characterManager.getAvailableCharacters()) {
+        for (Character character : characterManager.possibleCharactersToChoose()) {
             var profitability = characterProfitability(character, characterManager);
             if (profitability <= maxProfitability) continue;
             best = character;
