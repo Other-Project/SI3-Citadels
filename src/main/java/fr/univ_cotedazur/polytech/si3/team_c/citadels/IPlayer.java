@@ -33,4 +33,9 @@ public interface IPlayer {
      * Gets the chosen character (can be empty if the player hasn't chosen yet)
      */
     Optional<Character> getCharacter();
+
+    /**
+     * Gets if the current player has the crown
+     */
+    boolean hasCrown();
 }
