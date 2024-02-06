@@ -75,9 +75,10 @@ public class RichardBot extends Bot {
      */
     private int potentialAmountOfCoins() {
         int potentialMaxCoins = 0;
-        for (int i = 0; i < getPlayers().size() - 1; i++) {
-            for (int j = 1; j < getPlayers().size(); j++) {
-                int currentRes = getPlayers().get(i).getCoins() + getPlayers().get(j).getCoins();
+        var players = getPlayers();
+        for (int i = 0; i < players.size() - 1; i++) {
+            for (int j = 1; j < players.size(); j++) {
+                int currentRes = players.get(i).getCoins() + players.get(j).getCoins();
                 if (currentRes >= potentialMaxCoins) potentialMaxCoins = currentRes;
             }
         }
@@ -104,10 +105,6 @@ public class RichardBot extends Bot {
     }
 
     private List<IPlayer> playerWillBuildPenultimateDistrict() {
-        List<IPlayer> res = new ArrayList<>();
-        for (IPlayer player : getPlayers()) {
-            if (player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2) res.add(player);
-        }
-        return res;
+        return getPlayers().stream().filter(player -> player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2).toList();
     }
 }
