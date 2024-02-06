@@ -1,7 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.Game;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.IPlayer;
 
 import java.util.Collections;
@@ -74,8 +73,8 @@ public class DiscreetBot extends Bot {
     }
 
     private boolean tryFinalRush() {
-        return Game.DISTRICT_NUMBER_TO_END - getHandSize() > 1
-                && Game.DISTRICT_NUMBER_TO_END - getHandSize() <= 3
+        return getNumberOfDistrictsToEnd() - getHandSize() > 1
+                && getNumberOfDistrictsToEnd() - getHandSize() <= 3
                 && getCoins() >= 4;
     }
 

@@ -14,4 +14,9 @@ public class Assassin extends Character {
     public List<Action> getAction() {
         return List.of(Action.KILL);
     }
+
+    @Override
+    public int minimumNumberOfPlayers() {
+        return 4;
+    }
 }

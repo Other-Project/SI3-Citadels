@@ -1,10 +1,7 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.characters.*;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Bot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.DiscreetBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.FearFulBot;
-import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.Player;
+import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
@@ -14,15 +11,12 @@ import java.util.stream.Collectors;
 
 public class Game {
     private static final Logger LOGGER = Logger.getGlobal();
-    public static final int DISTRICT_NUMBER_TO_END = 8;
-    private final Map<Character, Player> characterPlayerMap;
     private List<Player> playerList;
-
     private Deck deck;
-
     private int crown;
     private int currentTurn = 0;
     private final Map<Action, Player> eventActions;
+    private final CharacterManager characterManager;
 
     /**
      * The characters the player can interact with
@@ -39,25 +33,23 @@ public class Game {
     }
 
     public Game(int numberPlayers, Player... players) {
+        this(numberPlayers, null, players);
+    }
+
+    public Game(int numberPlayers, CharacterManager characterManager, Player... players) {
+        this.characterManager = (characterManager == null) ? new CharacterManager(numberPlayers, random) : characterManager;
         deck = new Deck();
-        characterPlayerMap = new HashMap<>();
         playerList = new ArrayList<>(List.of(players));
         charactersToInteractWith = new ArrayList<>();
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
-            Bot bot;
-            switch (random.nextInt(3)) {
-                case 2:
-                    bot = new FearFulBot("fearFullBot" + i);
-                    break;
-                case 1:
-                    bot = new DiscreetBot("discreetBot" + i);
-                    break;
-                default:
-                    bot = new Bot("bot" + i);
-                    break;
-            }
+            Bot bot = switch (random.nextInt(4)) {
+                case 3 -> new AgressiveBot("agressiveBot" + i);
+                case 2 -> new FearFulBot("fearFullBot" + i);
+                case 1 -> new DiscreetBot("discreetBot" + i);
+                default -> new Bot("bot" + i);
+            };
             playerList.add(bot);
             bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
         }
@@ -82,6 +74,14 @@ public class Game {
         player.setPlayers(() -> new ArrayList<>(playerList.stream().filter(p -> !p.equals(player)).toList()));
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
+    }
+
+    /**
+     * @return the number of districts to build to end the game
+     */
+    public int numberOfDistrictsToEnd() {
+        if (playerList.size() == 3) return 10;
+        return 8;
     }
 
     protected void setDefaultDeck() {
@@ -147,22 +147,17 @@ public class Game {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.gainCoins(2);
             p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
+            p.setNumberOfDistrictsToEnd(numberOfDistrictsToEnd());
         }
-    }
-
-    /**
-     * Gets the default list of characters
-     */
-    public static List<Character> defaultCharacterList() {
-        return new ArrayList<>(List.of(new Assassin(), new Thief(), new Magician(), new King(),
-                new Bishop(), new Merchant(), new Architect(), new Warlord()));
     }
 
     /**
      * Each player selects a character in the character list
      */
     public void characterSelectionTurn() {
-        List<Character> characterList = defaultCharacterList();
+        characterManager.generate();
+        LOGGER.info(characterManager::toString);
+        charactersToInteractWith = new ArrayList<>(characterManager.getAvailableCharacters());
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
             int playerIndex = (crownIndex + i) % playerList.size();
@@ -173,11 +168,11 @@ public class Game {
                 beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerList.size()));
                 beforePlayers.addAll(playerList.subList(0, playerIndex));
             } else beforePlayers = new ArrayList<>(playerList.subList(crownIndex, playerIndex));
-            var choosenCharacter = player.pickCharacter(characterList);
-            characterPlayerMap.put(choosenCharacter, player);
+            Character choosenCharacter = player.pickCharacter(characterManager.possibleCharactersToChoose());
+            player.setPossibleCharacters(beforePlayers, characterManager);
+            characterManager.addPlayerCharacter(player, choosenCharacter);
             LOGGER.log(Level.INFO, "{0} has chosen the {1}", new Object[]{player.getName(), choosenCharacter});
-            player.setPossibleCharacters(characterList, beforePlayers);
-            characterList.remove(choosenCharacter);
+            characterManager.getAvailableCharacters().remove(choosenCharacter);
         }
     }
 
@@ -216,31 +211,20 @@ public class Game {
     }
 
     /**
-     * The method which checks if the game must end according to the number of districts built for the player
-     */
-    public boolean end(IPlayer player) {
-        return player.getBuiltDistricts().size() >= DISTRICT_NUMBER_TO_END;
-    }
-
-    /**
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
         int previousCrown = getCrown();
-        charactersToInteractWith = defaultCharacterList();
-        characterPlayerMap.clear();
         characterSelectionTurn();
         LOGGER.log(Level.INFO, "The game turn begins");
         boolean isEnd = false;
-        for (Character character : defaultCharacterList()) {
-            if (characterPlayerMap.containsKey(character)) {
-                Player player = characterPlayerMap.get(character);
+        for (Character character : characterManager.charactersList()) {
+            if (characterManager.characterIsChosen(character)) {
+                Player player = characterManager.getPlayer(character);
                 LOGGER.log(Level.INFO, "It is now {0}''s turn", character);
                 playerTurn(player);
-                if (end(player)) {
-                    if (!isEnd) player.endsGame();
+                if (!isEnd && player.endsGame())
                     isEnd = true;
-                }
             } else charactersToInteractWith.remove(character);
         }
         Optional<Character> characterKing = playerList.get(previousCrown).getCharacter();
@@ -266,6 +250,18 @@ public class Game {
     }
 
     /**
+     * Perform an action on a character
+     *
+     * @param character the character who will suffer the action
+     * @param committer the player who commits the action
+     * @param action    the committed action
+     */
+    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
+        if (characterManager.characterIsChosen(character))
+            characterManager.getPlayer(character).addSufferedAction(action, committer);
+    }
+
+    /**
      * @return the string for the winners display
      */
     public String winnersDisplay() {
@@ -277,18 +273,6 @@ public class Game {
             result.append("There is an equality between players : ")
                     .append(winners.getKey().stream().map(Player::getName).collect(Collectors.joining(", ")));
         return result.append(" with ").append(winners.getValue()).append(" points !").toString();
-    }
-
-    /**
-     * Perform an action on a character
-     *
-     * @param character the character who will suffer the action
-     * @param committer the player who commits the action
-     * @param action    the committed action
-     */
-    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        if (characterPlayerMap.containsKey(character))
-            characterPlayerMap.get(character).addSufferedAction(action, committer);
     }
 
     public static void main(String... args) {
