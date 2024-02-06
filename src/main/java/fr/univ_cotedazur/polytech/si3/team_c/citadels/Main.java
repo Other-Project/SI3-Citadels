@@ -42,8 +42,7 @@ public class Main {
         new Game(4).start();
     }
 
-    private static HashMap<String, Statistic> playMultipleGames(List<Player> botsInit, int numberOfGames) {
-        List<Player> bots = new ArrayList<>(botsInit);
+    private static HashMap<String, Statistic> playMultipleGames(List<Player> bots, int numberOfGames) {
         HashMap<String, Statistic> stat = new HashMap<>();
         bots.forEach(bot -> stat.put(bot.getName(), new Statistic()));
 
@@ -77,11 +76,13 @@ public class Main {
     }
 
     private static void displayResult(HashMap<String, Statistic> stat, int numberOfGames) {
-        LOGGER.log(Level.INFO, "Statistic measures on {0} games : \n", numberOfGames);
+        StringBuilder message = new StringBuilder("Statistic measures on " + numberOfGames + " games :\n");
         for (Map.Entry<String, Statistic> entry : stat.entrySet()) {
-            String message = entry.getKey() + " " + stat.get(entry.getKey()).toString();
-            LOGGER.log(Level.INFO, message);
+            message.append(entry.getKey()).append("\n\t").append(stat.get(entry.getKey()).toString()).append("\n");
         }
+        message.append("\n");
+        String display = message.toString();
+        LOGGER.log(Level.INFO, display);
     }
 
     public static void twoThousandGame() {

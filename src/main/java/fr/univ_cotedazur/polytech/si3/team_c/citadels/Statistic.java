@@ -44,6 +44,6 @@ public class Statistic {
 
     @Override
     public String toString() {
-        return "Win : " + win + "% / Looses : " + loose + "% / Equality :" + equality + "%";
+        return "Win : " + win + "% / Looses : " + loose + "% / Equality : " + equality + "%";
     }
 }

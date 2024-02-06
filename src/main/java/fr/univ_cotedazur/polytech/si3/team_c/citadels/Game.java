@@ -157,7 +157,7 @@ public class Game {
      */
     public void characterSelectionTurn() {
         characterManager.generate();
-        LOGGER.info(characterManager::toString);
+        LOGGER.fine(characterManager::toString);
         charactersToInteractWith = new ArrayList<>(characterManager.getAvailableCharacters());
         int crownIndex = getCrown();
         for (int i = 0; i < playerList.size(); i++) {
@@ -252,18 +252,6 @@ public class Game {
     }
 
     /**
-     * Perform an action on a character
-     *
-     * @param character the character who will suffer the action
-     * @param committer the player who commits the action
-     * @param action    the committed action
-     */
-    public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        if (characterManager.characterIsChosen(character))
-            characterManager.getPlayer(character).addSufferedAction(action, committer);
-    }
-
-    /**
      * @return the string for the winners display
      */
     public String winnersDisplay() {
@@ -285,7 +273,8 @@ public class Game {
      * @param action    the committed action
      */
     public void performActionOnCharacter(Character character, IPlayer committer, SufferedActions action) {
-        if (characterPlayerMap.containsKey(character))
-            characterPlayerMap.get(character).addSufferedAction(action, committer);
+        if (characterManager.characterIsChosen(character))
+            characterManager.getPlayer(character).addSufferedAction(action, committer);
     }
 }
+
