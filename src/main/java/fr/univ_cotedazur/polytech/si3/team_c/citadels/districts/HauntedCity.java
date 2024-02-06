@@ -3,7 +3,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels.districts;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Colors;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.District;
 
-import java.util.Optional;
+import java.util.List;
 
 public class HauntedCity extends District {
     public HauntedCity() {
@@ -11,8 +11,8 @@ public class HauntedCity extends District {
     }
 
     @Override
-    public Optional<Colors> bonusColors(boolean builtInLastTurn) {
-        if (builtInLastTurn) return Optional.of(getColor());
-        return Optional.empty();
+    public List<Colors> bonusColors(boolean builtInLastTurn) {
+        if (builtInLastTurn) return List.of(getColor());
+        return List.of(Colors.values());
     }
 }
