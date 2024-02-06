@@ -102,4 +102,12 @@ public class RichardBot extends Bot {
         }
         return false;
     }
+
+    private List<IPlayer> playerWillBuildPenultimateDistrict() {
+        List<IPlayer> res = new ArrayList<>();
+        for (IPlayer player : getPlayers()) {
+            if (player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2) res.add(player);
+        }
+        return res;
+    }
 }
