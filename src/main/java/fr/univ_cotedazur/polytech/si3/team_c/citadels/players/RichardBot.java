@@ -19,7 +19,6 @@ public class RichardBot extends Bot {
 
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
-        IPlayer enderPlayer = playerCanEndGame().get(0);
         // If the bot is in first place, he must kill the characters that could destroy one of his districts
         SimpleEntry<IPlayer, Integer> firstPlayer = playerWithMaxAttribute(iPlayer -> iPlayer.getBuiltDistricts().size());
         if (firstPlayer.getKey().equals(this)) {
@@ -27,6 +26,8 @@ public class RichardBot extends Bot {
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
 
+        List<IPlayer> enderPlayers = playerCanEndGame();
+        IPlayer enderPlayer = enderPlayers.isEmpty() ? null : enderPlayers.get(0);
         // If the bot estimates that the ender player has the best chances to get the stealing or destroying power, we kill that character
         if (enderPlayer != null) {
             Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
