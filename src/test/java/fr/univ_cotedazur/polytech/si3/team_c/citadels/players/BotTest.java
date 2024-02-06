@@ -667,7 +667,6 @@ class BotTest {
     void cardToDiscard() {
         bot1.gainCoins(1000);
         bot1.getHandDistricts().forEach(d -> bot1.buildDistrict(d, 0));
-        System.out.println(bot1.getCoins());
         assertEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));
         bot1.pay(987);
         assertNotEquals(Action.TAKE_THREE, bot1.nextAction(Set.of(Action.TAKE_THREE)));

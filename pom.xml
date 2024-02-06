@@ -123,7 +123,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>fr.univ_cotedazur.polytech.si3.team_c.citadels.Game</mainClass>
+                    <mainClass>fr.univ_cotedazur.polytech.si3.team_c.citadels.Main</mainClass>
+
                     <!--          <arguments>
                                 <argument>argument1</argument>
                               </arguments>
