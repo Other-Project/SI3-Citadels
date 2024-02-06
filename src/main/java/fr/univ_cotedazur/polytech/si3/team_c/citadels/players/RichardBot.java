@@ -54,10 +54,10 @@ public class RichardBot extends Bot {
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
         if (playerCanAttemptFinalRush(character)) {
-            return 50;
+            return 100;
         }
         if (character.getAction().contains(Action.KILL) && playerCanAttemptFinalRush(characterManager)) {
-            return 40;
+            return 80;
         }
 
         List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
@@ -70,7 +70,12 @@ public class RichardBot extends Bot {
                 return 30;
             } else if (!character.canHaveADistrictDestroyed()) {
                 return 20;
+            } else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) {
+                return 15;
+            } else if (character.getAction().contains(Action.STEAL)) {
+                return 10;
             }
+
         }
 
         return super.characterProfitability(character, characterManager);
