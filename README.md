@@ -10,7 +10,7 @@ Polytech Nice-Sophia - SI3 PS5
 
 ## Introducing :
 
-### The citadel game
+### Citadels game
 
 Citadels is a board game made up of character cards, each with a different ability,
 and districts of different colours (red, yellow, blue, green and purple).
@@ -21,9 +21,9 @@ A turn proceeds as described below:
 * Each player in turn chooses their character, starting with the player with the crown.
 * Each character is then called up in a set order.
 * The person who has chosen the character can then perform various actions:
-  * draw 2 cards or take 2 gold coins
-  * build a district: to build a district, you must have enough coins to pay the cost shown on the card.
-  * perform the special action associated with your character or one of your already-built purple districts.
+  * Draw 2 cards or take 2 gold coins
+  * Build a district: to build a district, you must have enough coins to pay the cost shown on the card.
+  * Perform the special action associated with your character or one of your already-built purple districts.
 
 The game ends when a player has built 8 districts (or 10 if there are 3 players), and each player's points are counted,
 which is equivalent to the sum of the costs of each of the districts, except in special cases.
@@ -33,7 +33,7 @@ The aim is to implement this game and create parties made up entirely of robots.
 The first step is to make:
 
 - Character cards
-- The neighbourhood cards
+- The districts cards
 - The game system
 - Implement the first bot
 
