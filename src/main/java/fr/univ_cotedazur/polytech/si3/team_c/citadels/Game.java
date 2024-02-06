@@ -193,7 +193,7 @@ public class Game {
             // The player who has been robbed give all his coins to the Thief
         }
         if (player.sufferAction(SufferedActions.KILLED)) {
-            LOGGER.log(Level.INFO, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
+            LOGGER.log(Level.FINE, "{0} was killed because he was the {1}", new Object[]{player.getName(), player.getCharacter().orElseThrow()});
             return;
         }
         Action startOfTurnAction = player.playStartOfTurnAction();

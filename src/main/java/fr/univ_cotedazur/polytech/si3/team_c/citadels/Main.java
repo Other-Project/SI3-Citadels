@@ -26,12 +26,12 @@ public class Main {
                 .build()
                 .parse(args);
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$s] %5$s%6$s%n");
-        if (twoThousand) twoThousandGames();
-        else if (demo) {
+        if (demo) {
             Arrays.stream(LOGGER.getParent().getHandlers()).forEach(handler -> handler.setLevel(Level.FINEST));
             LOGGER.setLevel(Level.FINEST);
-            gameBase();
         }
+        if (twoThousand) twoThousandGames();
+        else gameBase();
     }
 
     public static void gameBase() {
