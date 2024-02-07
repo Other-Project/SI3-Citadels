@@ -1,42 +1,68 @@
-# Projet Citadels - Team C
+# Citadels Project - Team C
 
 **[Lassauniere Théo](https://github.com/theoLassauniere), [Galli Evan](https://github.com/06Games),
 [Lubrat Jilian](https://github.com/LubratJilian), [Michelozzi Antoine-Marie](https://github.com/mantoniu)**  
 Polytech Nice-Sophia - SI3 PS5
 
-**Objectifs :** Recréer le jeu de société Citadelles et simuler une partie avec 4 robots ou plus.
+**Goals :** Recreate the Citadels board game and simulate a game with 3 or more bots.
 
 ------------------------
 
-## Présentation :
+## Introducing :
 
-### Le jeu Citadelles
+### Citadels game
 
-Citadelles est un jeu de société composé de cartes personnage ayant toutes une capacité différente 
-et de cartes quartier de couleurs différentes (rouge, jaune, bleu, vert et violet), 
-les cartes violettes ont, comme les personnages, des capacités propres. 
+Citadels is a board game made up of character cards, each with a different ability,
+and districts of different colours (red, yellow, blue, green and purple).
+Like the characters, the purple cards have their own abilities.
 
-Un tour se déroule de la façon suivante :
-* Chaque joueur en partant de celui qui a la couronne, choisit à tour de rôle son personnage. 
-* Puis chaque personnage est appelé dans un ordre défini. 
-* La personne ayant choisi le personnage peut alors réaliser différentes actions :
-  * piocher 2 cartes ou prendre 2 pièces d'or
-  * construire un quartier : pour construire un quartier, il faut avoir assez de pièces pour pouvoir payer le coût indiqué sur la carte. 
-  * réaliser l'action spéciale associée à son personnage ou à un de ses quartiers violets déjà construit. 
+A turn proceeds as described below:
 
-La partie se termine quand une personne a construit 8 quartiers, et on décompte pour chaque joueur son nombre de points, 
-qui est équivalent à la somme des coûts de chacun des quartiers, sauf cas particuliers.
+* Each player chooses a character in turn, starting with the player with the crown.
+* Each character is then called up in a set order.
+* The person who has chosen the character can then perform various actions:
+  * Draw 2 cards or take 2 gold coins
+  * Build a district: to build a district, the person must have enough coins to pay the cost of the card.
+  * Perform the special action associated with the chosen character or one of your already-built purple districts.
 
-L'objectif est d'implémenter ce jeu et de réaliser des parties composées uniquement de robots.
+The game ends at the end of the round in which a player has built 8 districts (or 10 if there are 3 players).
 
-Il faut ainsi dans un premier temps réaliser:
+The score is the sum of the following elements:
 
-- Les cartes personnages 
-- Les cartes quartiers 
-- Le système de jeu
-- L'implémentation d'un premier robot
+- Total construction cost of the build districts.
+- 3 points if the city includes districts of five different colours.
+- 4 points for the first player to build his eighth district
+- 2 points for the other players with eight districts.
 
-## Lancement avec Maven:
+The aim is to implement this game and create parties made up entirely of bots.
+
+The first step is to make:
+
+- Character cards
+- The district cards
+- The game system
+- Implement the first bot
+
+We then chose to implement different types of bots with different characteristics:
+
+- The discreet bot, whose aim is to be as discreet as possible in order to avoid
+  frightening other players so that it can progress without being slowed down by the actions of other players.
+- The aggressive bot, whose aim is to slow down other players' progress as much as possible.
+- The fearful bot, which is afraid of all the other players and plays it safe as soon as it is potentially in danger
+- The random bot, which makes random choices, gives an idea of the effectiveness of other bots.
+
+At the same time, we've corrected a number of bugs detected in the tests and refactored the `Game`
+class by creating the `Action` and `CharacterManager` classes, which respectively
+manage the actions and the data needed for the character selection turn.
+
+Finally, we implemented the features requested during the rush week:
+
+- [The Statistics mode](#statistics-mode)
+- [The CSV mode](#csv-mode)
+- The Richard's bot which uses
+  the [strategy given by Richard](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509)
+
+## Launching with Maven:
 
 > **Note**  
 > The terminal must use UTF8 encoding for emoji to be displayed correctly.  
@@ -45,26 +71,42 @@ Il faut ainsi dans un premier temps réaliser:
 > [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 > ```
 
-- ### Le programme principal
+- ### The main program
+  - #### Demo mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--demo"
+      ```
+    Launch the demo of a single game with all the logs.
 
-  ```
-  mvn clean compile exec:java
-  ```
+  - #### Statistics mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--2thousands"
+      ```
+    Simulates 2x1000 games :
+    - 1000 games of our best bot against the second-best bot (with other bots to complete the game)
+    - 1000 games of our best bot against itself (or as many clones of itself as there are players)
 
-- ### Les tests 
+    Next, game statistics will be displayed as follows:
+    number and percentage of games won/lost/drawn, and the average score for each bot.
+
+  - #### CSV mode
+      ```
+      mvn clean compile exec:java -Dexec.args="--csv"
+      ```
+    Writes the statistics collected during the simulation to the CSV file located in `stats/gamestats.csv`.
+    If it exists, the data is added to the pre-existing data.
+
+- ### Testing
+  To execute the tests, you need to use this command :
 
   ```
   mvn clean test
   ```
 
-- ###  Générer un jar puis le lancer:
+- ### Generate a jar and launch it:
+  To generate the `.jar` package and run the program :
 
   ```
   mvn clean package
-  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
+  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Main
   ```
-
-
-
-
-
