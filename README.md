@@ -39,7 +39,7 @@ The aim is to implement this game and create parties made up entirely of bots.
 The first step is to make:
 
 - Character cards
-- The districts cards
+- The district cards
 - The game system
 - Implement the first bot
 
@@ -76,7 +76,7 @@ Finally, we implemented the features requested during the rush week:
       ```
       mvn clean compile exec:java -Dexec.args="--demo"
       ```
-    Launch the demo of a single game with the full log.
+    Launch the demo of a single game with all the logs.
 
   - #### Statistics mode
       ```
