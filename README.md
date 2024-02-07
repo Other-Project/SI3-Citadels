@@ -4,7 +4,7 @@
 [Lubrat Jilian](https://github.com/LubratJilian), [Michelozzi Antoine-Marie](https://github.com/mantoniu)**  
 Polytech Nice-Sophia - SI3 PS5
 
-**Goals :** Recreate the Citadels board game and simulate a game with 4 or more bots.
+**Goals :** Recreate the Citadels board game and simulate a game with 3 or more bots.
 
 ------------------------
 
@@ -22,8 +22,8 @@ A turn proceeds as described below:
 * Each character is then called up in a set order.
 * The person who has chosen the character can then perform various actions:
   * Draw 2 cards or take 2 gold coins
-  * Build a district: to build a district, you must have enough coins to pay the cost of the card.
-  * Perform the special action associated with your character or one of your already-built purple districts.
+  * Build a district: to build a district, the person must have enough coins to pay the cost of the card.
+  * Perform the special action associated with the chosen character or one of your already-built purple districts.
 
 The game ends at the end of the round in which a player has built 8 districts (or 10 if there are 3 players).
 
@@ -91,7 +91,7 @@ Finally, we implemented the features requested during the rush week:
 
   - #### CSV mode
       ```
-      mvn clean compile exec:java -Dexec.args="--2thousands"
+      mvn clean compile exec:java -Dexec.args="--csv"
       ```
     Writes the statistics collected during the simulation to the CSV file located in "stats/gamestats.csv".
     If it exists, the data is added to the pre-existing data.
