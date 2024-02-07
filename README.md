@@ -108,5 +108,5 @@ Finally, we implemented the features requested during the rush week:
 
   ```
   mvn clean package
-  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
+  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Main
   ```
