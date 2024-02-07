@@ -67,7 +67,7 @@ public class Main {
     }
 
     public static void twoThousandGames() {
-        HashMap<String, Statistic> res = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
+        HashMap<String, Statistic> res = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"), new RandomBot("RandomBot"));
         LOGGER.info(res::toString);
         res = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
         LOGGER.info(res::toString);
