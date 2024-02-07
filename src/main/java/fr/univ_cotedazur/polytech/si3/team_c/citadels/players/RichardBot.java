@@ -106,7 +106,8 @@ public class RichardBot extends Bot {
                         else if (character.getAction().contains(Action.DESTROY)) return 650;
                     } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty()) {
                         if (character.getAction().contains(Action.KILL)) return 650;
-                        else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) return 550;
+                        else if (character.getAction().contains(Action.EXCHANGE_PLAYER) && getHandDistricts().size() <= 2)
+                            return 550;
                     } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.KILL)).findFirst().isEmpty()) {
                         if (character.getAction().contains(Action.DESTROY)) return 400;
                         else if (!character.canHaveADistrictDestroyed()) return 300;
@@ -256,5 +257,11 @@ public class RichardBot extends Bot {
         }
 
         return super.destroyDistrict(players);
+    }
+
+    @Override
+    public IPlayer playerToExchangeCards(List<IPlayer> players) {
+        if (playCombo) return playerCanEndGame().get(0);
+        return super.playerToExchangeCards(players);
     }
 }
