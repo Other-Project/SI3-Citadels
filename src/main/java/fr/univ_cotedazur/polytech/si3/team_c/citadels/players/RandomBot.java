@@ -53,13 +53,11 @@ public class RandomBot extends Player {
     @Override
     public Action nextAction(Set<Action> remainingActions) {
         List<Action> possibleActions = new ArrayList<>(remainingActions);
-        if (possibleActions.contains(Action.INCOME) && getHandDistricts().size() < 4)
-            possibleActions.remove(Action.INCOME);
         if (remainingActions.contains(Action.SPECIAL_INCOME) && quantityOfColorBuilt(getCharacter().orElseThrow().getColor()) == 0)
             possibleActions.remove(Action.SPECIAL_INCOME);
         if (remainingActions.contains(Action.DISCARD) && getHandDistricts().size() <= 1)
             possibleActions.remove(Action.DISCARD);
-        if (remainingActions.contains(Action.TAKE_THREE) && getCoins() <= 3)
+        if (remainingActions.contains(Action.TAKE_THREE) && getCoins() < 3)
             possibleActions.remove(Action.TAKE_THREE);
         if (remainingActions.contains(Action.EXCHANGE_DECK) && !wantToExchangeCard())
             possibleActions.remove(Action.EXCHANGE_DECK);
