@@ -3,6 +3,8 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.text.DecimalFormatSymbols;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatisticTest {
@@ -92,6 +94,7 @@ class StatisticTest {
         stat.addWin(20);
         stat.addWin(22);
         stat.addLoss(25);
-        assertEquals("Wins: 2 (66,7%) ; Equalities: 0 (0,0%) ; Losses: 1 (33,3%) ; Avr points: 22,3", stat.toString());
+        var separator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
+        assertEquals("Wins: 2 (66" + separator + "7%) ; Equalities: 0 (0" + separator + "0%) ; Losses: 1 (33" + separator + "3%) ; Avr points: 22" + separator + "3", stat.toString());
     }
 }
