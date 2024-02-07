@@ -6,6 +6,7 @@
   * [Create an Issue](#create-an-issue)
   * [Issue Lifecycle](#issue-lifecycle)
   * [Submit a Pull Request](#submit-a-pull-request)
+  * [Branching strategy](#branching-strategy)
 
 ### How to Contribute
 
@@ -33,7 +34,7 @@ follow-up reports will need to be created as new issues with a fresh description
 
 1. Always check out the `main` branch and submit pull requests against it.
 
-2. Create a branch of the following form: 'feature/feature_name' and check it out.
+2. For the branching, use the GitHub flow branching strategy, as described in [Branching strategy](#branching-strategy).
 
 3. For all the commit you will make in this branch use
    the [GitHub commit convention](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13).
@@ -50,6 +51,15 @@ follow-up reports will need to be created as new issues with a fresh description
 Then the other contributors to the project will provide their feedback on your code, and
 they will be able to suggest modifications to improve it. When several contributors have
 approved your changes, they can then merge it with the `main` branch.
+
+#### Branching strategy
+
+The [GitHub flow](https://docs.github.com/fr/get-started/using-github/github-flow) consists
+of creating a branch each time a feature is added, in the following form: `feature/<feature_name>`,
+which, when validated with the pull request, will be merged with the main branch.
+
+This strategy was chosen because it is the most appropriate for the size of our team,
+in terms of simplicity of implementation and effectiveness.
 
 #### Participate in Reviews
 
