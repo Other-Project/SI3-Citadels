@@ -95,26 +95,22 @@ public class RichardBot extends Bot {
                     /* We need first to destroy, and in a second time kill a character that can't have districts destroyed,
                     so that's why we don't choose him in this case */
                     if (character.getAction().contains(Action.DESTROY)) return 800;
-                    else if (character.getAction().contains(Action.KILL)) return 700;
-                    else if (!character.canHaveADistrictDestroyed()) return -1;
                     break;
                 case 2:
-                    if (comboCharacters.stream().filter(character1 -> !character1.canHaveADistrictDestroyed()).findFirst().isEmpty()) {
-                        if (character.getAction().contains(Action.KILL)) return 750;
-                        else if (character.getAction().contains(Action.DESTROY)) return 650;
-                    } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty()) {
-                        if (character.getAction().contains(Action.KILL)) return 650;
-                        else if (character.getAction().contains(Action.EXCHANGE_PLAYER) && getHandDistricts().size() <= 2)
-                            return 550;
-                    } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.KILL)).findFirst().isEmpty()) {
-                        if (character.getAction().contains(Action.DESTROY)) return 400;
-                        else if (!character.canHaveADistrictDestroyed()) return 300;
-                    }
+                    if ((comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty()
+                            || comboCharacters.stream().filter(character1 -> !character1.canHaveADistrictDestroyed()).findFirst().isEmpty())) {
+                        if (character.getAction().contains(Action.KILL)) return 800;
+                    } else if (character.getAction().contains(Action.DESTROY)) return 800;
+                    break;
+                case 1:
+                    if (getHandSize() <= 2
+                            && character.getAction().contains(Action.EXCHANGE_PLAYER)
+                            && comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty())
+                        return 800;
+                    if (comboCharacters.contains(character)) return 700;
                     break;
                 default:
-                    // Too many characters are missing, so we must take first characters to play
-                    return (1.0 / character.getTurn()) * 1000;
-
+                    break;
             }
         }
 
