@@ -25,9 +25,9 @@ A turn proceeds as described below:
   * Build a district: to build a district, you must have enough coins to pay the cost of the card.
   * Perform the special action associated with your character or one of your already-built purple districts.
 
-La partie se termine à la fin du tour où un joueur a construit 8 quartiers (ou 10 s'il y a 3 joueurs).
+The game ends at the end of the round in which a player has built 8 districts (or 10 if there are 3 players).
 
-Le décompte des points correspond à la somme des éléments suivants :
+The score is the sum of the following elements:
 
 - Total construction cost of the build districts.
 - 3 points if the city includes districts of five different colours.
