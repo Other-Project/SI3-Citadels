@@ -102,6 +102,7 @@ public class RichardBot extends Bot {
             }
         }
 
+        // This part is dedicated to block any player that can attempt a final rush
         if (hasCrown()
                 && (playerCanAttemptFinalRush(character)
                 || playerCanAttemptFinalRush(characterManager) && character.getAction().contains(Action.KILL))) {
