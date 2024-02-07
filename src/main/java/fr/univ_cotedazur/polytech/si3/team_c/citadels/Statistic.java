@@ -93,6 +93,6 @@ public class Statistic {
 
     @Override
     public String toString() {
-        return "Win : " + getWinPercentage() + "% / Loose : " + getLoosePercentage() + "% / Equality : " + getEqualityPercentage() + "%";
+        return "Win : " + getWinPercentage() + "% ; Equality : " + getEqualityPercentage() + "% ; Loose : " + getLoosePercentage() + "%";
     }
 }

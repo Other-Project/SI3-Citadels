@@ -47,27 +47,28 @@ public class Main {
             Arrays.stream(LOGGER.getParent().getHandlers()).forEach(handler -> handler.setLevel(Level.FINEST));
             LOGGER.setLevel(Level.FINEST);
         }
+        List<Statistic> stats = main.csv ? loadCsv(STATISTICS_PATH) : new ArrayList<>();
 
-        if (main.twoThousand) twoThousandGames();
-        else if (main.csv) {
-            var stats = loadCsv(STATISTICS_PATH);
-            HashMap<String, Statistic> results = playMultipleGames(10, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
-            stats.addAll(results.values());
-            writeCsv(STATISTICS_PATH, stats);
-
-        } else {
-            HashMap<String, Statistic> results = playMultipleGames(1, 4);
+        HashMap<String, Statistic> results;
+        if (main.twoThousand) {
+            results = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
             LOGGER.info(results::toString);
-        }
+            stats.addAll(results.values());
+            results = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
+        } else results = playMultipleGames(1, 4);
+        LOGGER.info(results::toString);
+        stats.addAll(results.values());
+
+        if (main.csv) writeCsv(STATISTICS_PATH, stats);
     }
 
     private static HashMap<String, Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) {
         HashMap<String, Statistic> stat = new HashMap<>() {
             @Override
             public String toString() {
-                StringBuilder message = new StringBuilder("Statistic measures on ").append(numberOfGames).append(" games :\n");
-                for (Map.Entry<String, Statistic> entry : this.entrySet())
-                    message.append(entry.getKey()).append("\n\t").append(this.get(entry.getKey()).toString()).append("\n");
+                StringBuilder message = new StringBuilder("Statistic measures on ").append(numberOfGames).append(" game(s) :\n");
+                for (Entry<String, Statistic> entry : this.entrySet())
+                    message.append(entry.getKey()).append("\n\t").append(entry.getValue()).append("\n");
                 return message.toString();
             }
         };
@@ -88,13 +89,6 @@ public class Main {
             losers.forEach(bot -> stat.get(bot).addLoss());
         }
         return stat;
-    }
-
-    public static void twoThousandGames() {
-        HashMap<String, Statistic> res = playMultipleGames(1000, 4, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"));
-        LOGGER.info(res::toString);
-        res = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
-        LOGGER.info(res::toString);
     }
 
     /**
