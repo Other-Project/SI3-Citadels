@@ -89,6 +89,7 @@ public class RandomBot extends Player {
             if (curDistrict.getCost() <= getCoins()) {
                 toBuild.add(curDistrict);
                 buildDistrict(curDistrict, turn);
+                maxAmountToChoose--;
             }
         }
         return toBuild;
