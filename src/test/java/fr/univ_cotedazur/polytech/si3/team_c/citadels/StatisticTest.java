@@ -78,6 +78,6 @@ class StatisticTest {
     @Test
     void toStringTest() {
         stat.addWin();
-        assertEquals("Win : 100.0% / Loose : 0.0% / Equality : 0.0%", stat.toString());
+        assertEquals("Win : 100.0% ; Equality : 0.0% ; Loose : 0.0%", stat.toString());
     }
 }
