@@ -93,7 +93,7 @@ Finally, we implemented the features requested during the rush week:
       ```
       mvn clean compile exec:java -Dexec.args="--csv"
       ```
-    Writes the statistics collected during the simulation to the CSV file located in "stats/gamestats.csv".
+    Writes the statistics collected during the simulation to the CSV file located in `stats/gamestats.csv`.
     If it exists, the data is added to the pre-existing data.
 
 - ### Testing
