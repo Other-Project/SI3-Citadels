@@ -7,12 +7,15 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 
 public class RichardBot extends Bot {
+    private boolean playCombo;
     public RichardBot(String name) {
         this(name, 0, Collections.emptyList());
+        playCombo = false;
     }
 
     public RichardBot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
+        playCombo = false;
     }
 
     @Override
@@ -30,17 +33,30 @@ public class RichardBot extends Bot {
         IPlayer enderPlayer = enderPlayers.isEmpty() ? null : enderPlayers.get(0);
         // If the bot estimates that the ender player has the best chances to get the stealing power, we kill that character */
         if (enderPlayer != null) {
-            Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
-            if (enderPlayerCharacter.getAction().contains(Action.STEAL)) return enderPlayerCharacter;
-            else if (hasCrown()) {
-                /* If we're here, it means that the bot must kill a character that can destroy,
-                or a character that can't get his districts destroyed */
-                var characterToKill = characterList.stream().filter(
-                        character -> character.getAction().contains(Action.DESTROY)
-                                || !character.canHaveADistrictDestroyed()).findFirst();
-                if (characterToKill.isPresent()) return characterToKill.get();
+            if (playCombo) {
+                if (hasCrown()) {
+                    if (enderPlayer.getHandSize() == 0) {
+                        // Case 3
+                        // The ender player will try to steal cards, so we kill a character that can exchange cards with players
+                        var characterToKill = characterList.stream().filter(character -> character.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+                        if (characterToKill.isPresent()) return characterToKill.get();
+                    } else {
+                        // Case 2
+                        // The bot need to kill any character except characters that can destroy districts
+                        var characterToKill = characterList.stream().filter(character -> !character.getAction().contains(Action.DESTROY)).findFirst();
+                        if (characterToKill.isPresent()) return characterToKill.get();
+                    }
+                } else {
+                    var characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
+                    if (characterToKill.isPresent()) return characterToKill.get();
+                }
+                Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
+                if (enderPlayerCharacter.getAction().contains(Action.STEAL)) return enderPlayerCharacter;
+                playCombo = false;
             } else {
-                var characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
+                // Here, the ender player must be 1st or 2nd to choose a character
+                var characterToKill = characterList.stream().filter(
+                        character -> !character.canHaveADistrictDestroyed() || character.getAction().contains(Action.DESTROY)).findAny();
                 if (characterToKill.isPresent()) return characterToKill.get();
             }
         }
@@ -74,6 +90,7 @@ public class RichardBot extends Bot {
 
         List<IPlayer> gameEnder = playerCanEndGame();
         if (gameEnder.size() == 1) {
+            playCombo = true;
             List<Character> comboCharacters = containsComboCharacters(characterManager);
             switch (comboCharacters.size()) {
                 case 3:
