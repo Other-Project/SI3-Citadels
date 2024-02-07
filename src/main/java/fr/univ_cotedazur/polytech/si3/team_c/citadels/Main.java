@@ -49,29 +49,21 @@ public class Main {
         }
         List<Statistic> stats = main.csv ? loadCsv(STATISTICS_PATH) : new ArrayList<>();
 
-        HashMap<String, Statistic> results;
+        List<Statistic> results;
         if (main.twoThousand) {
             results = playMultipleGames(1000, 5, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"), new RandomBot("Random Bot"));
             LOGGER.info(results::toString);
-            stats.addAll(results.values());
+            stats.addAll(results);
             results = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));
         } else results = playMultipleGames(1, 4);
         LOGGER.info(results::toString);
-        stats.addAll(results.values());
+        stats.addAll(results);
 
         if (main.csv) writeCsv(STATISTICS_PATH, stats);
     }
 
-    private static HashMap<String, Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) {
-        HashMap<String, Statistic> stat = new HashMap<>() {
-            @Override
-            public String toString() {
-                StringBuilder message = new StringBuilder("Statistic measures on ").append(numberOfGames).append(" game(s) :\n");
-                for (Entry<String, Statistic> entry : this.entrySet())
-                    message.append(entry.getKey()).append("\n\t").append(entry.getValue()).append("\n");
-                return message.toString();
-            }
-        };
+    private static List<Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) {
+        HashMap<String, Statistic> stat = new HashMap<>();
 
         for (int k = 0; k < numberOfGames; k++) {
             Game game = new Game(numberOfPlayers, players);
@@ -81,14 +73,23 @@ public class Main {
             SimpleEntry<List<Player>, Integer> winners = game.getWinners();
             List<String> botWinners = winners.getKey().stream().map(Player::getName).toList();
 
-            if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin();
-            else botWinners.forEach(bot -> stat.get(bot).addEquality());
+            if (botWinners.size() == 1) stat.get(botWinners.get(0)).addWin(winners.getValue());
+            else botWinners.forEach(bot -> stat.get(bot).addEquality(winners.getValue()));
 
-            List<String> losers = new ArrayList<>(game.getPlayerList().stream().map(Player::getName).toList());
-            losers.removeAll(botWinners.stream().toList());
-            losers.forEach(bot -> stat.get(bot).addLoss());
+            List<Player> losers = new ArrayList<>(game.getPlayerList());
+            losers.removeAll(winners.getKey());
+            losers.forEach(bot -> stat.get(bot.getName()).addLoss(bot.getScore(game.getCurrentTurn())));
         }
-        return stat;
+
+        return new ArrayList<>(stat.values()) {
+            @Override
+            public String toString() {
+                StringBuilder message = new StringBuilder("Statistic measures on ").append(numberOfGames).append(" game(s) :\n");
+                for (Statistic entry : this)
+                    message.append(entry.getName()).append("\n\t").append(entry).append("\n");
+                return message.toString();
+            }
+        };
     }
 
     /**
