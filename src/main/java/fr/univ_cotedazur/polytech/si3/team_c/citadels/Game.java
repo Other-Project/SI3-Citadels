@@ -105,8 +105,7 @@ public class Game {
     }
 
     private void setCrown(int player) {
-        Player playerToCrown = playerList.get(player);
-        setCrown(playerToCrown);
+        setCrown(playerList.get(player));
     }
 
     public int getCurrentTurn() {
@@ -222,7 +221,6 @@ public class Game {
      * Defines a round to play in the game
      */
     public boolean gameTurn() {
-
         Player previousCrownedPlayer = getCrown();
         int previousCrownedPlayerIndex = getCrownIndex();
         characterSelectionTurn();
