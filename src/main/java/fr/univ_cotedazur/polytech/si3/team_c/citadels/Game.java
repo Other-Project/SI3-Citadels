@@ -43,7 +43,8 @@ public class Game {
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
         for (int i = 1; i <= numberPlayers - initLength; i++) {
-            Bot bot = switch (random.nextInt(4)) {
+            Player bot = switch (random.nextInt(5)) {
+                case 4 -> new RandomBot("randomBot" + i);
                 case 3 -> new AgressiveBot("agressiveBot" + i);
                 case 2 -> new FearFulBot("fearFullBot" + i);
                 case 1 -> new DiscreetBot("discreetBot" + i);
