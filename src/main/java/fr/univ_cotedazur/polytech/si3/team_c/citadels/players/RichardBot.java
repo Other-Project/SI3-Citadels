@@ -20,6 +20,14 @@ public class RichardBot extends Bot {
 
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
+        // If a player will build his penultimate district, we kill the character that gives the crown
+        List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
+        if (willBuildPenultimate.size() == 1 && willBuildPenultimate.get(0).hasCrown() && !willBuildPenultimate.contains(this)) {
+            for (Character character : characterList) {
+                if (character.startTurnAction().equals(Action.GET_CROWN)) return character;
+            }
+        }
+
         // If the bot is in first place, he must kill the characters that could destroy one of his districts
         SimpleEntry<IPlayer, Integer> firstPlayer = playerWithMaxAttribute(iPlayer -> iPlayer.getBuiltDistricts().size());
         firstPlayer = firstPlayer.getValue() < this.getBuiltDistricts().size() ?
@@ -56,7 +64,9 @@ public class RichardBot extends Bot {
             } else {
                 // Here, the ender player must be 1st or 2nd to choose a character
                 var characterToKill = characterList.stream().filter(
-                        character -> !character.canHaveADistrictDestroyed() || character.getAction().contains(Action.DESTROY)).findAny();
+                        character -> !character.canHaveADistrictDestroyed()
+                                || character.getAction().contains(Action.DESTROY)
+                                || character.getAction().contains(Action.STEAL)).findAny();
                 if (characterToKill.isPresent()) return characterToKill.get();
             }
         }
@@ -69,13 +79,7 @@ public class RichardBot extends Bot {
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
 
-        // If a player will build his penultimate district, we kill the character that gives the crown
-        List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
-        if (willBuildPenultimate.size() == 1 && willBuildPenultimate.get(0).hasCrown()) {
-            for (Character character : characterList) {
-                if (character.getAction().contains(Action.GET_CROWN)) return character;
-            }
-        }
+
         return super.chooseCharacterToKill(characterList);
     }
 
@@ -120,6 +124,23 @@ public class RichardBot extends Bot {
             }
         }
 
+        List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
+        if (playerBuildPenultimate.size() == 1) {
+            if (character.startTurnAction().equals(Action.GET_CROWN)) {
+                return 150;
+            } else if (character.getAction().contains(Action.KILL)) {
+                return 40;
+            } else if (character.getAction().contains(Action.DESTROY)) {
+                return 30;
+            } else if (!character.canHaveADistrictDestroyed()) {
+                return 20;
+            } else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) {
+                return 15;
+            } else if (character.getAction().contains(Action.STEAL)) {
+                return 10;
+            }
+        }
+
         // This part is dedicated to block any player that can attempt a final rush
         if (hasCrown()
                 && (playerCanAttemptFinalRush(character)
@@ -134,23 +155,8 @@ public class RichardBot extends Bot {
             return 100;
         }
 
-        List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
-        if (playerBuildPenultimate.size() == 1) {
-            if (character.getAction().contains(Action.GET_CROWN)) {
-                return 50;
-            } else if (character.getAction().contains(Action.KILL)) {
-                return 40;
-            } else if (character.getAction().contains(Action.DESTROY)) {
-                return 30;
-            } else if (!character.canHaveADistrictDestroyed()) {
-                return 20;
-            } else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) {
-                return 15;
-            } else if (character.getAction().contains(Action.STEAL)) {
-                return 10;
-            }
 
-        }
+
 
         return super.characterProfitability(character, characterManager);
     }
@@ -216,7 +222,8 @@ public class RichardBot extends Bot {
             if (player.getCoins() >= 4
                     && getNumberOfDistrictsToEnd() - player.getBuiltDistricts().size() != 1
                     && player.getHandSize() >= character.numberOfDistrictToBuild() - (character.startTurnAction().equals(Action.BEGIN_DRAW) ? 2 : 0)
-                    && player.getBuiltDistricts().size() >= getNumberOfDistrictsToEnd() - character.numberOfDistrictToBuild())
+                    && player.getBuiltDistricts().size() >= getNumberOfDistrictsToEnd() - character.numberOfDistrictToBuild()
+                    && player.getBuiltDistricts().size() <= 5)
                 return true;
         }
         return false;
@@ -227,9 +234,11 @@ public class RichardBot extends Bot {
      *
      */
     private List<IPlayer> betterPlayerWillBuildPenultimateDistrict() {
-        return getPlayers().stream().filter(player ->
+        List<IPlayer> players = getPlayers();
+        players.add(this);
+        return players.stream().filter(player ->
                 player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2
-                        && player.getBuiltDistricts().size() > this.getBuiltDistricts().size()).toList();
+                        && player.getBuiltDistricts().size() >= this.getBuiltDistricts().size()).toList();
     }
 
     /**
@@ -248,6 +257,7 @@ public class RichardBot extends Bot {
         /* We try to block the player that will build his penultimate district as the warlord,
         so we try to destroy the smallest district to block him */
         List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
+        willBuildPenultimate.remove(this);
         if (!willBuildPenultimate.isEmpty()) {
             Optional<District> districtToDestroy = willBuildPenultimate.stream()
                     .flatMap(player -> player.getDestroyableDistricts().stream().filter(district -> district.getCost() - 1 <= getCoins()))
