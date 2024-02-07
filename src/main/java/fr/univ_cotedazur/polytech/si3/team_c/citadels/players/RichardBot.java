@@ -22,10 +22,12 @@ public class RichardBot extends Bot {
     public Character chooseCharacterToKill(List<Character> characterList) {
         // If a player will build his penultimate district, we kill the character that gives the crown
         List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
-        if (willBuildPenultimate.size() == 1 && willBuildPenultimate.get(0).hasCrown() && !willBuildPenultimate.contains(this)) {
-            for (Character character : characterList) {
-                if (character.startTurnAction().equals(Action.GET_CROWN)) return character;
-            }
+        willBuildPenultimate.remove(this);
+        var playerWillBuildPenultimate = willBuildPenultimate.stream().filter(IPlayer::hasCrown).findFirst();
+        if (playerWillBuildPenultimate.isPresent()) {
+            var characterToKill = getPossibleCharacters(playerWillBuildPenultimate.get()).stream()
+                    .filter(character -> character.startTurnAction().equals(Action.GET_CROWN)).findFirst();
+            if (characterToKill.isPresent()) return characterToKill.get();
         }
 
         // If the bot is in first place, he must kill the characters that could destroy one of his districts
