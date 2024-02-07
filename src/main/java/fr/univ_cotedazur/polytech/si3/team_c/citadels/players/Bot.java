@@ -215,7 +215,8 @@ public class Bot extends Player {
     }
 
     /**
-     * Get the possible characters that players could have chosen during their turn
+     * Get the possible characters that the given player could have chosen during their turn
+     * @param iPlayer The player we want to inspect
      */
     List<Character> getPossibleCharacters(IPlayer iPlayer) {
         return possibleCharacters.get(iPlayer);
