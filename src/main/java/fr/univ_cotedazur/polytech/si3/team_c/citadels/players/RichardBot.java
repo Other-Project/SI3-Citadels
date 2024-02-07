@@ -102,9 +102,17 @@ public class RichardBot extends Bot {
             }
         }
 
-        if (playerCanAttemptFinalRush(character)) {
-            // If a player can attend a final rush with character, we will take that character
-            return hasCrown() && !character.getAction().contains(Action.KILL) ? 100 : 80;
+        if (hasCrown()
+                && (playerCanAttemptFinalRush(character)
+                || playerCanAttemptFinalRush(characterManager) && character.getAction().contains(Action.KILL))) {
+            /* If a player can attempt a final rush with the given character or with another and the given character can kill,
+            he must take the given character */
+            return 100;
+        }
+        if (!hasCrown()
+                && playerCanAttemptFinalRush(characterManager) && character.getAction().contains(Action.KILL)) {
+            // If the bot is not first, at this state he must take the character that can kill
+            return 100;
         }
 
         List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
