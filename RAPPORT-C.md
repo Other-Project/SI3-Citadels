@@ -6,8 +6,8 @@ Polytech Nice-Sophia - SI3 PS5
 
 ------------------------
 
-# 1. Avancement :
-## Le Jeu :
+# Avancement
+## Le jeu
 
 ### Les règles du jeu Citadelles implémentées
 
@@ -54,7 +54,7 @@ placées faces cachées)
 * Un joueur qui a construit le nombre de quartiers nécessaire pour finir la partie peut, s'il en a la capacité,
   construire des quartiers jusqu'à la fin de son tour. (Par exemple avec l'Architecte)
 
-## Les Bots :
+## Les Bots
 
 Différents types de bots ont été implémenté, il y en a 6 et ils représentent chacun une stratégie différente.
 
@@ -98,9 +98,9 @@ toutes ses décisions de manières aléatoires.
 &nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but d'implémenter la stratégie de Richard postée sur
 ce [forum](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509)
 
-### Statistiques et analyse sur les bots :
+### Statistiques et analyse sur les bots
 
-## Choix d'implémentation :
+## Choix d'implémentation
 
 ### Journalisation
 
@@ -119,30 +119,38 @@ Le format du fichier CSV est le suivant :
   pour chacune 2 colones, d'abord le nombre de parties gagnées puis le pourcentage que cela représente,
   ainsi qu'une dernière colonne avec le nombre de points moyen du bot sur l'ensemble de partie.
 
-# 2. Architecture et qualité
+# Architecture et qualité
 
-## Lancement :
+## Architecture
 
-> **Note**  
-> The terminal must use UTF8 encoding for emoji to be displayed correctly.  
-> On Windows, you may need to run the following PowerShell command before launching the program
-> ```pwsh
-> [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
-> ```
+Le projet est découpée en plusieurs gros ensembles :
 
-### Lancement avec Maven :
+* La représentation des éléments du jeu par les classes des paquets `fr.univ_cotedazur.polytech.si3.team_c.citadels.characters` et `fr.univ_cotedazur.polytech.si3.team_c.citadels.districts`.  
+  Chaque personnage et chaque quartier est représenté par une classe qui lui est propre. Celle-ci hérite respectivement de `Character` ou de `District` qui tous deux sont des `Card`.  
+  Cette implémentation permet une grande flexibilité dans les comportements puisqu'il suffit de redéfinir les méthodes afin de changer de comportement.
+  * Les cartes (`Card`) disposent toutes d'un nom et d'une couleur (qui peut être `Colors.None`), deux cartes de même nom sont considérées comme égales.  
+    Elles permettent aussi l'ajout d'actions (énuméré `Action` détaillé au point suivant) durant le tour 
+    *(ex. le voleur ajoute l'action de voler ou le laboratoire permet de se débarrasser d'une carte en main afin de recevoir en échange d'une pièce)* 
+    ou encore d'ajouter des actions évènementielles *(ex. le cimetière permet de récupérer une carte détruite)*.
+  * En plus de ces possibilités, les personnages (`Character`) disposent d'un numéro d'ordre (ceux-ci jouent dans l'ordre déterminé par ce numéro),
+    de leur capacité ou non à être en défausse face visible *(ex. le Roi)* 
+    et d'un nombre minimum de joueurs dans la partie pour pouvoir être mis en jeu *(ex. l'Assassin ne peut être joué à moins de 4 joueurs)*.  
+    Ils peuvent aussi définir le nombre de quartiers constructibles en un tour *(ex. l'Architecte peut en construire 3)* et empêcher la destruction de leur quartier *(ex. l'Évêque)*.
+    Ils ont aussi la capacité de déclencher une action en début de tour *(ex. le Roi obtient la couronne)*
+  * Les quartiers (`District`) définissent un cout et un gain de points. 
+    Ils peuvent être destructibles ou non *(ex. le donjon)*. 
+    Ils définissent un nombre de quartiers à piocher (le plus grand nombre parmi les quartiers construits est celui appliqué), de quartiers à conserver après avoir pioché.
+    Ils sont aussi responsable de déterminer s'ils correspondent à une couleur lors du revenu généré par la couleur du personnage choisi
+    *(ex. l'école de magie est décompté dans le revenu peu importe la couleur)*.
+    Ils définissent aussi quelles couleurs ils peuvent représenter durant le calcul du bonus.
+  
+  Ainsi, de part toutes ces propriétés, l'ensemble du jeu peut être représenté en garantissant une abstraction suffisante 
+  pour une potentielle évolution future avec des cartes disposant de comportements hybrides.
 
-- #### Le programme principal
-
-  ```
-  mvn clean compile exec:java
-  ```
 
 - #### Les tests
 
-  ```
-  mvn clean test
-  ```
+* L'intéraction du joueur avec le moteur de jeu se fait au moyen de la classe `Player`. Cette classe est abstraite, car destinée à représenter un joueur générique.
 
 - #### Générer un jar puis le lancer :
 
@@ -153,8 +161,8 @@ Le format du fichier CSV est le suivant :
 
 ------------------------
 
-# 3. Processus
 
 
+# Processus
 
 
