@@ -21,7 +21,7 @@ public class RichardBot extends Bot {
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
         // If a player will build his penultimate district, we kill the character that gives the crown
-        List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
+        List<IPlayer> willBuildPenultimate = new ArrayList<>(betterPlayerWillBuildPenultimateDistrict());
         willBuildPenultimate.remove(this);
         var playerWillBuildPenultimate = willBuildPenultimate.stream().filter(IPlayer::hasCrown).findFirst();
         if (playerWillBuildPenultimate.isPresent()) {
@@ -32,8 +32,8 @@ public class RichardBot extends Bot {
 
         // If the bot is in first place, he must kill the characters that could destroy one of his districts
         SimpleEntry<IPlayer, Integer> firstPlayer = playerWithMaxAttribute(iPlayer -> iPlayer.getBuiltDistricts().size());
-        firstPlayer = firstPlayer.getValue() < this.getBuiltDistricts().size() ?
-                new SimpleEntry<>(this, this.getBuiltDistricts().size()) : firstPlayer;
+        if (firstPlayer.getValue() < this.getBuiltDistricts().size())
+            firstPlayer = new SimpleEntry<>(this, this.getBuiltDistricts().size());
         if (firstPlayer.getKey().equals(this)) {
             var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
@@ -41,25 +41,18 @@ public class RichardBot extends Bot {
 
         List<IPlayer> enderPlayers = playerCanEndGame();
         IPlayer enderPlayer = enderPlayers.isEmpty() ? null : enderPlayers.get(0);
-        // If the bot estimates that the ender player has the best chances to get the stealing power, we kill that character */
+        // If the bot estimates that the ender player has the best chances to get the stealing power, we kill that character
         if (enderPlayer != null) {
             if (playCombo) {
-                if (hasCrown()) {
-                    if (enderPlayer.getHandSize() == 0) {
-                        // Case 3
-                        // The ender player will try to steal cards, so we kill a character that can exchange cards with players
-                        var characterToKill = characterList.stream().filter(character -> character.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
-                        if (characterToKill.isPresent()) return characterToKill.get();
-                    } else {
-                        // Case 2
-                        // The bot need to kill any character except characters that can destroy districts
-                        var characterToKill = characterList.stream().filter(character -> !character.getAction().contains(Action.DESTROY)).findFirst();
-                        if (characterToKill.isPresent()) return characterToKill.get();
-                    }
-                } else {
-                    var characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
-                    if (characterToKill.isPresent()) return characterToKill.get();
-                }
+                Optional<Character> characterToKill;
+                if (!hasCrown())
+                    // Case 1 : The bot have to kill the character that can't have a district destroyed
+                    characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
+                else if (enderPlayer.getHandSize() == 0 && getPlayers().get(0).getHandSize() > 2)  // Case 3 : The ender player will try to steal cards, so we kill a character that can exchange cards with players
+                    characterToKill = characterList.stream().filter(character -> character.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+                else // Case 2 : The bot need to kill any character except characters that can destroy districts
+                    return super.chooseCharacterToKill(characterList.stream().filter(character -> !character.getAction().contains(Action.DESTROY)).toList());
+                if (characterToKill.isPresent()) return characterToKill.get();
                 Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
                 if (enderPlayerCharacter.getAction().contains(Action.STEAL)) return enderPlayerCharacter;
                 playCombo = false;
@@ -80,7 +73,6 @@ public class RichardBot extends Bot {
             var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.STEAL)).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
-
 
         return super.chooseCharacterToKill(characterList);
     }
