@@ -4,7 +4,7 @@
 [Lubrat Jilian](https://github.com/LubratJilian), [Michelozzi Antoine-Marie](https://github.com/mantoniu)**  
 Polytech Nice-Sophia - SI3 PS5
 
-**Goals :** Recreate Citadels board game and simulate a game with 4 or more robots.
+**Goals :** Recreate the Citadels board game and simulate a game with 4 or more bots.
 
 ------------------------
 
