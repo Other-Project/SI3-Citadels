@@ -4,7 +4,7 @@
 [Lubrat Jilian](https://github.com/LubratJilian), [Michelozzi Antoine-Marie](https://github.com/mantoniu)**  
 Polytech Nice-Sophia - SI3 PS5
 
-**Goals :** Recreate the board game Citadels and simulate a game with 4 or more robots.
+**Goals :** Recreate Citadels board game and simulate a game with 4 or more robots.
 
 ------------------------
 
@@ -18,17 +18,23 @@ Like the characters, the purple cards have their own abilities.
 
 A turn proceeds as described below:
 
-* Each player in turn chooses their character, starting with the player with the crown.
+* Each player chooses a character in turn, starting with the player with the crown.
 * Each character is then called up in a set order.
 * The person who has chosen the character can then perform various actions:
   * Draw 2 cards or take 2 gold coins
-  * Build a district: to build a district, you must have enough coins to pay the cost shown on the card.
+  * Build a district: to build a district, you must have enough coins to pay the cost of the card.
   * Perform the special action associated with your character or one of your already-built purple districts.
 
-The game ends when a player has built 8 districts (or 10 if there are 3 players), and each player's points are counted,
-which is equivalent to the sum of the costs of each of the districts, except in special cases.
+La partie se termine à la fin du tour où un joueur a construit 8 quartiers (ou 10 s'il y a 3 joueurs).
 
-The aim is to implement this game and create parties made up entirely of robots.
+Le décompte des points correspond à la somme des éléments suivants :
+
+- Total construction cost of the build districts.
+- 3 points if the city includes districts of five different colours.
+- 4 points for the first player to build his eighth district
+- 2 points for the other players with eight districts.
+
+The aim is to implement this game and create parties made up entirely of bots.
 
 The first step is to make:
 
@@ -39,10 +45,11 @@ The first step is to make:
 
 We then chose to implement different types of bots with different characteristics:
 
-- The discreet bot whose principle is to be as discreet as possible so as not to be affected by
-  the actions of other players.
-- The aggressive bot, whose aim is to take as many actions as possible on the other players.
+- The discreet bot, whose aim is to be as discreet as possible in order to avoid
+  frightening other players so that it can progress without being slowed down by the actions of other players.
+- The aggressive bot, whose aim is to slow down other players' progress as much as possible.
 - The fearful bot, which is afraid of all the other players and plays it safe as soon as it is potentially in danger
+- The random bot, which makes random choices, gives an idea of the effectiveness of other bots.
 
 At the same time, we've corrected a number of bugs detected in the tests and refactored the `Game`
 class by creating the `Action` and `CharacterManager` classes, which respectively
@@ -75,14 +82,19 @@ Finally, we implemented the features requested during the rush week:
       ```
       mvn clean compile exec:java -Dexec.args="--2thousands"
       ```
-    Launch 2 x 1000 games and print statistics.
+    Simulates 2x1000 games :
+    - 1000 games of our best bot against the second-best bot (with other bots to complete the game)
+    - 1000 games of our best bot against itself (or as many clones of itself as there are players)
+
+    Next, game statistics will be displayed as follows:
+    number and percentage of games won/lost/drawn, and the average score for each bot.
 
   - #### CSV mode
       ```
       mvn clean compile exec:java -Dexec.args="--2thousands"
       ```
-    Launch a simulation of several games (not necessarily 1000) with
-    rereading of "stats/gamestats.csv" if it exists and addition of new statistics.
+    Writes the statistics collected during the simulation to the CSV file located in "stats/gamestats.csv".
+    If it exists, the data is added to the pre-existing data.
 
 - ### Testing
   To execute the tests, you need to use this command :
