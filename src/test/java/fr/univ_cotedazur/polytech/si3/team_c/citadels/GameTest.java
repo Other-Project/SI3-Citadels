@@ -801,4 +801,19 @@ class GameTest {
         cards.forEach(simpleBot::addDistrictToHand);
         assertEquals(new Magician(), fearfulBot1.pickCharacter(cM));
     }
+
+    @Test
+    void playerOrderTest() {
+        Bot bot1 = new Bot("bot1");
+        Bot bot2 = new Bot("bot2");
+        Bot bot3 = new Bot("bot3");
+        Bot bot4 = new Bot("bot4");
+        game = new Game(bot1, bot2, bot3, bot4);
+        bot1.setCrown();
+        assertEquals(List.of(bot2, bot3, bot4), bot1.getPlayers());
+        bot3.setCrown();
+        bot1.resetCrown();
+        assertEquals(List.of(bot3, bot4, bot2), bot1.getPlayers());
+        assertEquals(List.of(bot4, bot1, bot2), bot3.getPlayers());
+    }
 }

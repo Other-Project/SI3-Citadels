@@ -37,7 +37,8 @@ public class Game {
     public Game(int numberPlayers, CharacterManager characterManager, Player... players) {
         this.characterManager = (characterManager == null) ? new CharacterManager(numberPlayers, random) : characterManager;
         deck = new Deck();
-        playerList = new ArrayList<>(List.of(players));
+        playerList = new ArrayList<>();
+        for (Player player : players) addPlayer(player);
         charactersToInteractWith = new ArrayList<>();
         eventActions = new EnumMap<>(Action.class);
         int initLength = playerList.size();
@@ -50,8 +51,7 @@ public class Game {
                 case 1 -> new DiscreetBot("discreetBot" + i);
                 default -> new Bot("bot" + i);
             };
-            playerList.add(bot);
-            bot.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(bot)).toList()));
+            addPlayer(bot);
         }
     }
 
@@ -71,7 +71,12 @@ public class Game {
      * Add a player to the game
      */
     protected void addPlayer(Player player) {
-        player.setPlayers(() -> new ArrayList<>(playerList.stream().filter(p -> !p.equals(player)).toList()));
+        player.setPlayers(() -> {
+            int crownIndex = getCrownIndex();
+            var res = new ArrayList<IPlayer>(playerList.subList(crownIndex, playerList.size()));
+            res.addAll(playerList.subList(0, crownIndex));
+            return res.stream().filter(p -> !p.equals(player)).toList();
+        });
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
     }
@@ -151,7 +156,6 @@ public class Game {
         for (Player p : playerList) {
             p.pickDistrictsFromDeck(deck.draw(2), 2);
             p.gainCoins(2);
-            p.setPlayers(() -> new ArrayList<>(playerList.stream().filter(player -> !player.equals(p)).toList()));
             p.setNumberOfDistrictsToEnd(numberOfDistrictsToEnd());
             p.resetCrown();
         }
