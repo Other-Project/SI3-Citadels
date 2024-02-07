@@ -1,59 +1,98 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
+import com.opencsv.bean.CsvBindByName;
+
 public class Statistic {
+    @CsvBindByName(column = "Number of runs")
+    @CsvPosition()
+    private int runs;
 
-    private int win;
-    private int loose;
-    private int equality;
+    @CsvBindByName(column = "Name of the bot")
+    @CsvPosition(position = 1)
+    private String name;
+    @CsvBindByName(column = "Number of wins")
+    @CsvPosition(position = 2)
+    private int wins;
+    @CsvBindByName(column = "Percentage of wins")
+    @CsvPosition(position = 3)
+    private float winsPercentage;
+    @CsvBindByName(column = "Number of equalities")
+    @CsvPosition(position = 4)
+    private int equalities;
+    @CsvBindByName(column = "Percentage of equalities")
+    @CsvPosition(position = 5)
+    private float equalitiesPercentage;
+    @CsvBindByName(column = "Number of losses")
+    @CsvPosition(position = 6)
+    private int losses;
+    @CsvBindByName(column = "Percentage of losses")
+    @CsvPosition(position = 7)
+    private float lossesPercentage;
 
-
-    public void addWin() {
-        win++;
+    /**
+     * For OpenCSV
+     */
+    @SuppressWarnings("unused")
+    public Statistic() {
     }
 
-    public void addLoose() {
-        loose++;
+    public Statistic(String name) {
+        this.name = name;
+    }
+
+    public void addWin() {
+        wins++;
+        runned();
+    }
+
+    public void addLoss() {
+        losses++;
+        runned();
     }
 
     public void addEquality() {
-        equality++;
+        equalities++;
+        runned();
+    }
+
+    private void runned() {
+        runs++;
+        winsPercentage = wins * 100f / runs;
+        equalitiesPercentage = equalities * 100f / runs;
+        lossesPercentage = losses * 100f / runs;
+
     }
 
     public int getWin() {
-        return win;
+        return wins;
     }
 
     public int getLoose() {
-        return loose;
+        return losses;
     }
 
     public int getEquality() {
-        return equality;
-    }
-
-    public Statistic() {
-        win = 0;
-        loose = 0;
-        equality = 0;
+        return equalities;
     }
 
     public float getWinPercentage() {
-        return win * 100f / numberOfTest();
+        return winsPercentage;
     }
 
     public float getLoosePercentage() {
-        return loose * 100f / numberOfTest();
+        return lossesPercentage;
     }
 
     public float getEqualityPercentage() {
-        return equality * 100f / numberOfTest();
+        return equalitiesPercentage;
     }
 
     public int numberOfTest() {
-        return win + loose + equality;
+        return runs;
     }
+
     @Override
     public String toString() {
-        return "Win : " + getWinPercentage() + "% / Loose : " + getLoosePercentage() + "% / Equality : " + getEqualityPercentage() + "%";
+        return "Win : " + getWinPercentage() + "% ; Equality : " + getEqualityPercentage() + "% ; Loose : " + getLoosePercentage() + "%";
     }
 }

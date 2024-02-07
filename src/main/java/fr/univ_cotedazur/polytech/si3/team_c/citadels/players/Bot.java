@@ -119,11 +119,25 @@ public class Bot extends Player {
     protected double exchangePlayerCard() {
         return 1;
     }
+
+    /**
+     * Level of security the bot feels if he could exchange its cards with another player
+     */
+    protected double exchangePlayerSecurity() {
+        return 0.25;
+    }
     /**
      * Level of the need to target another player if the bot could exchange cards with another player
      */
     protected double exchangePlayerFear() {
         return 0.5;
+    }
+
+    /**
+     * Level of the need to attack another player if the bot could destroy another player's district
+     */
+    protected double destroySecurity() {
+        return 1;
     }
     /**
      * Level of the need to attack another player if the bot could destroy another player's district
@@ -279,8 +293,12 @@ public class Bot extends Player {
                     if (playerToExchangeWith == null) break;
                     cardProfitability += playerToExchangeWith.getHandSize() - getHandDistricts().size() * exchangePlayerCard();
                     fearProfitability += exchangePlayerFear();
+                    securityProfitability += exchangePlayerSecurity();
                 }
-                case DESTROY -> fearProfitability += destroyFear();
+                case DESTROY -> {
+                    fearProfitability += destroyFear();
+                    securityProfitability += destroySecurity();
+                }
                 default -> { /* do nothing */ }
             }
         }

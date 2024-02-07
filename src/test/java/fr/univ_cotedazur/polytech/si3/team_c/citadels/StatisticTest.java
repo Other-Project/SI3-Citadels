@@ -24,9 +24,9 @@ class StatisticTest {
 
     @Test
     void addLooseTest() {
-        stat.addLoose();
+        stat.addLoss();
         assertEquals(1, stat.getLoose());
-        stat.addLoose();
+        stat.addLoss();
         assertEquals(2, stat.getLoose());
     }
 
@@ -48,9 +48,9 @@ class StatisticTest {
 
     @Test
     void getLoosePercentageTest() {
-        stat.addLoose();
+        stat.addLoss();
         assertEquals(100.0, stat.getLoosePercentage());
-        stat.addLoose();
+        stat.addLoss();
         assertEquals(100.0, stat.getLoosePercentage());
     }
 
@@ -68,8 +68,8 @@ class StatisticTest {
         stat.addEquality();
         assertEquals(50.0, stat.getWinPercentage());
         assertEquals(50.0, stat.getEqualityPercentage());
-        stat.addLoose();
-        stat.addLoose();
+        stat.addLoss();
+        stat.addLoss();
         assertEquals(25.0, stat.getWinPercentage());
         assertEquals(25.0, stat.getEqualityPercentage());
         assertEquals(50.0, stat.getLoosePercentage());
@@ -78,6 +78,6 @@ class StatisticTest {
     @Test
     void toStringTest() {
         stat.addWin();
-        assertEquals("Win : 100.0% / Loose : 0.0% / Equality : 0.0%", stat.toString());
+        assertEquals("Win : 100.0% ; Equality : 0.0% ; Loose : 0.0%", stat.toString());
     }
 }
