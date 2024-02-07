@@ -19,6 +19,8 @@ public class RichardBot extends Bot {
     public Character chooseCharacterToKill(List<Character> characterList) {
         // If the bot is in first place, he must kill the characters that could destroy one of his districts
         SimpleEntry<IPlayer, Integer> firstPlayer = playerWithMaxAttribute(iPlayer -> iPlayer.getBuiltDistricts().size());
+        firstPlayer = firstPlayer.getValue() < this.getBuiltDistricts().size() ?
+                new SimpleEntry<>(this, this.getBuiltDistricts().size()) : firstPlayer;
         if (firstPlayer.getKey().equals(this)) {
             var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
@@ -26,11 +28,21 @@ public class RichardBot extends Bot {
 
         List<IPlayer> enderPlayers = playerCanEndGame();
         IPlayer enderPlayer = enderPlayers.isEmpty() ? null : enderPlayers.get(0);
-        // If the bot estimates that the ender player has the best chances to get the stealing or destroying power, we kill that character
+        // If the bot estimates that the ender player has the best chances to get the stealing power, we kill that character */
         if (enderPlayer != null) {
             Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
-            if (enderPlayerCharacter.getAction().contains(Action.STEAL) || enderPlayerCharacter.getAction().contains(Action.DESTROY))
-                return enderPlayerCharacter;
+            if (enderPlayerCharacter.getAction().contains(Action.STEAL)) return enderPlayerCharacter;
+            else if (hasCrown()) {
+                /* If we're here, it means that the bot must kill a character that can destroy,
+                or a character that can't get his districts destroyed */
+                var characterToKill = characterList.stream().filter(
+                        character -> character.getAction().contains(Action.DESTROY)
+                                || !character.canHaveADistrictDestroyed()).findFirst();
+                if (characterToKill.isPresent()) return characterToKill.get();
+            } else {
+                var characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
+                if (characterToKill.isPresent()) return characterToKill.get();
+            }
         }
 
         // With this condition, a player cannot get too rich by stealing someone
@@ -53,11 +65,46 @@ public class RichardBot extends Bot {
 
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
-        if (playerCanAttemptFinalRush(character)) {
-            return 100;
+        // If the bot can end the game, he will try to take a character that avoids another player to destroy one of his districts
+        if (canEnd() &&
+                (character.getAction().contains(Action.KILL)
+                        || !character.canHaveADistrictDestroyed()
+                        || character.getAction().contains(Action.DESTROY)))
+            return (1.0 / character.getTurn()) * 1000;
+
+        List<IPlayer> gameEnder = playerCanEndGame();
+        if (gameEnder.size() == 1) {
+            List<Character> comboCharacters = containsComboCharacters(characterManager);
+            switch (comboCharacters.size()) {
+                case 3:
+                    /* We need first to destroy, and in a second time kill a character that can't have districts destroyed,
+                    so that's why we don't choose him in this case */
+                    if (character.getAction().contains(Action.DESTROY)) return 800;
+                    else if (character.getAction().contains(Action.KILL)) return 700;
+                    else if (!character.canHaveADistrictDestroyed()) return -1;
+                    break;
+                case 2:
+                    if (comboCharacters.stream().filter(character1 -> !character1.canHaveADistrictDestroyed()).findFirst().isEmpty()) {
+                        if (character.getAction().contains(Action.KILL)) return 750;
+                        else if (character.getAction().contains(Action.DESTROY)) return 650;
+                    } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty()) {
+                        if (character.getAction().contains(Action.KILL)) return 650;
+                        else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) return 550;
+                    } else if (comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.KILL)).findFirst().isEmpty()) {
+                        if (character.getAction().contains(Action.DESTROY)) return 400;
+                        else if (!character.canHaveADistrictDestroyed()) return 300;
+                    }
+                    break;
+                default:
+                    // Too many characters are missing, so we must take first characters to play
+                    return (1.0 / character.getTurn()) * 1000;
+
+            }
         }
-        if (character.getAction().contains(Action.KILL) && playerCanAttemptFinalRush(characterManager)) {
-            return 80;
+
+        if (playerCanAttemptFinalRush(character)) {
+            // If a player can attend a final rush with character, we will take that character
+            return hasCrown() && !character.getAction().contains(Action.KILL) ? 100 : 80;
         }
 
         List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
@@ -79,6 +126,18 @@ public class RichardBot extends Bot {
         }
 
         return super.characterProfitability(character, characterManager);
+    }
+
+    private List<Character> containsComboCharacters(CharacterManager characterManager) {
+        List<Character> res = new ArrayList<>();
+        for (Character character : characterManager.getAvailableCharacters()) {
+            if (character.getAction().contains(Action.KILL)
+                    || character.getAction().contains(Action.DESTROY)
+                    || !character.canHaveADistrictDestroyed()) {
+                res.add(character);
+            }
+        }
+        return res;
     }
 
     /**
@@ -144,6 +203,17 @@ public class RichardBot extends Bot {
         return getPlayers().stream().filter(player ->
                 player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2
                         && player.getBuiltDistricts().size() > this.getBuiltDistricts().size()).toList();
+    }
+
+    /**
+     * Detects if the current bot can end the game
+     */
+    private boolean canEnd() {
+        for (District district : getHandDistricts()) {
+            if (district.getCost() <= getCoins() && getBuiltDistricts().size() == getNumberOfDistrictsToEnd())
+                return true;
+        }
+        return false;
     }
 
     @Override
