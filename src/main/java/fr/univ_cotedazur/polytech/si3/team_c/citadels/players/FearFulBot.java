@@ -25,7 +25,7 @@ public class FearFulBot extends Bot {
      * @return 0 if nobody can be destroyed. Otherwise, it returns 6 plus the number of players who could have a reason to destroy multiplied by 2.
      */
     @Override
-    protected double destroyFear() {
+    protected double destroySecurity() {
         var nb = possibleDestruction(getPlayers()).size();
         if (nb == 0) {
             return 0;
@@ -60,7 +60,7 @@ public class FearFulBot extends Bot {
      *
      */
     @Override
-    protected double exchangePlayerFear() {
+    protected double exchangePlayerSecurity() {
         var nb = possibleExchange(getPlayers());
         if (nb < getPlayers().size() / 2.) {
             return 5 + nb;
@@ -74,12 +74,12 @@ public class FearFulBot extends Bot {
      * @return 0 if nobody could kill or 3 plus the number of players who could have a reason to kill because it is the least significant fear.
      */
     @Override
-    protected double killFear() {
+    protected double killSecurity() {
         var nb = possibleKill(getPlayers());
         if (nb == 0) {
             return 0;
         }
-        return nb + 3;
+        return nb + 4;
     }
 
     /**
@@ -88,12 +88,17 @@ public class FearFulBot extends Bot {
      * @return 0 if nobody has reasons to steal the bot. Otherwise, it returns 7 plus the number of players who could have a reason to steal.
      */
     @Override
-    protected double stealFear() {
+    protected double stealSecurity() {
         var nb = possibleSteal(getPlayers());
         if (nb == 0) {
             return 0;
         }
         return 7 + nb; //The factor 7 is calculated thanks to tests.
+    }
+
+    @Override
+    protected double numberOfDistrictToBuildMultiplier() {
+        return 0.;
     }
 
     public FearFulBot(String name, int coins, List<District> districts) {

@@ -769,7 +769,6 @@ class GameTest {
         testGame.characterSelectionTurn();
 
         // Get the argument passed to the pickCharacter method of bot7
-        @SuppressWarnings("unchecked")
         ArgumentCaptor<CharacterManager> argument = ArgumentCaptor.forClass(CharacterManager.class);
         verify(bot7).pickCharacter(argument.capture());
         assertTrue(List.of(argument.getValue().possibleCharactersToChoose().get(0), bot7.getCharacter().orElseThrow()).contains(new Warlord()));
@@ -783,21 +782,23 @@ class GameTest {
         game.addPlayer(fearfulBot1);
         game.addPlayer(simpleBot);
         fearfulBot1.buildDistrict(fearfulBot1.getHandDistricts().get(0), 0);
-        var characters = CharacterManager.defaultCharacterList();
-        assertEquals(new Bishop(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        List<Character> characters = new ArrayList<>(CharacterManager.defaultCharacterList());
+        CharacterManager cM = spy(new CharacterManager(2, new Random()));
+        when(cM.possibleCharactersToChoose()).thenReturn(characters);
+        assertEquals(new Bishop(), fearfulBot1.pickCharacter(cM));
         characters.remove(new Bishop());
         fearfulBot1.buildDistrict(fearfulBot1.getHandDistricts().get(0), 0);
-        assertEquals(new Warlord(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Warlord(), fearfulBot1.pickCharacter(cM));
         characters.remove(new Warlord());
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(cM));
         simpleBot.pay(3);
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(cM));
         simpleBot.pay(2);
-        assertEquals(new Thief(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Thief(), fearfulBot1.pickCharacter(cM));
         simpleBot.pay(5);
-        assertEquals(new Architect(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Assassin(), fearfulBot1.pickCharacter(cM));
         var cards = List.of(new Manor(), new Battlefield());
         cards.forEach(simpleBot::addDistrictToHand);
-        assertEquals(new Magician(), fearfulBot1.pickCharacter(characterManagerWithoutDiscard(2, characters)));
+        assertEquals(new Magician(), fearfulBot1.pickCharacter(cM));
     }
 }

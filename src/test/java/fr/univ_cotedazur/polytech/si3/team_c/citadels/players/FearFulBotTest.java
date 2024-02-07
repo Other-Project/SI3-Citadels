@@ -35,44 +35,44 @@ class FearFulBotTest {
         assertEquals(List.of(bot3), bot1.possibleDestruction(List.of(bot3)));
         assertEquals(List.of(), bot1.possibleDestruction(List.of(bot2)));
         assertEquals(List.of(bot3), bot1.possibleDestruction(List.of(bot3, bot2)));
-        assertEquals(8, bot1.destroyFear());
+        assertEquals(8, bot1.destroySecurity());
     }
 
     @Test
     void possibleExchangeTest() {
         assertEquals(2, bot1.possibleExchange(List.of(bot1, bot2, bot3)));
-        assertEquals(9, bot1.exchangePlayerFear());
+        assertEquals(9, bot1.exchangePlayerSecurity());
         bot3.addDistrictToHand(new Smithy());
         bot3.addDistrictToHand(new Battlefield());
         bot3.addDistrictToHand(new Church());
         assertEquals(1, bot1.possibleExchange(List.of(bot1, bot2, bot3)));
-        assertEquals(7, bot1.exchangePlayerFear());
+        assertEquals(7, bot1.exchangePlayerSecurity());
     }
 
     @Test
     void somebodyCouldKillTest() {
         bot1.buildDistrict(bot1.getHandDistricts().get(0), 0);
         assertEquals(2, bot1.possibleKill(bot1.getPlayers()));
-        assertEquals(5, bot1.killFear());
+        assertEquals(6, bot1.killSecurity());
         bot3.addDistrictToHand(new Smithy());
         bot3.addDistrictToHand(new Battlefield());
         bot3.addDistrictToHand(new Church());
         bot3.getHandDistricts().forEach(district -> bot3.buildDistrict(district, 0));
         assertEquals(1, bot1.possibleKill(bot1.getPlayers()));
-        assertEquals(4, bot1.killFear());
+        assertEquals(5, bot1.killSecurity());
     }
 
     @Test
     void somebodyCouldStealTest() {
         bot1.buildDistrict(bot1.getHandDistricts().get(0), 0);
         assertEquals(1, bot1.possibleSteal(bot1.getPlayers()));
-        assertEquals(8, bot1.stealFear());
+        assertEquals(8, bot1.stealSecurity());
         bot3.pay(20);
         assertEquals(2, bot1.possibleSteal(bot1.getPlayers()));
-        assertEquals(9, bot1.stealFear());
+        assertEquals(9, bot1.stealSecurity());
         bot3.gainCoins(100);
         bot2.gainCoins(100);
         assertEquals(0, bot1.possibleSteal(bot1.getPlayers()));
-        assertEquals(0, bot1.stealFear());
+        assertEquals(0, bot1.stealSecurity());
     }
 }
