@@ -148,21 +148,31 @@ Le projet est découpée en plusieurs gros ensembles :
   pour une potentielle évolution future avec des cartes disposant de comportements hybrides.
 
 
-- #### Les tests
+* Pour le moteur de jeu, nous avons décidé de séparer les différentes responsabilités dans les classes : `Game`, `Action`, `CharacterManager` et `Deck`.
+  * La classe `CharacterManager` permet de gérer les personnages lors du tour de sélection des personnages et de stocker les différentes informations
+  liées à celui-ci. Elle donne la liste des personnages aux joueurs et prend en compte les variations liés à leur nombre, à la fois pour la défausse,
+  mais aussi pour les personnages disponibles.
+  * L'énuméré `Action` liste et permet d'exécuter les différentes actions. Il interagit étroitement avec `Game` et `Player`. 
+  * La classe `Deck` gère la pioche et permet de tirer un nombre de cartes donné. À sa création, les cartes sont ajoutées et mélangées.
 
 * L'intéraction du joueur avec le moteur de jeu se fait au moyen de la classe `Player`. Cette classe est abstraite, car destinée à représenter un joueur générique.
 
-- #### Générer un jar puis le lancer :
+## Documentation
 
-  ```
-  mvn clean package
-  java -cp ./target/citadels-1.0.jar fr.univ_cotedazur.polytech.si3.team_c.citadels.Game
-  ```
+Toutes les méthodes, ainsi que les points importants de notre code sont expliqués à l'aide de commentaires.
+Ceux-ci contiennent pour les méthodes : la description des paramètres, la description de l'élément retourné, ainsi
+qu'une explication de l'action qu'elle réalise. Lorsqu'un code est complexe et qu'il est difficile à comprendre, 
+des explications sont données pour faciliter la compréhension à la relecture afin d'améliorer la productivité.
 
-------------------------
+## Qualité
 
 
 
 # Processus
 
+### Stratégie de branchement
 
+Nous avons opté pour la stratégie [GitHub flow](https://docs.github.com/fr/get-started/using-github/github-flow) 
+car celle-ci nous semblait être la plus adaptée à la taille de notre équipe par sa simplicité de mise en place,
+tandis que Git flow et Gitlab flow sont plus adaptées à des projets de plus grande envergure puisqu'elle dispose
+d'un plus grand nombre d'étapes avant la livraison.
