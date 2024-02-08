@@ -3,164 +3,153 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels.players;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.Character;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.*;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 
+import static fr.univ_cotedazur.polytech.si3.team_c.citadels.Action.GET_CROWN;
+
 public class RichardBot extends Bot {
-    private boolean playCombo;
+
     public RichardBot(String name) {
         this(name, 0, Collections.emptyList());
-        playCombo = false;
+
     }
 
     public RichardBot(String name, int coins, List<District> districts) {
         super(name, coins, districts);
-        playCombo = false;
+    }
+
+
+    public List<Character> removeCharacters(List<Character> characterList) {
+        List<Character> remove = new ArrayList<>();
+        Optional<Character> warlord = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
+        Optional<Character> thief = characterList.stream().filter(character -> character.getAction().contains(Action.STEAL)).findFirst();
+        List<IPlayer> couldWinThief = getPlayersAbleToWin(thief.orElse(null));
+        List<IPlayer> couldWinWarlord = getPlayersAbleToWin(warlord.orElse(null));
+        if (thief.isPresent() && couldWinThief.isEmpty() && !enrichPossible()) remove.add(thief.get());
+        if (warlord.isPresent() && couldWinWarlord.isEmpty() && !iAmFirst()) remove.add(warlord.get());
+
+        Optional<Character> assassin = characterList.stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
+        Optional<Character> bishop = characterList.stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
+        Optional<Character> magician = characterList.stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+
+        if (warlord.isPresent() && assassin.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown())
+            remove.add(warlord.get());
+
+        return remove;
     }
 
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
-        // If a player will build his penultimate district, we kill the character that gives the crown
-        List<IPlayer> willBuildPenultimate = new ArrayList<>(betterPlayerWillBuildPenultimateDistrict());
-        willBuildPenultimate.remove(this);
-        var playerWillBuildPenultimate = willBuildPenultimate.stream().filter(IPlayer::hasCrown).findFirst();
-        if (playerWillBuildPenultimate.isPresent()) {
-            var characterToKill = getPossibleCharacters(playerWillBuildPenultimate.get()).stream()
-                    .filter(character -> character.startTurnAction().equals(Action.GET_CROWN)).findFirst();
-            if (characterToKill.isPresent()) return characterToKill.get();
+        characterList = new ArrayList<>(characterList); //to be sure that characterList initial is not modified
+        //ASSASSIN
+        characterList.removeAll(removeCharacters(characterList));
+
+        Optional<Character> warlord = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
+
+
+        //ARCHITECT
+        Optional<Character> architect = characterList.stream().filter(character -> character.numberOfDistrictToBuild() == 3).findFirst();
+        if (architect.isPresent() && onePlayerCouldBecomeUntouchable(architect.get())) {
+            var annoyingCharacter = characterList.stream().filter(character -> character.numberOfDistrictToBuild() == 3).findFirst();
+            if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
 
-        // If the bot is in first place, he must kill the characters that could destroy one of his districts
-        SimpleEntry<IPlayer, Integer> firstPlayer = playerWithMaxAttribute(iPlayer -> iPlayer.getBuiltDistricts().size());
-        if (firstPlayer.getValue() < this.getBuiltDistricts().size())
-            firstPlayer = new SimpleEntry<>(this, this.getBuiltDistricts().size());
-        if (firstPlayer.getKey().equals(this)) {
+        //KING
+        Optional<Character> king = characterList.stream().filter(character -> character.startTurnAction().equals(GET_CROWN)).findFirst();
+        if (king.isPresent() && buildPenultimateDistrict()) {
+            var annoyingCharacter = characterList.stream().filter(character -> character.startTurnAction().equals(GET_CROWN)).findFirst();
+            if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
+        }
+
+        if (warlord.isPresent() && iWillbuildPenultimateDistrict()) {
             var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
 
-        List<IPlayer> enderPlayers = playerCanEndGame();
-        IPlayer enderPlayer = enderPlayers.isEmpty() ? null : enderPlayers.get(0);
-        // If the bot estimates that the ender player has the best chances to get the stealing power, we kill that character
-        if (enderPlayer != null) {
-            if (enderPlayers.size() == 1) {
-                Optional<Character> characterToKill;
-                if (!hasCrown())
-                    // Case 1 : The bot have to kill the character that can't have a district destroyed
-                    characterToKill = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
-                else if (enderPlayer.getHandSize() == 0 && getPlayers().get(0).getHandSize() > 2)  // Case 3 : The ender player will try to steal cards, so we kill a character that can exchange cards with players
-                    characterToKill = characterList.stream().filter(character -> character.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
-                else // Case 2 : The bot need to kill any character except characters that can destroy districts
-                    return super.chooseCharacterToKill(characterList.stream().filter(character -> !character.getAction().contains(Action.DESTROY)).toList());
-                if (characterToKill.isPresent()) return characterToKill.get();
-                Character enderPlayerCharacter = characterEstimation(enderPlayer, CharacterManager.defaultCharacterList());
-                if (enderPlayerCharacter.getAction().contains(Action.STEAL)) return enderPlayerCharacter;
-            } else {
-                // Here, the ender player must be 1st or 2nd to choose a character
-                var characterToKill = characterList.stream().filter(
-                        character -> !character.canHaveADistrictDestroyed()
-                                || character.getAction().contains(Action.DESTROY)
-                                || character.getAction().contains(Action.STEAL)).findAny();
-                if (characterToKill.isPresent()) return characterToKill.get();
-            }
-        }
-
-        // With this condition, a player cannot get too rich by stealing someone
-        int maxCoins = playerWithMaxAttribute(IPlayer::getCoins).getValue();
-        // Here, Richard didn't think about the extreme case, where there's one rich player and all the other don't have any coin
-        if (potentialAmountOfCoins() >= 6 && potentialAmountOfCoins() > maxCoins) {
-            var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.STEAL)).findFirst();
+        //LastTurn
+        Optional<Character> assassin = characterList.stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
+        Optional<Character> bishop = characterList.stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
+        Optional<Character> magician = characterList.stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+        if (warlord.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown()) {
+            var annoyingCharacter = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
+        if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() > 5 && thirdPlayer(positionWinningPlayer(characterList)).getHandSize() == 0)
+            return magician.get();
 
         return super.chooseCharacterToKill(characterList);
     }
 
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
-        // If the bot can end the game, he will try to take a character that avoids another player to destroy one of his districts
-        if (canEnd() &&
-                (character.getAction().contains(Action.KILL)
-                        || !character.canHaveADistrictDestroyed()
-                        || character.getAction().contains(Action.DESTROY)))
-            return (1.0 / character.getTurn()) * 1000;
-
-        List<IPlayer> gameEnder = playerCanEndGame();
-        if (gameEnder.size() == 1) {
-            List<Character> comboCharacters = containsComboCharacters(characterManager);
-            switch (comboCharacters.size()) {
-                case 3:
-                    /* We need first to destroy, and in a second time kill a character that can't have districts destroyed,
-                    so that's why we don't choose him in this case */
-                    if (character.getAction().contains(Action.DESTROY)) return 800;
-                    break;
-                case 2:
-                    if ((comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty()
-                            || comboCharacters.stream().filter(character1 -> !character1.canHaveADistrictDestroyed()).findFirst().isEmpty())) {
-                        if (character.getAction().contains(Action.KILL)) return 800;
-                    } else if (character.getAction().contains(Action.DESTROY)) return 800;
-                    break;
-                case 1:
-                    if (getHandSize() <= 2
-                            && character.getAction().contains(Action.EXCHANGE_PLAYER)
-                            && comboCharacters.stream().filter(character1 -> character1.getAction().contains(Action.DESTROY)).findFirst().isEmpty())
-                        return 800;
-                    if (comboCharacters.contains(character)) return 700;
-                    break;
-                default:
-                    break;
-            }
+        //ARCHITECT
+        Optional<Character> architect = characterManager.charactersList().stream().filter(archi -> archi.numberOfDistrictToBuild() == 3).findFirst();
+        if (architect.isPresent() && onePlayerCouldBecomeUntouchable(architect.get())) {
+            if (character.getAction().contains(Action.KILL)) return 750;
+            if (character.numberOfDistrictToBuild() >= 3) return 600;
+        }
+        if (architect.isPresent() && couldBecomeUntouchable(architect.get()) && (character.numberOfDistrictToBuild() >= 3)) {
+            return 150;
         }
 
-        List<IPlayer> playerBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
-        if (playerBuildPenultimate.size() == 1) {
-            if (character.startTurnAction().equals(Action.GET_CROWN)) {
-                return 150;
-            } else if (character.getAction().contains(Action.KILL)) {
-                return 40;
-            } else if (character.getAction().contains(Action.DESTROY)) {
-                return 30;
-            } else if (!character.canHaveADistrictDestroyed()) {
-                return 20;
-            } else if (character.getAction().contains(Action.EXCHANGE_PLAYER)) {
-                return 15;
-            } else if (character.getAction().contains(Action.STEAL)) {
-                return 10;
-            }
-        }
-
-        // This part is dedicated to block any player that can attempt a final rush
-        if (character.getAction().contains(Action.KILL) && playerCanAttemptFinalRush(characterManager)) {
-            /* If a player can attempt a final rush with the given character or with another and the given character can kill,
-            he must take the given character */
+        //LastTurn
+        Optional<Character> warlord = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.DESTROY)).findFirst();
+        Optional<Character> assassin = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
+        Optional<Character> bishop = characterManager.charactersList().stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
+        Optional<Character> magician = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+        if (warlord.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.DESTROY)))
+            return 500;
+        if (assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.KILL)))
             return 100;
+        if (warlord.isPresent() && assassin.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.KILL)))
+            return 100;
+        if (warlord.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.DESTROY)))
+            return 100;
+
+        if (assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.KILL)))
+            return 100;
+        if (bishop.isPresent() && magician.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.EXCHANGE_PLAYER)) && getHandSize() < 5)
+            return 100;
+
+        if (warlord.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.DESTROY)))
+            return 100;
+        if (bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.canHaveADistrictDestroyed()))
+            return 100;
+
+
+        //KING
+        if (buildPenultimateDistrict() || iWillbuildPenultimateDistrict()) {
+            if (character.startTurnAction().equals(GET_CROWN)) return 300;
+            else if (character.getAction().contains(Action.KILL)) return 150;
+            else if (character.getAction().contains(Action.DESTROY)) return 120;
+            else if (!character.canHaveADistrictDestroyed()) return 100;
         }
         return super.characterProfitability(character, characterManager);
     }
 
-    private List<Character> containsComboCharacters(CharacterManager characterManager) {
-        List<Character> res = new ArrayList<>();
-        for (Character character : characterManager.getAvailableCharacters()) {
-            if (character.getAction().contains(Action.KILL)
-                    || character.getAction().contains(Action.DESTROY)
-                    || !character.canHaveADistrictDestroyed()) {
-                res.add(character);
-            }
-        }
-        return res;
+    @Override
+    protected double exchangePlayerCard() {
+        return super.exchangePlayerCard();
     }
 
-    /**
-     * This method returns the players that can end the current game
-     *
-     * @return the player List
-     */
-    public List<IPlayer> playerCanEndGame() {
-        List<IPlayer> resPlayers = new ArrayList<>();
-        for (IPlayer player : getPlayers()) {
-            if (player.getBuiltDistricts().size() + 1 >= getNumberOfDistrictsToEnd()) resPlayers.add(player);
-        }
-        return resPlayers;
+    private List<IPlayer> getPlayersAbleToWin(List<Character> characters) {
+        Set<IPlayer> players = new HashSet<>();
+        characters.forEach(character -> players.addAll(getPlayersAbleToWin(character)));
+        return players.stream().toList();
+    }
+
+
+    private List<IPlayer> getPlayersAbleToWin(Character character) {
+        if (character == null) return new ArrayList<>();
+        return getPlayers().stream().filter(iPlayer -> iPlayer.getBuiltDistricts().size() + character.numberOfDistrictToBuild() >= getNumberOfDistrictsToEnd()).toList();
+    }
+
+    private boolean iAmFirst() {
+        return getPlayers().stream().allMatch(iPlayer -> iPlayer.getBuiltDistricts().stream().mapToInt(District::getPoint).sum() < getBuiltDistricts().stream().mapToInt(District::getPoint).sum());
+    }
+
+    private boolean enrichPossible() {
+        return potentialAmountOfCoins() >= 6;
     }
 
     /**
@@ -178,76 +167,59 @@ public class RichardBot extends Bot {
         return potentialMaxCoins;
     }
 
-    /**
-     * Detects if a player can attempt a final rush given all the characters except the visible ones
-     *
-     * @param characterManager to determine the characters to process
-     */
-    private boolean playerCanAttemptFinalRush(CharacterManager characterManager) {
-        for (Character character : characterManager.charactersList().stream()
-                .filter(character -> !characterManager.getVisible().contains(character)).toList()) {
-            if (playerCanAttemptFinalRush(character)) return true;
-        }
-        return false;
+    private boolean onePlayerCouldBecomeUntouchable(Character character) {
+        return !getPlayers().stream()
+                .filter(iPlayer -> iPlayer.getCoins() >= 4
+                        && iPlayer.getHandSize() >= 1
+                        && iPlayer.getBuiltDistricts().size() >= getNumberOfDistrictsToEnd() - character.numberOfDistrictToBuild()).toList().isEmpty();
     }
 
-    /**
-     * Detects if a player can attend a final rush with the given character
-     */
-    private boolean playerCanAttemptFinalRush(Character character) {
-        for (IPlayer player : getPlayers()) {
-            if (player.getCoins() >= 4
-                    && getNumberOfDistrictsToEnd() - player.getBuiltDistricts().size() != 1
-                    && player.getHandSize() >= character.numberOfDistrictToBuild() - (character.startTurnAction().equals(Action.BEGIN_DRAW) ? 2 : 0)
-                    && player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - character.numberOfDistrictToBuild())
-                return true;
-        }
-        return false;
+    private boolean couldBecomeUntouchable(Character character) {
+        return getCoins() >= 4
+                && getHandSize() >= 1
+                && getBuiltDistricts().size() >= getNumberOfDistrictsToEnd() - character.numberOfDistrictToBuild();
     }
 
     /**
      * Detects if a player is on the verge of building his penultimate district
      *
      */
-    private List<IPlayer> betterPlayerWillBuildPenultimateDistrict() {
-        List<IPlayer> players = getPlayers();
-        players.add(this);
-        return players.stream().filter(player ->
+    private boolean buildPenultimateDistrict() {
+        return !getPlayers().stream().filter(player ->
                 player.getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2
-                        && player.getBuiltDistricts().size() >= this.getBuiltDistricts().size()).toList();
+                        && player.getBuiltDistricts().size() >= this.getBuiltDistricts().size()).toList().isEmpty();
     }
 
-    /**
-     * Detects if the current bot can end the game
-     */
-    private boolean canEnd() {
-        for (District district : getHandDistricts()) {
-            if (district.getCost() <= getCoins() && getBuiltDistricts().size() == getNumberOfDistrictsToEnd())
-                return true;
+    private boolean iWillbuildPenultimateDistrict() {
+        return getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2;
+    }
+
+    private boolean iAmSecond() {
+        return getPlayersWithYou().get(1).equals(this);
+    }
+
+
+    private boolean thirdOrMoreWillWin(List<Character> possible) {
+        return possible.stream().anyMatch(character -> !getPlayersWithYou().subList(3, getPlayersWithYou().size()).stream().filter(player -> getPlayersAbleToWin(character).contains(player)).toList().isEmpty());
+    }
+
+    private IPlayer secondPlayer() {
+        return getPlayers().get(0);
+    }
+
+    private IPlayer thirdPlayer(int i) {
+        if (hasCrown()) return getPlayers().get(i - 1);
+        else return getPlayersWithYou().get(i);
+    }
+
+    private int positionWinningPlayer(List<Character> characters) {
+        List<Integer> position = new ArrayList<>();
+        List<IPlayer> players = getPlayersWithYou();
+        for (IPlayer iPlayer : players) {
+            if (characters.stream().anyMatch(character -> iPlayer.getBuiltDistricts().size() + character.numberOfDistrictToBuild() == getNumberOfDistrictsToEnd()))
+                position.add(players.indexOf(iPlayer));
         }
-        return false;
+        return position.stream().min(Integer::compareTo).get();
     }
 
-    @Override
-    public SimpleEntry<IPlayer, District> destroyDistrict(List<IPlayer> players) {
-        /* We try to block the player that will build his penultimate district as the warlord,
-        so we try to destroy the smallest district to block him */
-        List<IPlayer> willBuildPenultimate = betterPlayerWillBuildPenultimateDistrict();
-        willBuildPenultimate.remove(this);
-        if (!willBuildPenultimate.isEmpty()) {
-            Optional<SimpleEntry<IPlayer, District>> districtToDestroy = willBuildPenultimate.stream()
-                    .flatMap(player -> player.getDestroyableDistricts().stream().filter(district -> district.getCost() - 1 <= getCoins()).map(district -> new SimpleEntry<>(player, district)))
-                    .min(Comparator.comparingInt(entry -> entry.getValue().getCost()));
-            if (districtToDestroy.isPresent()) return districtToDestroy.get();
-        }
-
-        return super.destroyDistrict(players);
-    }
-
-    @Override
-    public IPlayer playerToExchangeCards(List<IPlayer> players) {
-        var enderPlayer = playerCanEndGame();
-        if (enderPlayer.size() == 1) return enderPlayer.get(0);
-        return super.playerToExchangeCards(players);
-    }
 }

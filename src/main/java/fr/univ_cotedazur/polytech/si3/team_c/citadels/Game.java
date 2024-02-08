@@ -75,7 +75,7 @@ public class Game {
             int crownIndex = getCrownIndex();
             var res = new ArrayList<IPlayer>(playerList.subList(crownIndex, playerList.size()));
             res.addAll(playerList.subList(0, crownIndex));
-            return res.stream().filter(p -> !p.equals(player)).toList();
+            return res;
         });
         if (playerList == null) playerList = new ArrayList<>(List.of(player));
         else this.playerList.add(player);
