@@ -80,6 +80,8 @@ public class RichardBot extends Bot {
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
         charactersPresentBefore = characterManager.possibleCharactersToChoose();
+
+
         //LastTurn
         Optional<Character> warlord = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.DESTROY)).findFirst();
         Optional<Character> assassin = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
@@ -106,8 +108,8 @@ public class RichardBot extends Bot {
         //ARCHITECT
         Optional<Character> architect = characterManager.charactersList().stream().filter(archi -> archi.numberOfDistrictToBuild() == 3).findFirst();
         if (architect.isPresent() && onePlayerCouldBecomeUntouchable(architect.get())) {
-            if (character.getAction().contains(Action.KILL)) return 250;
-            if (character.numberOfDistrictToBuild() >= 3) return 200;
+            if (character.getAction().contains(Action.KILL)) return 750;
+            if (character.numberOfDistrictToBuild() >= 3) return 400;
         }
         if (architect.isPresent() && couldBecomeUntouchable(architect.get()) && (character.numberOfDistrictToBuild() >= 3)) {
             return 150;
@@ -196,7 +198,7 @@ public class RichardBot extends Bot {
 
 
     private boolean thirdOrMoreWillWin(List<Character> possible) {
-        return possible.stream().anyMatch(character -> !getPlayersWithYou().subList(2, getPlayersWithYou().size()).stream().filter(player -> getPlayersAbleToWin(character).contains(player)).toList().isEmpty());
+        return possible.stream().anyMatch(character -> character.numberOfDistrictToBuild() == 1 && !getPlayersWithYou().subList(2, getPlayersWithYou().size()).stream().filter(player -> getPlayersAbleToWin(character).contains(player)).toList().isEmpty());
     }
 
     private IPlayer secondPlayer() {
