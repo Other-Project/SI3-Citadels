@@ -518,8 +518,7 @@ public abstract class Player implements IPlayer {
     public List<IPlayer> getPlayers() {
         try {
             List<IPlayer> test = players.call();
-            test.remove(this);
-            return test;
+            return test.stream().filter(iPlayer -> !iPlayer.equals(this)).toList();
         } catch (Exception e) {
             return Collections.emptyList();
         }
