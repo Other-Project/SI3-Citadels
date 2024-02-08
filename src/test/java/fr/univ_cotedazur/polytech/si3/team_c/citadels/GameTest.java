@@ -42,7 +42,7 @@ class GameTest {
         // Here, we are testing if the game is ending (that the method start executes well until the end)
     void start() {
         game.addPlayer(new Bot("bot1", 2, game.getDeck().draw(2)));
-        game.start();
+        assertDoesNotThrow(game::start);
         assertEquals(game.getPlayerList(), game.getWinners().getKey());
     }
 
@@ -693,7 +693,7 @@ class GameTest {
         CharacterManager characterManager = new CharacterManager(3, new Random());
 
         Game threePlayerGame = new Game(3, characterManager, bot1, bot2, bot3);
-        threePlayerGame.start();
+        assertDoesNotThrow(threePlayerGame::start);
         bot1.getPlayers();
 
         assertEquals(3, threePlayerGame.getPlayerList().size());
