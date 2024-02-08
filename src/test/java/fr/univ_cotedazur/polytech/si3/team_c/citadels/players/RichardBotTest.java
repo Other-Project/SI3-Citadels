@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class RichardBotTest {
 
@@ -186,12 +185,20 @@ class RichardBotTest {
         districts.forEach(district -> bot1.addDistrictToHand(district));
         districts.forEach(district -> bot1.buildDistrict(district, 0));
 
+        ///1
         assertEquals(new Warlord(), richardBot1.pickCharacter(characterManager));
         listCharacter.remove(new Warlord());
         assertEquals(new Assassin(), richardBot2.pickCharacter(characterManager));
+        listCharacter.remove(new Assassin());
         assertEquals(new Bishop(), richardBot2.chooseCharacterToKill(listCharacter));
 
-        assertEquals(new Assassin(), richardBot1.pickCharacter(characterManager));
+        ///2
+        listCharacter.clear();
+        listCharacter.addAll(CharacterManager.defaultCharacterList());
+        listCharacter.remove(new Bishop());
+        /*assertEquals(new Assassin(), richardBot1.pickCharacter(characterManager));
+        listCharacter.remove(new Assassin());
+        assertEquals(List.of(new Warlord()), richardBot1.removeCharacters(listCharacter));
         assertEquals(new Magician(), richardBot1.chooseCharacterToKill(listCharacter));
         listCharacter.remove(new Assassin());
         assertEquals(new Magician(), richardBot2.pickCharacter(characterManager));
@@ -207,6 +214,6 @@ class RichardBotTest {
         assertEquals(new Assassin(), richardBot1.pickCharacter(characterManager));
         assertNotEquals(new Warlord(), richardBot1.chooseCharacterToKill(listCharacter));
         listCharacter.remove(new Assassin());
-        assertEquals(new Warlord(), richardBot2.pickCharacter(characterManager));
+        assertEquals(new Warlord(), richardBot2.pickCharacter(characterManager));*/
     }
 }

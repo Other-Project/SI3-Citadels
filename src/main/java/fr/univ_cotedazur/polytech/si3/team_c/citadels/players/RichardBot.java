@@ -9,6 +9,8 @@ import static fr.univ_cotedazur.polytech.si3.team_c.citadels.Action.GET_CROWN;
 
 public class RichardBot extends Bot {
 
+    List<Character> charactersPresentBefore; //to store the characters available at the bot choice and know in which strategy we are when we want to kill and it is the last turn
+
     public RichardBot(String name) {
         this(name, 0, Collections.emptyList());
 
@@ -20,6 +22,7 @@ public class RichardBot extends Bot {
 
 
     public List<Character> removeCharacters(List<Character> characterList) {
+        //REMOVE FOR THE cASE OF ASSASSIN
         List<Character> remove = new ArrayList<>();
         Optional<Character> warlord = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
         Optional<Character> thief = characterList.stream().filter(character -> character.getAction().contains(Action.STEAL)).findFirst();
@@ -28,11 +31,8 @@ public class RichardBot extends Bot {
         if (thief.isPresent() && couldWinThief.isEmpty() && !enrichPossible()) remove.add(thief.get());
         if (warlord.isPresent() && couldWinWarlord.isEmpty() && !iAmFirst()) remove.add(warlord.get());
 
-        Optional<Character> assassin = characterList.stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
-        Optional<Character> bishop = characterList.stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
-        Optional<Character> magician = characterList.stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
-
-        if (warlord.isPresent() && assassin.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown())
+        //CASE 2 OF LAST TURN (warlod not in list in the case 3 of LAST)
+        if (warlord.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown())
             remove.add(warlord.get());
 
         return remove;
@@ -44,8 +44,17 @@ public class RichardBot extends Bot {
         //ASSASSIN
         characterList.removeAll(removeCharacters(characterList));
 
-        Optional<Character> warlord = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
-
+        Optional<Character> warlord = charactersPresentBefore.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
+        //LastTurn
+        Optional<Character> assassin = charactersPresentBefore.stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
+        Optional<Character> bishop = charactersPresentBefore.stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
+        Optional<Character> magician = charactersPresentBefore.stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
+        if (thirdOrMoreWillWin(characterList) && iAmSecond()) {
+            var annoyingCharacter = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
+            if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
+        }
+        if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() > 5 && thirdPlayer(positionWinningPlayer(characterList)).getHandSize() == 0)
+            return magician.get();
 
         //ARCHITECT
         Optional<Character> architect = characterList.stream().filter(character -> character.numberOfDistrictToBuild() == 3).findFirst();
@@ -65,33 +74,12 @@ public class RichardBot extends Bot {
             var annoyingCharacter = characterList.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
-
-        //LastTurn
-        Optional<Character> assassin = characterList.stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
-        Optional<Character> bishop = characterList.stream().filter(warl -> !warl.canHaveADistrictDestroyed()).findFirst();
-        Optional<Character> magician = characterList.stream().filter(warl -> warl.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
-        if (warlord.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown()) {
-            var annoyingCharacter = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
-            if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
-        }
-        if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() > 5 && thirdPlayer(positionWinningPlayer(characterList)).getHandSize() == 0)
-            return magician.get();
-
         return super.chooseCharacterToKill(characterList);
     }
 
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
-        //ARCHITECT
-        Optional<Character> architect = characterManager.charactersList().stream().filter(archi -> archi.numberOfDistrictToBuild() == 3).findFirst();
-        if (architect.isPresent() && onePlayerCouldBecomeUntouchable(architect.get())) {
-            if (character.getAction().contains(Action.KILL)) return 750;
-            if (character.numberOfDistrictToBuild() >= 3) return 600;
-        }
-        if (architect.isPresent() && couldBecomeUntouchable(architect.get()) && (character.numberOfDistrictToBuild() >= 3)) {
-            return 150;
-        }
-
+        charactersPresentBefore = characterManager.possibleCharactersToChoose();
         //LastTurn
         Optional<Character> warlord = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.DESTROY)).findFirst();
         Optional<Character> assassin = characterManager.charactersList().stream().filter(warl -> warl.getAction().contains(Action.KILL)).findFirst();
@@ -100,22 +88,30 @@ public class RichardBot extends Bot {
         if (warlord.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.DESTROY)))
             return 500;
         if (assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.KILL)))
-            return 100;
+            return 450;
         if (warlord.isPresent() && assassin.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.KILL)))
-            return 100;
+            return 450;
         if (warlord.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.DESTROY)))
-            return 100;
-
+            return 450;
         if (assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.KILL)))
-            return 100;
+            return 450;
         if (bishop.isPresent() && magician.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.getAction().contains(Action.EXCHANGE_PLAYER)) && getHandSize() < 5)
-            return 100;
+            return 450;
 
         if (warlord.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && hasCrown() && (character.getAction().contains(Action.DESTROY)))
-            return 100;
+            return 450;
         if (bishop.isPresent() && thirdOrMoreWillWin(characterManager.possibleCharactersToChoose()) && iAmSecond() && (character.canHaveADistrictDestroyed()))
-            return 100;
+            return 450;
 
+        //ARCHITECT
+        Optional<Character> architect = characterManager.charactersList().stream().filter(archi -> archi.numberOfDistrictToBuild() == 3).findFirst();
+        if (architect.isPresent() && onePlayerCouldBecomeUntouchable(architect.get())) {
+            if (character.getAction().contains(Action.KILL)) return 250;
+            if (character.numberOfDistrictToBuild() >= 3) return 200;
+        }
+        if (architect.isPresent() && couldBecomeUntouchable(architect.get()) && (character.numberOfDistrictToBuild() >= 3)) {
+            return 150;
+        }
 
         //KING
         if (buildPenultimateDistrict() || iWillbuildPenultimateDistrict()) {
@@ -129,7 +125,7 @@ public class RichardBot extends Bot {
 
     @Override
     protected double exchangePlayerCard() {
-        return super.exchangePlayerCard();
+        return super.exchangePlayerCard();//TODO add magician choice
     }
 
     private List<IPlayer> getPlayersAbleToWin(List<Character> characters) {
@@ -200,7 +196,7 @@ public class RichardBot extends Bot {
 
 
     private boolean thirdOrMoreWillWin(List<Character> possible) {
-        return possible.stream().anyMatch(character -> !getPlayersWithYou().subList(3, getPlayersWithYou().size()).stream().filter(player -> getPlayersAbleToWin(character).contains(player)).toList().isEmpty());
+        return possible.stream().anyMatch(character -> !getPlayersWithYou().subList(2, getPlayersWithYou().size()).stream().filter(player -> getPlayersAbleToWin(character).contains(player)).toList().isEmpty());
     }
 
     private IPlayer secondPlayer() {
