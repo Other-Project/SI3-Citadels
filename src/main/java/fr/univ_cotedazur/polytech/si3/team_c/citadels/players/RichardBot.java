@@ -19,7 +19,12 @@ public class RichardBot extends Bot {
         super(name, coins, districts);
     }
 
-
+    /**
+     * Method to implement Richard's strategy concerning the Assassin, to don't kill some Thief or Warlord in some cases .
+     *
+     * @param characterList: The list of characters that can be killed.
+     * @return: A list of characters that the Assassin will not kill.
+     */
     protected List<Character> charactersNotToKill(List<Character> characterList) {
         // ASSASSIN
         Set<Character> remove = new HashSet<>();
@@ -37,14 +42,18 @@ public class RichardBot extends Bot {
         return remove.stream().toList();
     }
 
+    /**
+     * Method to implement Richard's strategy for character killing, prioritizing Richard's criteria if applicable and calling the superclass method otherwise.
+     * @param characterList: The list of characters the player can kill.
+     * @return: The character the Assassin must kill.
+     */
     @Override
     public Character chooseCharacterToKill(List<Character> characterList) {
         characterList = new ArrayList<>(characterList); //to be sure that characterList initial is not modified
-
-        //ASSASSIN
         characterList.removeAll(charactersNotToKill(characterList)); // Remove from the list of killable characters those you mustn't kill
-
         Optional<Character> warlord = charactersPresent.stream().filter(character -> character.getAction().contains(Action.DESTROY)).findFirst();
+
+        //ASSASSIN THANKS TO charactersNotToKill
 
         //LastTurn
         Optional<Character> assassin = charactersPresent.stream().filter(c -> c.getAction().contains(Action.KILL)).findFirst();
@@ -55,7 +64,7 @@ public class RichardBot extends Bot {
             var annoyingCharacter = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
             if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
         }
-        if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() >= LOW_AMOUNT_OF_CARD && thirdPlayer(positionWinningPlayer(CharacterManager.defaultCharacterList())).getHandSize() == 0)
+        if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() >= LOW_AMOUNT_OF_CARD && thirdPlayer(positionWinningPlayer(characterList)).getHandSize() == 0)
             return magician.get();
 
         //ARCHITECT
@@ -65,7 +74,6 @@ public class RichardBot extends Bot {
 
         //KING
         Optional<Character> king = characterList.stream().filter(character -> character.startTurnAction().equals(GET_CROWN)).findFirst();
-
         if (king.isPresent() && buildPenultimateDistrict())
             return king.get();
 
@@ -75,6 +83,12 @@ public class RichardBot extends Bot {
         return super.chooseCharacterToKill(characterList);
     }
 
+    /**
+     * Method to implement Richard's strategy for character selection, prioritizing Richard's criteria if applicable and calling the superclass method otherwise.
+     * @param character The character whose profitability is to be calculated
+     * @param characterManager The characterManager of the game to have information
+     * @return The profitability of the character
+     */
     @Override
     protected double characterProfitability(Character character, CharacterManager characterManager) {
         charactersPresent = new ArrayList<>(characterManager.possibleCharactersToChoose());
@@ -96,6 +110,11 @@ public class RichardBot extends Bot {
         return super.characterProfitability(character, characterManager);
     }
 
+    /**
+     * Method to implement Richard's strategy for character selection, considering the possibility of a player could win if he takes the king to the next turn (the penultimate turn in fact)
+     * @param character The character whose profitability is to be calculated
+     * @return The profitability of the character or null if the character is unprofitable
+     */
     private Integer counterKingProfitability(Character character) {
         if (buildPenultimateDistrict() || iWillBuildPenultimateDistrict()) {
             if (character.startTurnAction().equals(GET_CROWN)) return 300;
@@ -106,15 +125,25 @@ public class RichardBot extends Bot {
         return null;
     }
 
+    /**
+     * Method to implement Richard's character selection strategy, considering the possibility of a player becoming untouchable due to the Architect
+     * @param character The character whose profitability is to be calculated
+     * @return The profitability of the character or null if the character is unprofitable
+     */
     private Integer counterArchitectProfitability(Character character) {
         List<Character> architect = charactersPresent.stream().filter(archi -> archi.numberOfDistrictToBuild() > 1).toList();
         if (architect.stream().anyMatch(this::onePlayerCouldBecomeUntouchable)) {
-            if (character.getAction().contains(Action.KILL)) return 750;
+            if (character.getAction().contains(Action.KILL)) return 500;
             if (character.numberOfDistrictToBuild() > 1) return 400;
         }
         return null;
     }
 
+    /**
+     * Method to implement Richard's character selection strategy, considering the possibility of a player could build his last district this turn
+     * @param character The character whose profitability is to be calculated
+     * @return The profitability of the character or null if the character is unprofitable
+     */
     private Integer lastTurnProfitability(Character character, CharacterManager characterManager) {
         if (thirdOrMoreWillWin(characterManager.possibleCharactersToChoose())) {
             List<Character> warlord = charactersPresent.stream().filter(c -> c.getAction().contains(Action.DESTROY)).toList();
@@ -152,6 +181,11 @@ public class RichardBot extends Bot {
         return null;
     }
 
+    /**
+     * Method to choose a player to exchange cards, implements the Richard's strategy
+     * @param players List of player with which it can exchange
+     *
+     */
     @Override
     public IPlayer playerToExchangeCards(List<IPlayer> players) {
         if (getHandDistricts().size() < LOW_AMOUNT_OF_CARD && thirdOrMoreWillWin(charactersPresent) && charactersPresent.stream().noneMatch(character -> character.getAction().contains(Action.DESTROY)))
@@ -159,22 +193,39 @@ public class RichardBot extends Bot {
         else return super.playerToExchangeCards(players);
     }
 
+    /**
+     * Method to obtain all the players in capacity to win at the next turn with one of the character possible to choose
+     * @param characters the characters that a player could take
+     *
+     */
     private List<IPlayer> getPlayersAbleToWin(List<Character> characters) {
         Set<IPlayer> players = new HashSet<>();
         characters.forEach(character -> players.addAll(getPlayersAbleToWin(character)));
         return players.stream().toList();
     }
 
-
+    /**
+     * Method to obtain all the players in capacity to win at the next turn with a character
+     * @param character the character that a player could take
+     *
+     */
     private List<IPlayer> getPlayersAbleToWin(Character character) {
         if (character == null) return Collections.emptyList();
         return getPlayers().stream().filter(iPlayer -> iPlayer.getBuiltDistricts().size() + character.numberOfDistrictToBuild() >= getNumberOfDistrictsToEnd()).toList();
     }
 
+    /**
+     * Method to check if the bot is the first player in terms of points
+     *
+     */
     private boolean iAmFirst() {
         return getPlayers().stream().allMatch(iPlayer -> iPlayer.getBuiltDistricts().stream().mapToInt(District::getPoint).sum() < getBuiltDistricts().stream().mapToInt(District::getPoint).sum());
     }
 
+    /**
+     * Method to check if the bot could enrich it, in terms of Richard Strategy
+     *
+     */
     private boolean enrichPossible() {
         return potentialAmountOfCoins() >= 6;
     }
@@ -194,10 +245,21 @@ public class RichardBot extends Bot {
         return potentialMaxCoins;
     }
 
+    /**
+     * Method to know if a player could become untouchable, on the Richard's criteria
+     * @param character the character which could permit to a player ro become untouchable
+     *
+     */
     private boolean onePlayerCouldBecomeUntouchable(Character character) {
         return getPlayers().stream().anyMatch(iPlayer -> couldBecomeUntouchable(character, iPlayer));
     }
 
+    /**
+     * Method to know if a player could become untouchable, on the Richard's criteria
+     * @param character the character which could permit to a player ro become untouchable
+     * @param player the player to check
+     *
+     */
     private boolean couldBecomeUntouchable(Character character, IPlayer player) {
         return player.getCoins() >= 4
                 && player.getHandSize() >= character.numberOfDistrictToBuild() - (character.startTurnAction().equals(Action.BEGIN_DRAW) ? 2 : 0)
@@ -215,14 +277,21 @@ public class RichardBot extends Bot {
                         && player.getBuiltDistricts().size() >= this.getBuiltDistricts().size()).toList().isEmpty();
     }
 
+    /**
+     * Detects if the bot is on the verge of building its penultimate district
+     *
+     */
     private boolean iWillBuildPenultimateDistrict() {
         return getBuiltDistricts().size() == getNumberOfDistrictsToEnd() - 2;
     }
 
+    /**
+     * Method to determine if the bot is the second player to choose its character
+     *
+     */
     private boolean iAmSecond() {
         return getPlayersWithYou().get(1).equals(this);
     }
-
 
     private boolean thirdOrMoreWillWin(List<Character> possible) {
         return possible.stream()
@@ -232,14 +301,26 @@ public class RichardBot extends Bot {
                         .toList().isEmpty());
     }
 
+    /**
+     * Method to obtain the player which choose his character in second
+     *
+     */
     private IPlayer secondPlayer() {
         return getPlayers().get(0);
     }
 
+    /**
+     * Method to obtain the player in position i the list of players
+     * @param i the position of a player in the list of players
+     */
     private IPlayer thirdPlayer(int i) {
         return getPlayersWithYou().get(i);
     }
 
+    /**
+     * Method to obtain the position of the player first player that could win in the list of players
+     * @param characters the list of character a player could pick
+     */
     private int positionWinningPlayer(List<Character> characters) {
         List<Integer> position = new ArrayList<>();
         List<IPlayer> players = getPlayersWithYou();
