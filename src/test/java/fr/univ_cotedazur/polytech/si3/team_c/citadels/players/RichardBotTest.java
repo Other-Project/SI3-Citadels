@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RichardBotTest {
 
     Game game;
 
-    RichardBot richardBot1, richardBot2;
+    RichardBot richardBot1, richardBot2, richardBot3, richardBot4;
     Bot bot1, bot2;
 
     CharacterManager characterManager;
@@ -44,7 +44,7 @@ class RichardBotTest {
 
             @Override
             public List<Character> charactersList() {
-                return listCharacter;
+                return new ArrayList<>(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
             }
 
             @Override
@@ -63,28 +63,93 @@ class RichardBotTest {
             }
         };
 
+        bot1 = new Bot("Bot 1") {
+            @Override
+            public Character pickCharacter(CharacterManager characterManager) {
+                setCharacter(new Thief());
+                return new Thief();
+            }
+        };
+        bot2 = new Bot("Bot 2") {
+            @Override
+            public Character pickCharacter(CharacterManager characterManager) {
+                setCharacter(new Warlord());
+                return new Warlord();
+            }
+        };
+
+        //NO CONDITION VERIFIED
         game = new Game(3, characterManager, richardBot1, bot1, bot2);
         game.playerInitialization();
-        bot2.setCrown();
-        richardBot1.gainCoins(3);
-        bot1.gainCoins(2);
-        bot2.gainCoins(3);
         game.characterSelectionTurn();
-        listCharacter.remove(new Assassin());
-        assertEquals(List.of(new Warlord()), richardBot1.removeCharacters(listCharacter));
-        bot2.pay(4);
-        assertEquals(List.of(new Thief(), new Warlord()), richardBot1.removeCharacters(listCharacter));
+        assertTrue(richardBot1.charactersNotToKill(listCharacter).contains(new Warlord()));
+        assertTrue(richardBot1.charactersNotToKill(listCharacter).contains(new Thief()));
+        game.getPlayerList().forEach(Player::resetPlayer);
 
+        //JUST ONE WARLORD CONDITION, I AM THE FIRST PLAYER DUE TO POINTS VERIFIED
+        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        listCharacter.clear();
+        listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
+        game.playerInitialization();
+        game.characterSelectionTurn();
         richardBot1.gainCoins(6);
         richardBot1.buildDistrict(richardBot1.getHandDistricts().get(0), 0);
         richardBot1.pay(richardBot1.getCoins());
-        assertEquals(List.of(new Thief()), richardBot1.removeCharacters(listCharacter));
+        assertEquals(List.of(new Thief()), richardBot1.charactersNotToKill(listCharacter));
+        game.getPlayerList().forEach(Player::resetPlayer);
 
+        //JUST ONE THIEF CONDITION, I DON'T WANT ONE PLAYER COULD SIMPLY BECOME RICH
+        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        listCharacter.clear();
+        listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
+        game.playerInitialization();
+        game.characterSelectionTurn();
+        bot1.gainCoins(2);
+        bot2.gainCoins(3);
+        assertEquals(List.of(new Warlord()), richardBot1.charactersNotToKill(listCharacter));
+        game.getPlayerList().forEach(Player::resetPlayer);
+
+        //TWO CONDITION VERIFIED, ONE FOR THE THIEF AND ONE FOR THE WARLORD, FUSION OF TEH TWO TEST OVER
+        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        game.playerInitialization();
+        listCharacter.clear();
+        listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
+        game.characterSelectionTurn();
+        bot1.gainCoins(2);
+        bot2.gainCoins(3);
+        richardBot1.gainCoins(6);
+        richardBot1.buildDistrict(richardBot1.getHandDistricts().get(0), 0);
+        richardBot1.pay(richardBot1.getCoins());
+        assertEquals(List.of(), richardBot1.charactersNotToKill(listCharacter));
+        game.getPlayerList().forEach(Player::resetPlayer);
+
+        /*
+        //JUST ONE WARLORD CONDITION, I AM SURE THAT THE WARLORD HAS BEEN TAKE BY SOMEBODY COULD WIN
+        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        game.playerInitialization();
+        listCharacter.clear();
+        listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
+        bot2.setCrown();
         bot2.gainCoins(30);
         List<District> districts = List.of(new DragonGate(), new University(), new Tavern(), new Battlefield(), new Prison(), new Fortress(), new WatchTower(), new Monastery(), new Manor());
         districts.forEach(district -> bot2.addDistrictToHand(district));
         districts.forEach(district -> bot2.buildDistrict(district, 0));
-        assertEquals(List.of(), richardBot1.removeCharacters(listCharacter));
+        game.characterSelectionTurn();
+        assertEquals(List.of(new Thief()), richardBot1.charactersNotToKill(listCharacter));
+        game.getPlayerList().forEach(Player::resetPlayer);
+
+        //JUST ONE THIEF CONDITION, I AM SURE THAT THE THIEF HAS BEEN TAKE BY SOMEBODY COULD WIN
+        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        game.playerInitialization();
+        listCharacter.clear();
+        listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
+        bot1.setCrown();
+        bot1.gainCoins(30);
+        districts.forEach(district -> bot1.addDistrictToHand(district));
+        districts.forEach(district -> bot1.buildDistrict(district, 0));
+        game.characterSelectionTurn();
+        assertEquals(List.of(new Warlord()), richardBot1.charactersNotToKill(listCharacter));
+        game.getPlayerList().forEach(Player::resetPlayer);*/
     }
 
     @Test
@@ -170,50 +235,122 @@ class RichardBotTest {
             public List<Character> charactersList() {
                 return listCharacter;
             }
+
+            @Override
+            public List<Character> getAvailableCharacters() {
+                return listCharacter;
+            }
+
+            @Override
+            protected void setHiddenDiscard() {
+            }
+
+            @Override
+            protected void setVisibleDiscard() {
+            }
         };
         richardBot1 = new RichardBot("Richard Bot 1");
         richardBot2 = new RichardBot("Richard Bot 2");
-        game = new Game(3, characterManager, richardBot1, richardBot2, bot1, bot2);
+        richardBot3 = new RichardBot("Richard Bot 3");
+        richardBot4 = new RichardBot("Richard Bot 4");
+        game = new Game(3, characterManager, richardBot1, richardBot2, richardBot3, richardBot4);
         game.playerInitialization();
         richardBot1.setCrown();
 
         List<District> districts = List.of(new Laboratory(), new Church(), new HauntedCity(), new Castle());
         districts.forEach(district -> richardBot2.addDistrictToHand(district));
 
-        bot1.gainCoins(30);
-        districts = List.of(new DragonGate(), new University(), new Tavern(), new Battlefield(), new Prison(), new Fortress(), new WatchTower());
-        districts.forEach(district -> bot1.addDistrictToHand(district));
-        districts.forEach(district -> bot1.buildDistrict(district, 0));
+        richardBot3.gainCoins(42);
+        districts = List.of(new DragonGate(), new University(), new Tavern(), new Battlefield(), new Prison(), new Church(), new Castle());
+        districts.forEach(district -> richardBot3.addDistrictToHand(district));
+        richardBot3.getHandDistricts().forEach(district -> richardBot3.buildDistrict(district, 0));
+        richardBot3.removeFromHand(richardBot3.getHandDistricts());
 
         ///1
-        assertEquals(new Warlord(), richardBot1.pickCharacter(characterManager));
-        listCharacter.remove(new Warlord());
-        assertEquals(new Assassin(), richardBot2.pickCharacter(characterManager));
-        listCharacter.remove(new Assassin());
-        assertEquals(new Bishop(), richardBot2.chooseCharacterToKill(listCharacter));
+        game.characterSelectionTurn();
+        assertEquals(new Warlord(), richardBot1.getCharacter().orElseThrow());
+        assertEquals(new Assassin(), richardBot2.getCharacter().orElseThrow());
+        assertEquals(new Bishop(), richardBot2.chooseCharacterToKill(game.getCharactersToInteractWith()));
 
         ///2
         listCharacter.clear();
         listCharacter.addAll(CharacterManager.defaultCharacterList());
         listCharacter.remove(new Bishop());
-        /*assertEquals(new Assassin(), richardBot1.pickCharacter(characterManager));
-        listCharacter.remove(new Assassin());
-        assertEquals(List.of(new Warlord()), richardBot1.removeCharacters(listCharacter));
+        game.characterSelectionTurn();
+        assertEquals(new Assassin(), richardBot1.getCharacter().orElseThrow());
+        assertEquals(List.of(new Warlord()), richardBot1.charactersNotToKill(game.getCharactersToInteractWith()));
+        assertEquals(new Warlord(), richardBot2.getCharacter().orElseThrow());
+
+
+        //3 Part 1
+        listCharacter.clear();
+        listCharacter.addAll(CharacterManager.defaultCharacterList());
+        listCharacter.remove(new Warlord());
+        game.characterSelectionTurn();
+        assertEquals(new Assassin(), richardBot1.getCharacter().orElseThrow());
         assertEquals(new Magician(), richardBot1.chooseCharacterToKill(listCharacter));
         listCharacter.remove(new Assassin());
-        assertEquals(new Magician(), richardBot2.pickCharacter(characterManager));
+        assertNotEquals(new Magician(), richardBot2.getCharacter().orElseThrow());
 
-        listCharacter.add(new Warlord());
-        assertEquals(new Warlord(), richardBot1.pickCharacter(characterManager));
-        listCharacter.remove(new Warlord());
-        assertEquals(new Bishop(), richardBot2.pickCharacter(characterManager));
-
-        listCharacter.remove(new Bishop());
-        listCharacter.add(new Warlord());
-        listCharacter.add(new Assassin());
-        assertEquals(new Assassin(), richardBot1.pickCharacter(characterManager));
-        assertNotEquals(new Warlord(), richardBot1.chooseCharacterToKill(listCharacter));
+        //4 Part
+        listCharacter.clear();
+        listCharacter.addAll(CharacterManager.defaultCharacterList());
         listCharacter.remove(new Assassin());
-        assertEquals(new Warlord(), richardBot2.pickCharacter(characterManager));*/
+        game.characterSelectionTurn();
+        assertEquals(new Warlord(), richardBot1.getCharacter().orElseThrow());
+        listCharacter.remove(new Warlord());
+        assertEquals(new Bishop(), richardBot2.getCharacter().orElseThrow());
+    }
+
+    @Test
+    void LastTurnPart2Test() {
+        List<Character> listCharacter = new ArrayList<>(CharacterManager.defaultCharacterList());
+        characterManager = new CharacterManager(3, new Random(), listCharacter) {
+            @Override
+            public List<Character> possibleCharactersToChoose() {
+                return listCharacter;
+            }
+
+            @Override
+            public List<Character> charactersList() {
+                return listCharacter;
+            }
+
+            @Override
+            public List<Character> getAvailableCharacters() {
+                return listCharacter;
+            }
+
+            @Override
+            protected void setHiddenDiscard() {
+            }
+
+            @Override
+            protected void setVisibleDiscard() {
+            }
+        };
+        richardBot1 = new RichardBot("Richard Bot 1");
+        richardBot2 = new RichardBot("Richard Bot 2");
+        richardBot3 = new RichardBot("Richard Bot 3");
+        richardBot4 = new RichardBot("Richard Bot 4");
+        game = new Game(3, characterManager, richardBot1, richardBot2, richardBot3, richardBot4);
+        game.playerInitialization();
+        richardBot1.setCrown();
+
+        richardBot3.gainCoins(42);
+        List<District> districts = List.of(new DragonGate(), new University(), new Tavern(), new Battlefield(), new Prison(), new Church(), new Castle());
+        districts.forEach(district -> richardBot3.addDistrictToHand(district));
+        richardBot3.getHandDistricts().forEach(district -> richardBot3.buildDistrict(district, 0));
+        richardBot3.removeFromHand(richardBot3.getHandDistricts());
+
+        //3 Part 2
+        listCharacter.remove(new Warlord());
+        game.characterSelectionTurn();
+        assertEquals(new Assassin(), richardBot1.getCharacter().orElseThrow());
+        assertNotEquals(new Magician(), richardBot1.chooseCharacterToKill(listCharacter));
+        listCharacter.remove(new Assassin());
+        assertEquals(new Magician(), richardBot2.getCharacter().orElseThrow());
+        assertEquals(richardBot3, richardBot2.playerToExchangeCards(richardBot2.getPlayersWithYou()));
+
     }
 }

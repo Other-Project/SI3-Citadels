@@ -560,6 +560,7 @@ public abstract class Player implements IPlayer {
         this.character = null;
         this.actionSet.clear();
         this.gameEnder = false;
+        this.hasCrown = false;
     }
 
     public void setCrown() {
