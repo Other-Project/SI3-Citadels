@@ -29,6 +29,7 @@ public abstract class Player implements IPlayer {
     private Set<Action> actionSet;
 
     private Callable<List<IPlayer>> players;
+    private boolean hasCrown;
 
     private int numberOfDistrictsToEnd = 8;
 
@@ -40,6 +41,7 @@ public abstract class Player implements IPlayer {
         builtDistricts = new HashMap<>();
         sufferedActions = new EnumMap<>(SufferedActions.class);
         players = Collections::emptyList;
+        hasCrown = false;
     }
 
     /**
@@ -515,6 +517,14 @@ public abstract class Player implements IPlayer {
 
     public List<IPlayer> getPlayers() {
         try {
+            return players.call().stream().filter(iPlayer -> !iPlayer.equals(this)).toList();
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<IPlayer> getPlayersWithYou() {
+        try {
             return players.call();
         } catch (Exception e) {
             return Collections.emptyList();
@@ -549,5 +559,18 @@ public abstract class Player implements IPlayer {
         this.character = null;
         this.actionSet.clear();
         this.gameEnder = false;
+        this.hasCrown = false;
+    }
+
+    public void setCrown() {
+        hasCrown = true;
+    }
+
+    public void resetCrown() {
+        hasCrown = false;
+    }
+
+    public boolean hasCrown() {
+        return hasCrown;
     }
 }

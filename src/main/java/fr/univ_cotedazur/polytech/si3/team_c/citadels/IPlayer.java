@@ -1,7 +1,6 @@
 package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IPlayer {
     /**
@@ -30,7 +29,7 @@ public interface IPlayer {
     List<District> getDestroyableDistricts();
 
     /**
-     * Gets the chosen character (can be empty if the player hasn't chosen yet)
+     * Gets if the current player has the crown
      */
-    Optional<Character> getCharacter();
+    boolean hasCrown();
 }

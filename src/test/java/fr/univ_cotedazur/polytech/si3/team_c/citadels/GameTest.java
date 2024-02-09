@@ -89,10 +89,10 @@ class GameTest {
         bot2.pickCharacter(characterManagerWithoutDiscard(2, List.of(new Magician())));
         for (Player p : game.getPlayerList()) {  //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
         }
         game.gameTurn();//To test the crown feature in the gameTurn and test if the crown does not turn between player if there is a King
-        assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+        assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
     }
 
     @Test
@@ -129,10 +129,10 @@ class GameTest {
         game.setCrown(bot1);
         for (Player p : game.getPlayerList()) { //To test the crown feature in the playerTurn
             game.playerTurn(p);
-            assertEquals(bot1, game.getPlayerList().get(game.getCrown()));
+            assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
         }
-        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown turns between player if there is no King
-        assertEquals(bot2, game.getPlayerList().get(game.getCrown()));
+        game.gameTurn();//To test the crown feature in the gameTurn and test if the crown doesn't turn between player if there is no King
+        assertEquals(bot1, game.getPlayerList().get(game.getCrownIndex()));
     }
 
     @Test
@@ -800,5 +800,20 @@ class GameTest {
         var cards = List.of(new Manor(), new Battlefield());
         cards.forEach(simpleBot::addDistrictToHand);
         assertEquals(new Magician(), fearfulBot1.pickCharacter(cM));
+    }
+
+    @Test
+    void playerOrderTest() {
+        Bot bot1 = new Bot("bot1");
+        Bot bot2 = new Bot("bot2");
+        Bot bot3 = new Bot("bot3");
+        Bot bot4 = new Bot("bot4");
+        game = new Game(bot1, bot2, bot3, bot4);
+        bot1.setCrown();
+        assertEquals(List.of(bot2, bot3, bot4), bot1.getPlayers());
+        bot3.setCrown();
+        bot1.resetCrown();
+        assertEquals(List.of(bot3, bot4, bot2), bot1.getPlayers());
+        assertEquals(List.of(bot4, bot1, bot2), bot3.getPlayers());
     }
 }

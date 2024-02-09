@@ -52,7 +52,7 @@ public class Main {
 
         List<Statistic> results;
         if (main.twoThousand) {
-            results = playMultipleGames(1000, 5, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"), new RandomBot("Random Bot"));
+            results = playMultipleGames(1000, 5, new Bot("Bot"), new DiscreetBot("Discrete Bot"), new FearFulBot("Fearful Bot"), new AgressiveBot("Aggressive Bot"), new RandomBot("Random Bot"), new RichardBot("Richard Bot"));
             LOGGER.info(results::toString);
             stats.addAll(results);
             results = playMultipleGames(1000, 4, new Bot("Bot 1"), new Bot("Bot 2"), new Bot("Bot 3"), new Bot("Bot 4"));

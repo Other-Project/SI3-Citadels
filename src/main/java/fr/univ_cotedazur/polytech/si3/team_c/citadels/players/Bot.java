@@ -214,6 +214,14 @@ public class Bot extends Player {
         addPossibleCharacters(afterPlayers, afterCharacters);
     }
 
+    /**
+     * Get the possible characters that the given player could have chosen during their turn
+     * @param iPlayer The player we want to inspect
+     */
+    List<Character> getPossibleCharacters(IPlayer iPlayer) {
+        return possibleCharacters.get(iPlayer);
+    }
+
     @Override
     public Character pickCharacter(CharacterManager characterManager) {
         super.pickCharacter(characterManager);
