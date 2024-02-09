@@ -95,8 +95,11 @@ toutes ses décisions de manières aléatoires.
 
 ### Richard Bot
 
-&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but d'implémenter la stratégie de Richard postée sur
-ce [forum](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509)
+&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but d'implémenter la stratégie de Richard postée sur ce [forum](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509). 
+Pour ce bot, il a fallu modifier la méthode `characterProfitability`, là où pour les autres, 
+il fallait seulement modifier les valeurs retournées par les méthodes qui servaient de coefficient. 
+Car pour implémenter la stratégie de Richard, il fallait modifier la manière de choisir les personnages de manière précise et donc que celle-ci ne repose pas sur des coefficients. 
+Celà permet, par exemple, dans une situation précise, que le choix du personnage ne repose pas sur la couleur des quartiers déjà construits, mais soit pleinement défini.
 
 ### Statistiques et analyse sur les bots
 
@@ -147,7 +150,6 @@ Le projet est découpée en plusieurs gros ensembles :
   Ainsi, de part toutes ces propriétés, l'ensemble du jeu peut être représenté en garantissant une abstraction suffisante 
   pour une potentielle évolution future avec des cartes disposant de comportements hybrides.
 
-
 * Pour le moteur de jeu, nous avons décidé de séparer les différentes responsabilités dans les classes : `Game`, `Action`, `CharacterManager` et `Deck`.
   * La classe `CharacterManager` permet de gérer les personnages lors du tour de sélection des personnages et de stocker les différentes informations
   liées à celui-ci. Elle donne la liste des personnages aux joueurs et prend en compte les variations liés à leur nombre, à la fois pour la défausse,
@@ -156,6 +158,8 @@ Le projet est découpée en plusieurs gros ensembles :
   * La classe `Deck` gère la pioche et permet de tirer un nombre de cartes donné. À sa création, les cartes sont ajoutées et mélangées.
 
 * L'intéraction du joueur avec le moteur de jeu se fait au moyen de la classe `Player`. Cette classe est abstraite, car destinée à représenter un joueur générique.
+  La classe `Bot` hérite de `Player` et fourni une implémentation de base suffisamment développée pour que d'autres comportements puissent être adaptés à partir de cette classe.
+  Ainsi les `DiscretBot`, `AgressiveBot` et `FearfulBot` se basent essentiellement sur le comportement défini par `Bot` et changent essentiellement que des coefficients.
 
 ## Documentation
 
@@ -166,11 +170,44 @@ des explications sont données pour faciliter la compréhension à la relecture 
 
 ## Qualité
 
-
+La force du code est que l'on peut de manière assez simple ajouter des extensions au jeu de base que ça soit au niveau des personnages et/ou des quartiers.
+De plus, le code est pensé pour pouvoir ajouter des joueurs humains sans avoir besoin de refactor tout le code.
+Au niveau des parties de moins bonne qualité, il y a la méthode `nextAction` dans la classe `Bot` qui pourrait nécessiter d'être réfactor,
+d'ailleurs cela se retrouve dans l'analyse de sonar.
 
 # Processus
 
-### Stratégie de branchement
+## Répartition des tâches
+
+Au niveau de la répartition des tâches, l'ensemble du groupe à travailler sur les ajouts dans la mesure
+où certains ont implémenté les fonctionnalités et d'autres ont review durant les pulls request et demandé
+des modifications en essayant de pleinement comprendre le code. 
+
+### Les Classes Principales
+
+Dans l'ensemble tout le monde a travaillé sur les différentes classes du projet et dans la mise en place des principaux éléments. 
+Mais, pour maximiser l'efficacité, chaque personne s'est investie de manière plus ciblée sur certains éléments.
+
+* Evan a été le plus important reviewer, il a implémenté la classe `Bot`, qui a été un élément essentiel à la création des autres bots, 
+  et il a mis en place les statistiques et la sauvegarde de celles-ci dans un fichier csv. 
+* Jilian a aussi participé aux statistiques, à l'implémentation des cartes violettes et des personnages, et s'est concentré ensuite sur la résolution des bugs.
+* Théo s'est concentré sur le moteur de jeu avec la création de la classe `Game` et sur la gestion des actions spécifiques des personnages.
+* Antoine-Marie s'est occupé des actions subies par les personnages avec un énuméré, du tour de sélection des 
+  personnages, ainsi que des probabilités de choix d'un personnage par un joueur dans `Bot`.
+
+### Les cartes
+
+* Jilian a réalisé les quartiers avec l'aide d'Antoine-Marie qui a aidé à la réalisation des quartiers violets.
+* L'implémentation des personnages a été réparti entre Jilian, Théo et Antoine-Marie.
+
+### Bots
+* Evan a réalisé le `Bot` et l' `AgressiveBot`.
+* Jilian a réalisé le `FearFulBot`.
+* Théo a réalisé le `DiscreetBot`.
+* Antoine-Marie a réalisé le `RandomBot`.
+* Pour le `RichardBot`, tout le monde a travaillé dessus, Jilian et Théo plutôt sur la conception et Antoine-Marie et Evan plutôt sur la relecture et la correction de bugs.
+
+## Stratégie de branchement
 
 Nous avons opté pour la stratégie [GitHub flow](https://docs.github.com/fr/get-started/using-github/github-flow) 
 car celle-ci nous semblait être la plus adaptée à la taille de notre équipe par sa simplicité de mise en place,
