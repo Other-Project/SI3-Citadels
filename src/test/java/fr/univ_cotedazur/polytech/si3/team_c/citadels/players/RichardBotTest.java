@@ -32,20 +32,6 @@ class RichardBotTest {
     void assassinateStrategyTest() {
         List<Character> listCharacter = new ArrayList<>(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
         characterManager = new CharacterManager(3, new Random(), listCharacter) {
-            @Override
-            public List<Character> getAvailableCharacters() {
-                return super.getAvailableCharacters();
-            }
-
-            @Override
-            public List<Character> possibleCharactersToChoose() {
-                return listCharacter;
-            }
-
-            @Override
-            public List<Character> charactersList() {
-                return new ArrayList<>(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
-            }
 
             @Override
             protected void setHiddenDiscard() {
@@ -123,7 +109,7 @@ class RichardBotTest {
         assertEquals(List.of(), richardBot1.charactersNotToKill(listCharacter));
         game.getPlayerList().forEach(Player::resetPlayer);
 
-        /*
+
         //JUST ONE WARLORD CONDITION, I AM SURE THAT THE WARLORD HAS BEEN TAKE BY SOMEBODY COULD WIN
         game = new Game(3, characterManager, richardBot1, bot1, bot2);
         game.playerInitialization();
@@ -139,7 +125,7 @@ class RichardBotTest {
         game.getPlayerList().forEach(Player::resetPlayer);
 
         //JUST ONE THIEF CONDITION, I AM SURE THAT THE THIEF HAS BEEN TAKE BY SOMEBODY COULD WIN
-        game = new Game(3, characterManager, richardBot1, bot1, bot2);
+        game = new Game(3, characterManager, bot1, richardBot1, bot2);
         game.playerInitialization();
         listCharacter.clear();
         listCharacter.addAll(List.of(new Thief(), new Assassin(), new Warlord(), new Architect()));
@@ -149,7 +135,7 @@ class RichardBotTest {
         districts.forEach(district -> bot1.buildDistrict(district, 0));
         game.characterSelectionTurn();
         assertEquals(List.of(new Warlord()), richardBot1.charactersNotToKill(listCharacter));
-        game.getPlayerList().forEach(Player::resetPlayer);*/
+        game.getPlayerList().forEach(Player::resetPlayer);
     }
 
     @Test
