@@ -8,6 +8,7 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 import org.apache.commons.lang3.ArrayUtils;
 
+import javax.naming.LimitExceededException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
@@ -62,7 +63,7 @@ public class Main {
         if (main.csv) writeCsv(STATISTICS_PATH, stats);
     }
 
-    private static List<Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) {
+    private static List<Statistic> playMultipleGames(int numberOfGames, int numberOfPlayers, Player... players) throws LimitExceededException {
         HashMap<String, Statistic> stat = new HashMap<>();
 
         for (int k = 0; k < numberOfGames; k++) {

@@ -465,7 +465,7 @@ public abstract class Player implements IPlayer {
      * @param cards List of cards to remove of the hand
      */
     public void removeFromHand(List<District> cards) {
-        handDistricts.removeAll(cards);
+        cards.forEach(handDistricts::remove);
     }
 
     /**

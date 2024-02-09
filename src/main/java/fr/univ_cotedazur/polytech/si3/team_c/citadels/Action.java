@@ -38,9 +38,9 @@ public enum Action {
             game.getDeck().addAll(drawnCard.stream().filter(
                     district -> {
                         for (District card : districtsToKeep) {
-                            if (card == district) return true;
+                            if (card == district) return false;
                         }
-                        return false;
+                        return true;
                     }).toList()); // We add back to the deck the districts that the player doesn't want to keep
             return MessageFormat.format("{0} kept {1}", player.getName(), districtsToKeep);
         }
@@ -149,7 +149,8 @@ public enum Action {
 
             List<Action> actions = districtToDestroy.getValue().getEventAction();
             actions.forEach(action -> game.unregisterPlayerForEventAction(player, action));
-            game.callEventAction(Action.RECOVER_DESTROYED_DISTRICT, player, districtToDestroy.getValue());
+            if (!game.callEventAction(Action.RECOVER_DESTROYED_DISTRICT, player, districtToDestroy.getValue()))
+                game.getDeck().add(districtToDestroy.getValue());
 
             return MessageFormat.format("{0} destroys the {1} of {2}\n{0} has now {3} coins",
                     player.getName(), districtToDestroy.getValue(), districtToDestroy.getKey().getName(), player.getCoins());
@@ -188,7 +189,7 @@ public enum Action {
                 eventPlayer.pay(1);
                 eventPlayer.addDistrictToHand(districtToDestroy);
                 return MessageFormat.format("{0} payed one coin to recover {1}", eventPlayer.getName(), districtToDestroy);
-            } else game.getDeck().add(districtToDestroy);
+            }
             return null;
         }
     },

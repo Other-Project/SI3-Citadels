@@ -2,6 +2,7 @@ package fr.univ_cotedazur.polytech.si3.team_c.citadels;
 
 import fr.univ_cotedazur.polytech.si3.team_c.citadels.players.*;
 
+import javax.naming.LimitExceededException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.logging.Level;
@@ -129,21 +130,23 @@ public class Game {
         if (eventActions.get(eventAction) == player) eventActions.remove(eventAction);
     }
 
-    public <T> void callEventAction(Action eventAction, Player caller, T param) {
-        if (!eventActions.containsKey(eventAction)) return;
+    public <T> boolean callEventAction(Action eventAction, Player caller, T param) {
+        if (!eventActions.containsKey(eventAction)) return false;
         String text = eventAction.doEventAction(this, caller, eventActions.get(eventAction), param);
-        if (text != null)
-            LOGGER.fine(text);
+        if (text == null) return false;
+        LOGGER.fine(text);
+        return true;
     }
 
 
-    public void start() {
+    public void start() throws LimitExceededException {
         playerList.forEach(Player::resetPlayer);
         playerInitialization();
         if (playerList.isEmpty()) throw new IllegalStateException("No players in this game");
         LOGGER.log(Level.FINE, "Game starts");
         setCrown(random.nextInt(playerList.size()));
         for (int i = 1; true; i++) {
+            if (i > 100) throw new LimitExceededException("The game seems to be stuck");
             LOGGER.log(Level.FINE, "===== Turn {0} =====", i);
             currentTurn = i;
             if (gameTurn()) break;
