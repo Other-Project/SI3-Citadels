@@ -237,8 +237,7 @@ public class RichardBot extends Bot {
     }
 
     private IPlayer thirdPlayer(int i) {
-        if (hasCrown()) return getPlayers().get(i - 1);
-        else return getPlayersWithYou().get(i);
+        return getPlayersWithYou().get(i);
     }
 
     private int positionWinningPlayer(List<Character> characters) {
