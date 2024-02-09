@@ -72,13 +72,18 @@ public class DiscreetBot extends Bot {
         return (getBuiltDistricts().size() * 2 + 1.0) / (getBuiltDistricts().stream().filter(district1 -> district1.getColor() == district.getColor()).count() + 1 << 2);
     }
 
-    private boolean tryFinalRush() {
-        return getNumberOfDistrictsToEnd() - getHandSize() > 1
-                && getNumberOfDistrictsToEnd() - getHandSize() <= 3
+    /**
+     * Detects if the discreet bot should try to attempt a final rush
+     */
+    protected boolean tryFinalRush() {
+        var numberOfDistrictLeftToBuild = getNumberOfDistrictsToEnd() - getBuiltDistricts().size();
+        return getHandSize() >= 1
+                && numberOfDistrictLeftToBuild <= 3
+                && numberOfDistrictLeftToBuild > 1
                 && getCoins() >= 4;
     }
 
-    private int differenceOfDistrictsWithFirst() {
+    protected int differenceOfDistrictsWithFirst() {
         Optional<IPlayer> firstPlayer = getPlayers().stream().max(Comparator.comparingInt(player -> player.getBuiltDistricts().size()));
         return firstPlayer.map(iPlayer -> iPlayer.getBuiltDistricts().size() - getBuiltDistricts().size()).orElse(-1);
     }
