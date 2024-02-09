@@ -12,8 +12,8 @@ Polytech Nice-Sophia - SI3 PS5
 ### Les règles du jeu Citadelles implémentées
 
 Citadelles est un jeu de société composé de cartes personnage ayant toute une capacité différente
-et de cartes quartier de couleurs différentes (rouge, jaune, bleu, vert et violet),
-les cartes violettes ont, comme les personnages, des capacités propres.
+et de cartes quartier de couleurs différentes (rouge, jaune, bleu, vert et violet).
+Les cartes violettes ont, comme les personnages, des capacités propres.
 
 Un tour se déroule de la façon suivante :
 
@@ -41,7 +41,7 @@ Lors de la phase de choix des personages d'un tour de jeu, les règles varient e
   personnages
 * A 4 joueurs : 2 cartes personnages sont écartées faces visibles et deux autres faces cachées
 * A 5 joueurs : 1 carte personnages sont écartées faces visibles et deux autres faces cachées
-* A 6 et 7 joueurs : aucunes cartes personnages sont écartées faces visibles et deux autres faces cachées
+* A 6 et 7 joueurs : aucunes cartes personnages ne sont écartées faces visibles et deux autres faces cachées
 
 (Dans tous les cas le roi ne peut pas être parmi les cartes placées faces visibles, mais il peut être parmi les cartes
 placées faces cachées)
@@ -60,12 +60,12 @@ Différents types de bots ont été implémenté, il y en a 6 et ils représente
 
 ### Bot
 
-&nbsp; &nbsp; &nbsp; C'est l'implémentation de base, dont dérive d'autres types de bot. Il prend des décisions fondées
+C'est l'implémentation de base, dont dérive d'autres types de bot. Il prend des décisions fondées
 sur des critères de rentabilités déterminés mathématiquement.
 
 ### Discreet Bot
 
-&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but de ne pas se faire repérer par les autres joueurs et essaye de
+Ce bot a pour but de ne pas se faire repérer par les autres joueurs et essaye de
 rester
 discret afin de gagner. Dès qu'il est en capacité de terminer la partie, il prend l'opportunité. Il construit ni des
 quartiers rapportant trop de points pour éviter de se faire attaquer par les autres joueurs, ni ceux qui n'en rapportent
@@ -74,52 +74,52 @@ pour quand même essayer de marquer un maximum de points.
 
 ### FearFul Bot
 
-&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot ne construit que des quartiers rapportant au moins 3 points. Et s'il se sent
-en danger, de destruction d'un de ses quartiers, d'être volé, d'être tué ou qu'on lui échange ses cartes tente de se
-protéger.
+Ce bot évite de construire des quartiers rapportant moins de 3 points. S'il se sent en danger, il tente de se protéger. 
+Les dangers sont classés par ordre de priorité : en premier celui de la destruction de l'un de ses quartiers, 
+en second celui de voir ses cartes échanger par un autre joueur, en troisième celui d'être volé et en dernier celui d'être tué.
 À chaque tour, il va donc étudier son jeu et celui des autres joueurs pour choisir un personnage lui permettant de se
-protéger s'il se sent en danger. Les dangers sont classés par ordre de priorité : en premier celui de la destruction de
-l'un
-de ses quartiers, en second celui de voir ses cartes échanger par un autre joueur, en troisième celui d'être volé et en
-dernier celui d'être tué.
+protéger s'il se sent en danger.
 
 ### Agressive Bot
 
-&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but d'être plus agressif que `Bot` sans, pour autant, l'être tout le
-temps sans quoi il n'aurait qu'une infime chance de gagner ne serais-ce qu'une partie.
-
-### Random Bot
-
-&nbsp; &nbsp; &nbsp; Ce bot n'hérite d'aucun comportement de `Bot`. Il est directement basé sur `Player`. Il prend
-toutes ses décisions de manières aléatoires.
+Ce bot a pour but d'être plus agressif sans, pour autant, l'être tout le temps, car il n'aurait qu'une infime chance de gagner.
 
 ### Richard Bot
 
-&nbsp; &nbsp; &nbsp; Basé sur `Bot`, ce bot a pour but d'implémenter la stratégie de Richard postée sur ce [forum](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509). 
-Pour ce bot, il a fallu modifier la méthode `characterProfitability`, là où pour les autres, 
-il fallait seulement modifier les valeurs retournées par les méthodes qui servaient de coefficient. 
-Car pour implémenter la stratégie de Richard, il fallait modifier la manière de choisir les personnages de manière précise et donc que celle-ci ne repose pas sur des coefficients. 
-Celà permet, par exemple, dans une situation précise, que le choix du personnage ne repose pas sur la couleur des quartiers déjà construits, mais soit pleinement défini.
+Ce bot a pour but d'implémenter la stratégie de Richard postée sur ce [forum](https://forum.trictrac.net/t/citadelles-charte-citadelles-de-base/509).
+Pour ce bot, il a fallu modifier la méthode `characterProfitability`, là où pour les autres,
+il fallait seulement modifier les valeurs retournées par les méthodes qui servaient de coefficient.
+Car pour implémenter la stratégie de Richard, il fallait se réferer précisément aux personnages et que donc elle ne peut pas se reposer uniquement sur des coefficients.
+
+### Random Bot
+
+Contrairement aux autres ce bot n'héritent d'aucun comportement de `Bot`. Il est directement basé sur `Player`. Il prend
+toutes ses décisions de manières aléatoires.
 
 ### Statistiques et analyse sur les bots
+
+Il est difficile de savoir quel est le meilleur bot parmi tous ceux implémentés, car la stratégie de chacun des bots impacte les autres bots.
+Par exemple la stratégie de Richard va influencer tous les autres types de bots dès que ceux-ci vont arriver dans une situation où ils peuvent 
+potentiellement finir. D'ailleurs cela se reflète lorsque qu'on lance le projet avec l'attribut "--2thousands", les bots `RichardBot`, `FearFulBot`,
+`DiscreetBot` ont des pourcentages de victoires proches et le type de bot ayant le plus grand pourcentage peut être variable. De plus retirer ou 
+ajouter un type de bot peut faire varier radicalement les pourcentages de victoire.
 
 ## Choix d'implémentation
 
 ### Journalisation
 
 Pour la journalisation le choix a été fait d'avoir un `Level.INFO` pour tout ce qui est statistique sur un nombre de n
-parties
-entre k bots de différents types et un `Level.FINE` pour toutes les informations de la partie.
-Cela permet de changer le niveau de journalisation en fonction de quel paramètre est passé au lancement programme.
+parties entre k bots de différents types et un `Level.FINE` pour toutes les informations de la partie.
+Cela permet de changer le niveau de journalisation en fonction de quel paramètre est passé au lancement du programme.
 
 ### CSV contenant les statistiques
 
 Le format du fichier CSV est le suivant :
 
 * Chaque ligne donne les statistiques d'un bot pour un ensemble de parties jouées avec d'autres bots.
-* Chaque colones donne dans l'ordre, le nombre de parties jouées par les bots, le nom des bots (ce qui permet aussi d'en
+* Chaque colonne donne dans l'ordre, le nombre de parties jouées par les bots, le nom des bots (ce qui permet aussi d'en
   déduire le type de bot). Les colonnes suivantes donnent les statistiques, de victoires, d'égalités et de défaite avec
-  pour chacune 2 colones, d'abord le nombre de parties gagnées puis le pourcentage que cela représente,
+  pour chacune 2 colonnes, d'abord le nombre de parties gagnées puis le pourcentage que cela représente,
   ainsi qu'une dernière colonne avec le nombre de points moyen du bot sur l'ensemble de partie.
 
 # Architecture et qualité
@@ -140,9 +140,9 @@ Le projet est découpée en plusieurs gros ensembles :
     et d'un nombre minimum de joueurs dans la partie pour pouvoir être mis en jeu *(ex. l'Assassin ne peut être joué à moins de 4 joueurs)*.  
     Ils peuvent aussi définir le nombre de quartiers constructibles en un tour *(ex. l'Architecte peut en construire 3)* et empêcher la destruction de leur quartier *(ex. l'Évêque)*.
     Ils ont aussi la capacité de déclencher une action en début de tour *(ex. le Roi obtient la couronne)*
-  * Les quartiers (`District`) définissent un cout et un gain de points. 
+  * Les quartiers (`District`) définissent un coût et un gain de points. 
     Ils peuvent être destructibles ou non *(ex. le donjon)*. 
-    Ils définissent un nombre de quartiers à piocher (le plus grand nombre parmi les quartiers construits est celui appliqué), de quartiers à conserver après avoir pioché.
+    Ils définissent un nombre de quartiers à piocher (le plus grand nombre parmi les quartiers construits est celui appliqué) et de quartiers à conserver après avoir pioché.
     Ils sont aussi responsable de déterminer s'ils correspondent à une couleur lors du revenu généré par la couleur du personnage choisi
     *(ex. l'école de magie est décompté dans le revenu peu importe la couleur)*.
     Ils définissent aussi quelles couleurs ils peuvent représenter durant le calcul du bonus.
@@ -172,36 +172,30 @@ des explications sont données pour faciliter la compréhension à la relecture 
 
 La force du code est que l'on peut de manière assez simple ajouter des extensions au jeu de base que ça soit au niveau des personnages et/ou des quartiers.
 De plus, le code est pensé pour pouvoir ajouter des joueurs humains sans avoir besoin de refactor tout le code.
-Au niveau des parties de moins bonne qualité, il y a la méthode `nextAction` dans la classe `Bot` qui pourrait nécessiter d'être réfactor,
+Au niveau des parties de moins bonne qualité, il y a la méthode `nextAction` dans la classe `Bot` qui serait à réfactor,
 d'ailleurs cela se retrouve dans l'analyse de sonar.
 
 # Processus
 
 ## Répartition des tâches
 
-Au niveau de la répartition des tâches, l'ensemble du groupe à travailler sur les ajouts dans la mesure
-où certains ont implémenté les fonctionnalités et d'autres ont review durant les pulls request et demandé
-des modifications en essayant de pleinement comprendre le code. 
+En termes de répartition des tâches, l'équipe a collaboré sur tous les ajouts du projet. 
+Soit en mettant en œuvre des fonctionnalités, soit en effectuant des relectures de 
+pull requests en demandant des modifications et en cherchant à comprendre le code.
+Globalement, chaque membre a contribué aux différentes classes du projet, 
+mais pour une efficacité maximale, chacun s'est concentré sur des éléments spécifiques.
 
 ### Les Classes Principales
 
-Dans l'ensemble tout le monde a travaillé sur les différentes classes du projet et dans la mise en place des principaux éléments. 
-Mais, pour maximiser l'efficacité, chaque personne s'est investie de manière plus ciblée sur certains éléments.
-
-* Evan a été le plus important reviewer, il a implémenté la classe `Bot`, qui a été un élément essentiel à la création des autres bots, 
-  et il a mis en place les statistiques et la sauvegarde de celles-ci dans un fichier csv. 
-* Jilian a aussi participé aux statistiques, à l'implémentation des cartes violettes et des personnages, et s'est concentré ensuite sur la résolution des bugs.
-* Théo s'est concentré sur le moteur de jeu avec la création de la classe `Game` et sur la gestion des actions spécifiques des personnages.
+* Evan a été le relecteur le plus important, il a implémenté la classe `Bot`, qui a été un élément essentiel à la création des autres bots,
+  il a mis en place les statistiques et la sauvegarde de celles-ci dans un fichier csv. 
+* Jilian a aussi participé aux statistiques, à l'implémentation des cartes violettes et des personnages, et il s'est ensuite concentré sur la résolution des bugs.
+* Théo s'est chargé du moteur de jeu avec la création de la classe `Game` et de la gestion des actions spécifiques des personnages.
 * Antoine-Marie s'est occupé des actions subies par les personnages avec un énuméré, du tour de sélection des 
   personnages, ainsi que des probabilités de choix d'un personnage par un joueur dans `Bot`.
 
-### Les cartes
-
-* Jilian a réalisé les quartiers avec l'aide d'Antoine-Marie qui a aidé à la réalisation des quartiers violets.
-* L'implémentation des personnages a été réparti entre Jilian, Théo et Antoine-Marie.
-
 ### Bots
-* Evan a réalisé le `Bot` et l' `AgressiveBot`.
+* Evan a réalisé l' `AgressiveBot`.
 * Jilian a réalisé le `FearFulBot`.
 * Théo a réalisé le `DiscreetBot`.
 * Antoine-Marie a réalisé le `RandomBot`.
@@ -211,5 +205,5 @@ Mais, pour maximiser l'efficacité, chaque personne s'est investie de manière p
 
 Nous avons opté pour la stratégie [GitHub flow](https://docs.github.com/fr/get-started/using-github/github-flow) 
 car celle-ci nous semblait être la plus adaptée à la taille de notre équipe par sa simplicité de mise en place,
-tandis que Git flow et Gitlab flow sont plus adaptées à des projets de plus grande envergure puisqu'elle dispose
+tandis que Git flow et Gitlab flow sont plus adaptées à des projets de plus grande envergure puisqu'elles disposent
 d'un plus grand nombre d'étapes avant la livraison.
