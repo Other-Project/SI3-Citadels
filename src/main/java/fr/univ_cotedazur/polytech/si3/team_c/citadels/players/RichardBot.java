@@ -61,8 +61,7 @@ public class RichardBot extends Bot {
         Optional<Character> magician = charactersPresent.stream().filter(c -> c.getAction().contains(Action.EXCHANGE_PLAYER)).findFirst();
 
         if (thirdOrMoreWillWin(characterList) && iAmSecond()) {
-            var annoyingCharacter = characterList.stream().filter(character -> !character.canHaveADistrictDestroyed()).findFirst();
-            if (annoyingCharacter.isPresent()) return annoyingCharacter.get();
+            if (bishop.isPresent()) return bishop.get();
         }
         if (magician.isPresent() && assassin.isPresent() && bishop.isPresent() && thirdOrMoreWillWin(characterList) && hasCrown() && secondPlayer().getHandSize() >= LOW_AMOUNT_OF_CARD && thirdPlayer(positionWinningPlayer(characterList)).getHandSize() == 0)
             return magician.get();
